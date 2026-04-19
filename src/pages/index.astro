@@ -13,35 +13,70 @@ const [anime, notes, videos, academic] = await Promise.all([
 const latest = [...notes, ...academic]
 	.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
 	.slice(0, 3);
+
+const stats = [
+	{ label: '学术进展', value: academic.length, href: '/academic/', tone: 'coral' },
+	{ label: '追番条目', value: anime.length, href: '/anime/', tone: 'violet' },
+	{ label: '个人笔记', value: notes.length, href: '/notes/', tone: 'teal' },
+	{ label: '视频收藏', value: videos.length, href: '/videos/', tone: 'gold' },
+];
 ---
 
 <Layout title="Aiu 的个人内容中心">
-	<section class="home-hero">
-		<div>
-			<p class="eyebrow">Personal Lab</p>
-			<h1 class="page-title">把学术、追番、笔记和灵感放在同一个星图里。</h1>
-			<p class="lede">
-				这里先长出一个能用的骨架：内容可以按集合管理，页面可以继续扩展，之后再接 GitHub Actions 和 Decap CMS。
-			</p>
-		</div>
-		<img
-			src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1000&q=80"
-			alt=""
-		/>
+	<section class="dashboard-head">
+		<p class="eyebrow">Dashboard</p>
+		<h1 class="page-title">Aiu 内容控制台</h1>
+		<p class="lede">把学术进展、追番记录、个人笔记和视频收藏放进同一套后台式工作台。</p>
 	</section>
 
-	<section class="quick-grid" aria-label="内容入口">
-		<a href="/academic/"><strong>学术进展</strong><span>{academic.length} 条记录</span></a>
-		<a href="/anime/"><strong>追番列表</strong><span>{anime.length} 部作品</span></a>
-		<a href="/notes/"><strong>个人笔记</strong><span>{notes.length} 篇笔记</span></a>
-		<a href="/videos/"><strong>B 站视频</strong><span>{videos.length} 个链接</span></a>
+	<section class="stat-grid" aria-label="内容统计">
+		{
+			stats.map((item) => (
+				<a class:list={['stat-card', `tone-${item.tone}`]} href={item.href}>
+					<span>{item.label}</span>
+					<strong>{item.value}</strong>
+					<small>查看详情</small>
+				</a>
+			))
+		}
+	</section>
+
+	<section class="dashboard-grid">
+		<article class="panel intro-panel">
+			<h2>站点说明</h2>
+			<p>
+				当前站点已经切换成左侧导航 + 顶部工具栏的后台式结构。内容仍然来自 Markdown，
+				后面可以继续接 Decap CMS，把这里变成真正可编辑的个人内容后台。
+			</p>
+			<div class="action-row">
+				<a href="/notes/">写笔记</a>
+				<a href="/anime/">整理追番</a>
+				<a href="/academic/">记录研究</a>
+			</div>
+		</article>
+
+		<article class="panel timeline-panel">
+			<h2>最近更新</h2>
+			<ul>
+				{
+					latest.map((entry) => (
+						<li>
+							<a href={`/${entry.collection}/${entry.id}/`}>
+								<strong>{entry.data.title}</strong>
+								<span>{entry.data.date.toLocaleDateString('zh-CN')}</span>
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</article>
 	</section>
 
 	<div class="section-head">
-		<h2>最近更新</h2>
-		<a href="/notes/">看全部</a>
+		<h2>内容预览</h2>
+		<a href="/notes/">全部笔记</a>
 	</div>
-	<section class="grid">
+	<section class="grid preview-grid">
 		{
 			latest.map((entry) => (
 				<ContentCard
@@ -59,71 +94,162 @@ const latest = [...notes, ...academic]
 </Layout>
 
 <style>
-	.home-hero {
-		display: grid;
-		grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.72fr);
-		align-items: center;
-		gap: 34px;
-		min-height: 60vh;
-		padding: 28px 0;
-	}
-
-	.home-hero img {
-		width: 100%;
-		aspect-ratio: 4 / 5;
+	.dashboard-head,
+	.panel,
+	.stat-card {
 		border: 1px solid var(--line);
 		border-radius: 8px;
-		object-fit: cover;
-		box-shadow: 0 22px 60px rgba(60, 64, 67, 0.14);
+		background: var(--panel);
+		box-shadow: 0 2px 10px rgba(32, 35, 39, 0.04);
 	}
 
-	.quick-grid {
+	.dashboard-head {
+		padding: 22px 24px;
+	}
+
+	.stat-grid {
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
-		gap: 12px;
-		margin-top: 18px;
+		gap: 16px;
+		margin: 16px 0;
 	}
 
-	.quick-grid a {
-		min-height: 110px;
-		padding: 18px;
-		border: 1px solid var(--line);
-		border-radius: 8px;
-		background: #ffffff;
+	.stat-card {
+		position: relative;
+		min-height: 128px;
+		padding: 18px 18px 16px;
+		overflow: hidden;
 		text-decoration: none;
 	}
 
-	.quick-grid strong,
-	.quick-grid span {
+	.stat-card::before {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 4px;
+		background: var(--teal);
+		content: "";
+	}
+
+	.stat-card span,
+	.stat-card strong,
+	.stat-card small {
 		display: block;
 	}
 
-	.quick-grid strong {
-		margin-bottom: 22px;
-		font-size: 1.1rem;
+	.stat-card span {
+		color: var(--muted);
+		font-size: 0.94rem;
 	}
 
-	.quick-grid span {
+	.stat-card strong {
+		margin: 18px 0 10px;
+		font-size: 2rem;
+		line-height: 1;
+	}
+
+	.stat-card small {
 		color: var(--muted);
+		font-size: 0.84rem;
+	}
+
+	.tone-coral::before {
+		background: var(--coral);
+	}
+
+	.tone-violet::before {
+		background: var(--violet);
+	}
+
+	.tone-gold::before {
+		background: var(--gold);
+	}
+
+	.dashboard-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+		gap: 16px;
+	}
+
+	.panel {
+		padding: 18px;
+	}
+
+	.panel h2 {
+		margin: 0 0 12px;
+		font-size: 1rem;
+	}
+
+	.intro-panel p {
+		max-width: 760px;
+		margin: 0;
+		color: var(--muted);
+		line-height: 1.8;
+	}
+
+	.action-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		margin-top: 18px;
+	}
+
+	.action-row a {
+		padding: 9px 12px;
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		color: var(--teal);
+		font-weight: 750;
+		text-decoration: none;
+	}
+
+	.timeline-panel ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.timeline-panel li + li {
+		border-top: 1px solid var(--line);
+	}
+
+	.timeline-panel a {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 14px;
+		padding: 12px 0;
+		text-decoration: none;
+	}
+
+	.timeline-panel strong {
+		font-size: 0.95rem;
+	}
+
+	.timeline-panel span {
+		flex: 0 0 auto;
+		color: var(--muted);
+		font-size: 0.85rem;
+	}
+
+	.preview-grid {
+		margin-bottom: 24px;
 	}
 
 	@media (max-width: 820px) {
-		.home-hero {
+		.stat-grid,
+		.dashboard-grid {
 			grid-template-columns: 1fr;
-			min-height: auto;
 		}
 
-		.home-hero img {
-			aspect-ratio: 16 / 10;
-		}
-
-		.quick-grid {
+		.stat-grid {
 			grid-template-columns: repeat(2, 1fr);
 		}
 	}
 
 	@media (max-width: 520px) {
-		.quick-grid {
+		.stat-grid {
 			grid-template-columns: 1fr;
 		}
 	}
