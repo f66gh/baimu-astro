@@ -1,0 +1,49 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+	const entries = await getCollection('videos');
+	return entries.map((entry) => ({
+		params: { slug: entry.id },
+		props: { entry },
+	}));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<Layout title={`${entry.data.title} | 视频`}>
+	<article class="detail">
+		<p class="eyebrow">Video / {entry.data.platform}</p>
+		<h1 class="page-title">{entry.data.title}</h1>
+		<p class="lede">{entry.data.summary}</p>
+		<p class="video-link"><a href={entry.data.url} target="_blank" rel="noreferrer">打开原视频</a></p>
+		{entry.data.cover && <img class="hero-image" src={entry.data.cover} alt="" />}
+		<div class="prose">
+			<Content />
+		</div>
+	</article>
+</Layout>
+
+<style>
+	.video-link a {
+		display: inline-flex;
+		margin-top: 18px;
+		padding: 10px 14px;
+		border-radius: 8px;
+		background: var(--ink);
+		color: #ffffff;
+		font-weight: 750;
+		text-decoration: none;
+	}
+
+	.hero-image {
+		width: 100%;
+		max-height: 520px;
+		margin: 30px 0;
+		border-radius: 8px;
+		object-fit: cover;
+	}
+</style>

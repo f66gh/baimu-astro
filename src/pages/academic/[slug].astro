@@ -1,0 +1,49 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+	const entries = await getCollection('academic');
+	return entries.map((entry) => ({
+		params: { slug: entry.id },
+		props: { entry },
+	}));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+const stageLabel = {
+	idea: '想法',
+	reading: '阅读',
+	experiment: '实验',
+	writing: '写作',
+	published: '发表',
+};
+---
+
+<Layout title={`${entry.data.title} | 学术`}>
+	<article class="detail">
+		<p class="eyebrow">Academic / {stageLabel[entry.data.stage]}</p>
+		<h1 class="page-title">{entry.data.title}</h1>
+		<p class="lede">{entry.data.summary}</p>
+		<ul class="tag-list">
+			<li>{entry.data.date.toLocaleDateString('zh-CN')}</li>
+			{entry.data.tags.map((tag) => <li>{tag}</li>)}
+		</ul>
+		{entry.data.cover && <img class="hero-image" src={entry.data.cover} alt="" />}
+		<div class="prose">
+			<Content />
+		</div>
+	</article>
+</Layout>
+
+<style>
+	.hero-image {
+		width: 100%;
+		max-height: 520px;
+		margin: 30px 0;
+		border-radius: 8px;
+		object-fit: cover;
+	}
+</style>
