@@ -1,29 +1,22 @@
 ---
-import { getCollection } from 'astro:content';
-import ContentCard from '../../components/ContentCard.astro';
+import CollectionPage from '../../components/content/CollectionPage.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import Layout from '../../layouts/Layout.astro';
+import { cardPageSize, getLocalizedEntries, paginateItems } from '../../lib/content';
 
-const entries = (await getCollection('notes')).sort(
-	(a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
-);
+const lang = 'zh';
+const page = paginateItems(await getLocalizedEntries('notes', lang), 1, cardPageSize);
 ---
 
 <Layout title="个人笔记 | Aiu Web">
-	<PageHeader eyebrow="Notes" title="个人笔记" lede="读书、技术、折腾记录和一些还没长成论文的想法，都可以先放在这里。" />
-	<section class="grid">
-		{
-			entries.map((entry) => (
-				<ContentCard
-					href={`/notes/${entry.id}/`}
-					title={entry.data.title}
-					summary={entry.data.summary}
-					date={entry.data.date}
-					cover={entry.data.cover}
-					tags={[entry.data.category, ...entry.data.tags]}
-					accent="teal"
-				/>
-			))
-		}
-	</section>
+	<PageHeader eyebrow="Notes" title="个人笔记" lede="放置和组内研究不强绑定的学习记录、工具笔记和自由探索。" />
+	<CollectionPage
+		entries={page.items}
+		collection="notes"
+		lang={lang}
+		view="card"
+		basePath="/notes"
+		currentPage={page.currentPage}
+		totalPages={page.totalPages}
+	/>
 </Layout>

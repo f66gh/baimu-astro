@@ -1,36 +1,15 @@
 ---
 import { getCollection } from 'astro:content';
-import ContentCard from '../../components/ContentCard.astro';
-import PageHeader from '../../components/PageHeader.astro';
+import AnimeArchivePage from '../../components/anime/AnimeArchivePage.astro';
 import Layout from '../../layouts/Layout.astro';
+import { sortByDateDesc } from '../../lib/content';
 
-const entries = (await getCollection('anime')).sort((a, b) => {
-	return b.data.year - a.data.year || b.data.date.valueOf() - a.data.date.valueOf();
-});
-
-const statusLabel = {
-	watching: '在看',
-	finished: '看完',
-	paused: '暂停',
-	planned: '想看',
-};
+const entries = sortByDateDesc(await getCollection('anime'));
 ---
 
 <Layout title="追番列表 | Aiu Web">
-	<PageHeader eyebrow="Anime" title="追番列表" lede="按年份、状态、标签慢慢整理，既能放短评，也能展开成长篇观后感。" />
-	<section class="grid">
-		{
-			entries.map((entry) => (
-				<ContentCard
-					href={`/anime/${entry.id}/`}
-					title={entry.data.title}
-					summary={entry.data.summary}
-					cover={entry.data.cover}
-					tags={entry.data.tags}
-					accent="violet"
-					meta={`${entry.data.year} / ${statusLabel[entry.data.status]}${entry.data.rating ? ` / ${entry.data.rating} 分` : ''}`}
-				/>
-			))
-		}
-	</section>
+	<AnimeArchivePage
+		entries={entries}
+		filterEntries={entries}
+	/>
 </Layout>

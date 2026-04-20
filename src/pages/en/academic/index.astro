@@ -1,0 +1,22 @@
+---
+import CollectionPage from '../../../components/content/CollectionPage.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import Layout from '../../../layouts/Layout.astro';
+import { cardPageSize, getLocalizedEntries, paginateItems } from '../../../lib/content';
+
+const lang = 'en';
+const page = paginateItems(await getLocalizedEntries('academic', lang), 1, cardPageSize);
+---
+
+<Layout title="Academic | Aiu Web">
+	<PageHeader eyebrow="Academic" title="Academic" lede="Paper reading, group tasks, and ideas that gradually become research memory." />
+	<CollectionPage
+		entries={page.items}
+		collection="academic"
+		lang={lang}
+		view="card"
+		basePath="/academic"
+		currentPage={page.currentPage}
+		totalPages={page.totalPages}
+	/>
+</Layout>

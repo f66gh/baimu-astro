@@ -1,37 +1,22 @@
 ---
-import { getCollection } from 'astro:content';
-import ContentCard from '../../components/ContentCard.astro';
+import CollectionPage from '../../components/content/CollectionPage.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import Layout from '../../layouts/Layout.astro';
+import { cardPageSize, getLocalizedEntries, paginateItems } from '../../lib/content';
 
-const entries = (await getCollection('academic')).sort(
-	(a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
-);
-
-const stageLabel = {
-	idea: '想法',
-	reading: '阅读',
-	experiment: '实验',
-	writing: '写作',
-	published: '发表',
-};
+const lang = 'zh';
+const page = paginateItems(await getLocalizedEntries('academic', lang), 1, cardPageSize);
 ---
 
 <Layout title="学术进展 | Aiu Web">
-	<PageHeader eyebrow="Academic" title="学术进展" lede="把论文阅读、实验进度、写作片段和未来方向放到同一条时间线上。" />
-	<section class="grid">
-		{
-			entries.map((entry) => (
-				<ContentCard
-					href={`/academic/${entry.id}/`}
-					title={entry.data.title}
-					summary={entry.data.summary}
-					date={entry.data.date}
-					cover={entry.data.cover}
-					tags={[stageLabel[entry.data.stage], ...entry.data.tags]}
-					accent="coral"
-				/>
-			))
-		}
-	</section>
+	<PageHeader eyebrow="Academic" title="学术进展" lede="记录论文阅读、组内任务，以及想法与阶段性总结。" />
+	<CollectionPage
+		entries={page.items}
+		collection="academic"
+		lang={lang}
+		view="card"
+		basePath="/academic"
+		currentPage={page.currentPage}
+		totalPages={page.totalPages}
+	/>
 </Layout>

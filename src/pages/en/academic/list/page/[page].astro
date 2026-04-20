@@ -1,0 +1,29 @@
+---
+import CollectionPage from '../../../../../components/content/CollectionPage.astro';
+import PageHeader from '../../../../../components/PageHeader.astro';
+import Layout from '../../../../../layouts/Layout.astro';
+import { getLocalizedEntries, listPageSize, numberedPagePaths, paginateItems } from '../../../../../lib/content';
+
+const lang = 'en';
+
+export async function getStaticPaths() {
+	const entries = await getLocalizedEntries('academic', 'en');
+	return numberedPagePaths(entries, listPageSize);
+}
+
+const { currentPage } = Astro.props;
+const page = paginateItems(await getLocalizedEntries('academic', 'en'), currentPage, listPageSize);
+---
+
+<Layout title={`Academic List | Page ${currentPage}`}>
+	<PageHeader eyebrow="Academic" title="Academic" lede="A compact list for quickly scanning research notes and tasks." />
+	<CollectionPage
+		entries={page.items}
+		collection="academic"
+		lang={lang}
+		view="list"
+		basePath="/academic"
+		currentPage={page.currentPage}
+		totalPages={page.totalPages}
+	/>
+</Layout>

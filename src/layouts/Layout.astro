@@ -1,4 +1,7 @@
 ---
+import { Icon } from 'astro-icon/components';
+import { getLangFromPath, localizePath, stripLangPrefix, t, toggleLangPath } from '../lib/i18n';
+
 interface Props {
 	title?: string;
 	description?: string;
@@ -6,37 +9,46 @@ interface Props {
 
 const {
 	title = 'Aiu 的个人站',
-	description = '学术进展、追番记录、个人笔记和视频收藏。',
+	description = '学术进展、个人笔记、追番记录和音乐收藏。',
 } = Astro.props;
 
 const navItems = [
-	{ href: '/', label: '首页', icon: '⌂' },
-	{ href: '/academic/', label: '学术进展', icon: '◆' },
-	{ href: '/anime/', label: '追番列表', icon: '◉' },
-	{ href: '/notes/', label: '个人笔记', icon: '✎' },
-	{ href: '/videos/', label: '视频收藏', icon: '▶' },
+	{ href: '/', labelKey: 'home', icon: 'mdi:view-dashboard-outline', localized: true },
+	{ href: '/academic/', labelKey: 'academic', icon: 'mdi:school-outline', localized: true },
+	{ href: '/notes/', labelKey: 'notes', icon: 'mdi:notebook-edit-outline', localized: true },
+	{ href: '/anime/', labelKey: 'anime', icon: 'mdi:television-classic', localized: false },
+	{ href: '/music/', labelKey: 'music', icon: 'mdi:music', localized: false },
 ];
 
 const socialItems = [
-	{ href: 'https://github.com/', label: 'GitHub' },
-	{ href: 'https://space.bilibili.com/', label: 'Bilibili' },
-	{ href: 'https://tieba.baidu.com/', label: '贴吧' },
-	{ href: 'mailto:yourname@gmail.com', label: 'Gmail' },
+	{ href: 'https://github.com/', label: 'GitHub', icon: 'mdi:github' },
+	{ href: 'https://space.bilibili.com/', label: 'Bilibili', icon: 'simple-icons:bilibili' },
+	{ href: 'https://tieba.baidu.com/', label: '贴吧', icon: 'simple-icons:baidu' },
+	{ href: 'mailto:yourname@gmail.com', label: 'Gmail', icon: 'mdi:gmail' },
 ];
 
 const currentPath = Astro.url.pathname;
+const cleanPath = stripLangPrefix(currentPath);
+const lang = getLangFromPath(currentPath);
 const activeItem =
 	navItems
 		.filter((item) => item.href !== '/')
-		.find((item) => currentPath.startsWith(item.href)) ?? navItems[0];
+		.find((item) => cleanPath.startsWith(item.href)) ?? navItems[0];
 const pageName = title.split('|')[0].trim();
-const breadcrumb = currentPath === '/'
-	? ['首页']
-	: ['首页', activeItem.label, ...(pageName && pageName !== activeItem.label ? [pageName] : [])];
+const activeLabel = t(lang, activeItem.labelKey);
+const breadcrumb = cleanPath === '/'
+	? [t(lang, 'home')]
+	: [t(lang, 'home'), activeLabel, ...(pageName && pageName !== activeLabel ? [pageName] : [])];
+const supportsLocalizedContent =
+	cleanPath === '/' || cleanPath.startsWith('/academic/') || cleanPath.startsWith('/notes/');
+const nextLangPath = supportsLocalizedContent
+	? toggleLangPath(currentPath)
+	: localizePath('/', lang === 'en' ? 'zh' : 'en');
+const langLabel = lang === 'en' ? '中文' : 'EN';
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang={lang === 'en' ? 'en' : 'zh-CN'}>
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -45,56 +57,227 @@ const breadcrumb = currentPath === '/'
 		<meta name="generator" content={Astro.generator} />
 		<meta name="description" content={description} />
 		<title>{title}</title>
+		<script is:inline>
+			(() => {
+				const storageKey = 'aiu-theme';
+				const stored = localStorage.getItem(storageKey);
+				const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+				const theme = stored === 'light' || stored === 'dark'
+					? stored
+					: systemDark
+						? 'dark'
+						: 'light';
+
+				document.documentElement.dataset.theme = theme;
+				document.documentElement.style.colorScheme = theme;
+			})();
+		</script>
+		<style is:inline>
+			.collection-toolbar {
+				display: flex;
+				justify-content: flex-end;
+				margin: -4px 0 16px;
+			}
+
+			.grid,
+			.entry-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 300px));
+				justify-content: start;
+				gap: 16px;
+			}
+
+			.entry-list {
+				display: grid;
+				gap: 12px;
+			}
+
+			.collection-page {
+				display: flex;
+				flex: 1 1 auto;
+				flex-direction: column;
+				min-height: max(420px, calc(100dvh - 280px));
+			}
+
+			.collection-body {
+				flex: 0 0 auto;
+				margin-bottom: 20px;
+			}
+
+			.collection-page > .pagination-shell {
+				margin-top: auto;
+			}
+
+			.grid > .card,
+			.entry-grid > .entry-card {
+				width: 100%;
+				max-width: 300px;
+			}
+
+			@media (max-width: 620px) {
+				.collection-toolbar {
+					justify-content: flex-start;
+				}
+
+				.grid,
+				.entry-grid {
+					grid-template-columns: 1fr;
+					justify-content: stretch;
+				}
+
+				.grid > .card,
+				.entry-grid > .entry-card {
+					max-width: none;
+				}
+			}
+		</style>
 	</head>
 	<body>
 		<div class="admin-shell">
-			<aside class="sidebar" aria-label="站点导航">
-				<a class="brand" href="/">
+			<button class="drawer-backdrop" type="button" data-drawer-close aria-label="关闭导航"></button>
+			<aside class="sidebar" id="site-sidebar" aria-label="站点导航">
+				<a class="brand" href={localizePath('/', lang)}>
 					<span class="brand-mark">A</span>
 					<span>Aiu 控制台</span>
 				</a>
 				<nav>
-					{
-						navItems.map((item) => {
-							const isActive = item.href === '/'
-								? currentPath === '/'
-								: currentPath.startsWith(item.href);
+						{
+							navItems.map((item) => {
+								const isActive = item.href === '/'
+									? cleanPath === '/'
+									: cleanPath.startsWith(item.href);
 
-							return (
-								<a href={item.href} aria-current={isActive ? 'page' : undefined}>
-									<span>{item.icon}</span>
-									{item.label}
-								</a>
-							);
-						})
+								return (
+									<a
+										href={item.localized ? localizePath(item.href, lang) : item.href}
+										aria-current={isActive ? 'page' : undefined}
+									>
+										<Icon class="nav-icon" name={item.icon} size="19" aria-hidden="true" />
+										{t(lang, item.labelKey)}
+									</a>
+								);
+							})
 					}
 				</nav>
 			</aside>
 			<section class="workbench">
 				<header class="topbar">
-					<div class="breadcrumb" aria-label="页面层级">
-						{
-							breadcrumb.map((item, index) => (
-								<>
-									<span>{item}</span>
-									{index < breadcrumb.length - 1 && <b>/</b>}
-								</>
-							))
-						}
+					<div class="topbar-primary">
+						<button
+							class="menu-toggle"
+							type="button"
+							data-drawer-toggle
+							aria-controls="site-sidebar"
+							aria-expanded="false"
+							aria-label="打开导航"
+						>
+							<Icon name="mdi:menu" size="22" aria-hidden="true" />
+						</button>
+						<div class="breadcrumb" aria-label="页面层级">
+							{
+								breadcrumb.map((item, index) => (
+									<>
+										<span>{item}</span>
+										{index < breadcrumb.length - 1 && <b>/</b>}
+									</>
+								))
+							}
+						</div>
 					</div>
-					<nav class="social-nav" aria-label="社交平台">
-						{
-							socialItems.map((item) => (
-								<a href={item.href} target="_blank" rel="noreferrer">{item.label}</a>
-							))
-						}
-					</nav>
+					<div class="top-actions">
+						<nav class="social-nav" aria-label="社交平台">
+							{
+								socialItems.map((item) => (
+									<a href={item.href} target="_blank" rel="noreferrer" aria-label={item.label}>
+										<Icon name={item.icon} size="18" aria-hidden="true" />
+										<span>{item.label}</span>
+									</a>
+								))
+							}
+						</nav>
+						<a class="lang-toggle" href={nextLangPath} aria-label="切换语言" title="切换语言">
+							<Icon name="mdi:translate" size="18" aria-hidden="true" />
+							<span>{langLabel}</span>
+						</a>
+						<button class="theme-toggle" type="button" data-theme-toggle aria-label="切换深浅色" aria-pressed="false">
+							<Icon class="theme-icon theme-icon-light" name="mdi:weather-sunny" size="18" aria-hidden="true" />
+							<Icon class="theme-icon theme-icon-dark" name="mdi:weather-night" size="18" aria-hidden="true" />
+							<span data-theme-label>白天</span>
+						</button>
+					</div>
 				</header>
 				<main>
 					<slot />
 				</main>
 			</section>
 		</div>
+		<script is:inline>
+			(() => {
+				const storageKey = 'aiu-theme';
+				const root = document.documentElement;
+				const button = document.querySelector('[data-theme-toggle]');
+				const label = document.querySelector('[data-theme-label]');
+
+				const setTheme = (theme) => {
+					root.dataset.theme = theme;
+					root.style.colorScheme = theme;
+					localStorage.setItem(storageKey, theme);
+
+					if (button) {
+						button.setAttribute('aria-pressed', String(theme === 'dark'));
+					}
+
+					if (label) {
+						label.textContent = theme === 'dark' ? '黑夜' : '白天';
+					}
+				};
+
+				setTheme(root.dataset.theme === 'dark' ? 'dark' : 'light');
+				button?.addEventListener('click', () => {
+					setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+				});
+			})();
+		</script>
+		<script is:inline>
+			(() => {
+				const root = document.documentElement;
+				const toggle = document.querySelector('[data-drawer-toggle]');
+				const closeButtons = document.querySelectorAll('[data-drawer-close]');
+				const sidebar = document.querySelector('#site-sidebar');
+				const links = sidebar?.querySelectorAll('a') ?? [];
+
+				const setDrawer = (isOpen) => {
+					root.dataset.drawer = isOpen ? 'open' : 'closed';
+					document.body.style.overflow = isOpen ? 'hidden' : '';
+					toggle?.setAttribute('aria-expanded', String(isOpen));
+					toggle?.setAttribute('aria-label', isOpen ? '关闭导航' : '打开导航');
+				};
+
+				toggle?.addEventListener('click', () => {
+					setDrawer(root.dataset.drawer !== 'open');
+				});
+
+				closeButtons.forEach((button) => {
+					button.addEventListener('click', () => setDrawer(false));
+				});
+
+				links.forEach((link) => {
+					link.addEventListener('click', () => setDrawer(false));
+				});
+
+				window.addEventListener('keydown', (event) => {
+					if (event.key === 'Escape') {
+						setDrawer(false);
+					}
+				});
+
+				window.matchMedia('(min-width: 821px)').addEventListener('change', (event) => {
+					if (event.matches) {
+						setDrawer(false);
+					}
+				});
+			})();
+		</script>
 	</body>
 </html>
 
@@ -106,11 +289,15 @@ const breadcrumb = currentPath === '/'
 		--line: #e5e7eb;
 		--paper: #f3f5f8;
 		--panel: #ffffff;
+		--button-bg: #ffffff;
+		--button-hover: #f8fafc;
 		--sidebar: #14181f;
 		--sidebar-soft: #1d232d;
 		--sidebar-text: #c8d0dc;
 		--sidebar-strong: #ffffff;
 		--wash: #f8fafc;
+		--shadow: rgba(32, 35, 39, 0.06);
+		--tag-bg: rgba(255, 255, 255, 0.7);
 		--coral: #e65f4c;
 		--teal: #009688;
 		--leaf: #4d7c0f;
@@ -119,6 +306,24 @@ const breadcrumb = currentPath === '/'
 		font-family:
 			Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
 			sans-serif;
+	}
+
+	html[data-theme="dark"] {
+		color-scheme: dark;
+		--ink: #e8eaed;
+		--muted: #a8b0bb;
+		--line: #2c333d;
+		--paper: #101214;
+		--panel: #181b1f;
+		--button-bg: #20242a;
+		--button-hover: #262b32;
+		--sidebar: #090b0d;
+		--sidebar-soft: #171b20;
+		--sidebar-text: #aeb7c2;
+		--sidebar-strong: #ffffff;
+		--wash: #20242a;
+		--shadow: rgba(0, 0, 0, 0.24);
+		--tag-bg: rgba(255, 255, 255, 0.06);
 	}
 
 	* {
@@ -146,21 +351,25 @@ const breadcrumb = currentPath === '/'
 		max-width: 100%;
 	}
 
-	.admin-shell {
-		display: grid;
-		grid-template-columns: 232px minmax(0, 1fr);
-		min-height: 100vh;
-		background: var(--paper);
-	}
+		.admin-shell {
+			display: grid;
+			grid-template-columns: 232px minmax(0, 1fr);
+			min-height: 100vh;
+			background: var(--paper);
+		}
 
-	.sidebar {
-		position: sticky;
-		top: 0;
-		height: 100vh;
-		overflow-y: auto;
-		background: var(--sidebar);
-		box-shadow: 2px 0 10px rgba(17, 19, 22, 0.18);
-	}
+		.drawer-backdrop {
+			display: none;
+		}
+
+		.sidebar {
+			position: sticky;
+			top: 0;
+			height: 100vh;
+			overflow-y: auto;
+			background: var(--sidebar);
+			box-shadow: 2px 0 10px var(--shadow);
+		}
 
 	.brand {
 		display: flex;
@@ -202,10 +411,10 @@ const breadcrumb = currentPath === '/'
 		border-left: 3px solid transparent;
 	}
 
-	nav a span {
+	.nav-icon {
+		flex: 0 0 auto;
 		width: 20px;
 		color: #95a3b8;
-		text-align: center;
 	}
 
 	nav a[aria-current="page"],
@@ -223,25 +432,52 @@ const breadcrumb = currentPath === '/'
 		position: sticky;
 		top: 0;
 		z-index: 4;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 18px;
-		min-height: 56px;
-		padding: 0 22px;
-		background: var(--panel);
-		border-bottom: 1px solid var(--line);
-		box-shadow: 0 1px 4px rgba(32, 35, 39, 0.06);
-	}
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 18px;
+			min-height: 56px;
+			padding: 0 22px;
+			background: var(--panel);
+			border-bottom: 1px solid var(--line);
+			box-shadow: 0 1px 4px var(--shadow);
+		}
 
-	.breadcrumb {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 9px;
-		color: #4b5563;
-		font-size: 0.94rem;
-	}
+		.topbar-primary {
+			display: flex;
+			align-items: center;
+			min-width: 0;
+			gap: 12px;
+		}
+
+		.menu-toggle {
+			display: none;
+			align-items: center;
+			justify-content: center;
+			flex: 0 0 auto;
+			width: 40px;
+			height: 40px;
+			padding: 0;
+			border: 1px solid var(--line);
+			border-radius: 8px;
+			background: var(--button-bg);
+			color: var(--ink);
+			cursor: pointer;
+		}
+
+		.menu-toggle:hover {
+			background: var(--button-hover);
+			color: var(--teal);
+		}
+
+		.breadcrumb {
+			display: flex;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 9px;
+			color: var(--muted);
+			font-size: 0.94rem;
+		}
 
 	.breadcrumb span:last-of-type {
 		color: var(--ink);
@@ -262,23 +498,62 @@ const breadcrumb = currentPath === '/'
 		padding: 0;
 	}
 
-	.social-nav a {
+	.top-actions {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.social-nav a,
+	.lang-toggle,
+	.theme-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 7px;
 		min-height: 32px;
 		padding: 0 10px;
 		border: 1px solid var(--line);
 		border-radius: 8px;
-		background: #ffffff;
-		color: #4b5563;
+		background: var(--button-bg);
+		color: var(--muted);
+		font: inherit;
 		font-size: 0.87rem;
+		font-weight: 700;
+		text-decoration: none;
 	}
 
-	.social-nav a:hover {
-		background: #f8fafc;
+	.lang-toggle,
+	.theme-toggle {
+		cursor: pointer;
+	}
+
+	.social-nav a:hover,
+	.lang-toggle:hover,
+	.theme-toggle:hover {
+		background: var(--button-hover);
 		color: var(--teal);
 		border-left-color: var(--line);
 	}
 
+	.theme-icon-dark {
+		display: none;
+	}
+
+	html[data-theme="dark"] .theme-icon-light {
+		display: none;
+	}
+
+	html[data-theme="dark"] .theme-icon-dark {
+		display: block;
+	}
+
 	main {
+		display: flex;
+		flex-direction: column;
+		min-height: calc(100dvh - 56px);
 		padding: 18px;
 	}
 
@@ -327,8 +602,43 @@ const breadcrumb = currentPath === '/'
 
 	:global(.grid) {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 300px));
+		justify-content: start;
 		gap: 16px;
+	}
+
+	:global(.collection-toolbar) {
+		display: flex;
+		justify-content: flex-end;
+		margin: -4px 0 16px;
+	}
+
+	:global(.entry-grid) {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 300px));
+		justify-content: start;
+		gap: 16px;
+	}
+
+	:global(.entry-list) {
+		display: grid;
+		gap: 12px;
+	}
+
+	:global(.collection-page) {
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		min-height: max(420px, calc(100dvh - 280px));
+	}
+
+	:global(.collection-body) {
+		flex: 0 0 auto;
+		margin-bottom: 20px;
+	}
+
+	:global(.collection-page > .pagination-shell) {
+		margin-top: auto;
 	}
 
 	:global(.tag-list) {
@@ -344,7 +654,7 @@ const breadcrumb = currentPath === '/'
 		padding: 5px 8px;
 		border: 1px solid var(--line);
 		border-radius: 8px;
-		background: rgba(255, 255, 255, 0.7);
+		background: var(--tag-bg);
 		color: var(--muted);
 		font-size: 0.82rem;
 	}
@@ -359,7 +669,7 @@ const breadcrumb = currentPath === '/'
 
 	:global(.prose p),
 	:global(.prose li) {
-		color: #303134;
+		color: var(--ink);
 		font-size: 1.02rem;
 		line-height: 1.9;
 	}
@@ -373,31 +683,103 @@ const breadcrumb = currentPath === '/'
 			grid-template-columns: 1fr;
 		}
 
-		.sidebar {
-			position: static;
-			height: auto;
+		.drawer-backdrop {
+			position: fixed;
+			inset: 0;
+			z-index: 9;
+			display: block;
+			border: 0;
+			background: rgba(15, 23, 42, 0.48);
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity 160ms ease;
 		}
 
-		.brand {
-			height: 52px;
+		html[data-drawer="open"] .drawer-backdrop {
+			opacity: 1;
+			pointer-events: auto;
+		}
+
+		.sidebar {
+			position: fixed;
+			top: 0;
+			left: 0;
+			z-index: 10;
+			width: min(304px, 84vw);
+			height: 100vh;
+			transform: translateX(-102%);
+			transition: transform 180ms ease;
+		}
+
+		html[data-drawer="open"] .sidebar {
+			transform: translateX(0);
 		}
 
 		.sidebar nav {
-			display: grid;
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			padding: 8px;
+			display: block;
+			padding: 12px 0;
 		}
 
 		.sidebar nav a {
-			border-left: 0;
-			border-radius: 8px;
+			border-left: 3px solid transparent;
+			border-radius: 0;
 		}
 
 		.topbar {
-			position: static;
-			align-items: flex-start;
+			position: sticky;
+			align-items: stretch;
 			flex-direction: column;
-			padding: 12px 16px;
+			gap: 10px;
+			padding: 10px 12px;
+		}
+
+		.topbar-primary {
+			width: 100%;
+		}
+
+		.menu-toggle {
+			display: inline-flex;
+		}
+
+		.breadcrumb {
+			min-width: 0;
+			overflow: hidden;
+			white-space: nowrap;
+			flex-wrap: nowrap;
+		}
+
+		.breadcrumb span,
+		.breadcrumb b {
+			flex: 0 0 auto;
+		}
+
+		.breadcrumb span:last-of-type {
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.top-actions {
+			justify-content: flex-start;
+			width: 100%;
+			gap: 6px;
+		}
+
+		.social-nav {
+			gap: 6px;
+		}
+
+		.social-nav a {
+			width: 36px;
+			padding: 0;
+		}
+
+		.social-nav a span {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+			white-space: nowrap;
 		}
 
 		:global(.page-title) {
@@ -409,13 +791,31 @@ const breadcrumb = currentPath === '/'
 		}
 	}
 
-	@media (max-width: 520px) {
-		.sidebar nav {
-			grid-template-columns: 1fr;
+	@media (max-width: 620px) {
+		:global(.collection-toolbar) {
+			justify-content: flex-start;
 		}
 
-		.social-nav {
-			justify-content: flex-start;
+		:global(.grid) {
+			grid-template-columns: 1fr;
+			justify-content: stretch;
+		}
+
+		:global(.entry-grid) {
+			grid-template-columns: 1fr;
+			justify-content: stretch;
+		}
+	}
+
+	@media (max-width: 520px) {
+		.lang-toggle span,
+		.theme-toggle span {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+			white-space: nowrap;
 		}
 	}
 </style>

@@ -1,0 +1,233 @@
+---
+import { getAnimeSeason, getRewatchLabel } from '../../lib/anime';
+import TagBadge from '../content/TagBadge.astro';
+import AnimeRating from './AnimeRating.astro';
+
+interface Props {
+	entry: any;
+}
+
+const { entry } = Astro.props;
+const season = getAnimeSeason(entry.data.date);
+const tags = entry.data.tags ?? [];
+const moods = entry.data.moods ?? [];
+---
+
+<article class="anime-detail">
+	<header class="detail-head">
+		<div class="poster">
+			{
+				entry.data.cover ? (
+					<img src={entry.data.cover} alt="" />
+				) : (
+					<span>{entry.data.title.slice(0, 2)}</span>
+				)
+			}
+		</div>
+		<div class="intro">
+			<p class="eyebrow">Anime / {season.label}</p>
+			<h1>{entry.data.title}</h1>
+			<p class="summary">{entry.data.summary}</p>
+			<div class="rating-line">
+				<AnimeRating rating={entry.data.rating} />
+				<span>{getRewatchLabel(entry.data.rewatchCount)}</span>
+			</div>
+			<dl class="facts">
+				<div>
+					<dt>观看日期</dt>
+					<dd>{entry.data.date.toLocaleDateString('zh-CN')}</dd>
+				</div>
+				{entry.data.format && (
+					<div>
+						<dt>形式</dt>
+						<dd>{entry.data.format}</dd>
+					</div>
+				)}
+				{entry.data.originalType && (
+					<div>
+						<dt>原作类型</dt>
+						<dd>{entry.data.originalType}</dd>
+					</div>
+				)}
+			</dl>
+			{
+				(entry.data.bangumi || entry.data.tieba) && (
+					<div class="links">
+						{entry.data.bangumi && <a href={entry.data.bangumi} target="_blank" rel="noreferrer">Bangumi</a>}
+						{entry.data.tieba && <a href={entry.data.tieba} target="_blank" rel="noreferrer">贴吧原帖</a>}
+					</div>
+				)
+			}
+			{
+				(tags.length > 0 || moods.length > 0) && (
+					<div class="tags">
+						{tags.map((tag: string) => <TagBadge tag={tag} collection="anime" lang="zh" />)}
+						{moods.map((mood: string) => <TagBadge tag={mood} collection="anime" lang="zh" />)}
+					</div>
+				)
+			}
+		</div>
+	</header>
+	<div class="anime-prose">
+		<slot />
+	</div>
+</article>
+
+<style>
+	.anime-detail {
+		width: min(100%, 980px);
+		margin: 0 auto;
+	}
+
+	.detail-head {
+		display: grid;
+		grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+		gap: 24px;
+		align-items: start;
+		padding-bottom: 24px;
+		border-bottom: 1px solid var(--line);
+	}
+
+	.poster {
+		display: grid;
+		place-items: center;
+		overflow: hidden;
+		aspect-ratio: 2 / 3;
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		background: var(--wash);
+		color: var(--teal);
+		font-size: 1.8rem;
+		font-weight: 900;
+		box-shadow: 0 2px 10px var(--shadow);
+	}
+
+	.poster img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.eyebrow {
+		margin: 0 0 10px;
+		color: var(--teal);
+		font-size: 0.86rem;
+		font-weight: 800;
+		letter-spacing: 0;
+		text-transform: uppercase;
+	}
+
+	h1 {
+		margin: 0;
+		font-size: 2rem;
+		line-height: 1.22;
+		letter-spacing: 0;
+	}
+
+	.summary {
+		max-width: 720px;
+		margin: 14px 0 0;
+		color: var(--muted);
+		line-height: 1.78;
+	}
+
+	.rating-line,
+	.links,
+	.tags {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-top: 14px;
+	}
+
+	.rating-line span:last-child {
+		color: var(--muted);
+		font-size: 0.88rem;
+		font-weight: 800;
+	}
+
+	.facts {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+		gap: 10px;
+		max-width: 620px;
+		margin: 18px 0 0;
+	}
+
+	.facts div {
+		padding: 10px;
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		background: var(--panel);
+	}
+
+	dt {
+		color: var(--muted);
+		font-size: 0.78rem;
+		font-weight: 800;
+	}
+
+	dd {
+		margin: 4px 0 0;
+		color: var(--ink);
+		font-weight: 800;
+	}
+
+	.links a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 30px;
+		padding: 0 10px;
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		background: var(--button-bg);
+		color: var(--teal);
+		font-size: 0.84rem;
+		font-weight: 800;
+		text-decoration: none;
+	}
+
+	.anime-prose {
+		padding: 24px 0 42px;
+	}
+
+	.anime-prose :global(p),
+	.anime-prose :global(li) {
+		color: var(--ink);
+		font-size: 1.02rem;
+		line-height: 1.92;
+	}
+
+	.anime-prose :global(img) {
+		display: block;
+		width: auto;
+		max-width: 100%;
+		max-height: 620px;
+		margin: 22px auto;
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		object-fit: contain;
+		box-shadow: 0 2px 10px var(--shadow);
+	}
+
+	@media (min-width: 1480px) {
+		.anime-detail {
+			width: min(100%, 68vw, 1180px);
+		}
+	}
+
+	@media (max-width: 720px) {
+		.detail-head {
+			grid-template-columns: 1fr;
+		}
+
+		.poster {
+			width: min(100%, 260px);
+		}
+
+		h1 {
+			font-size: 1.55rem;
+		}
+	}
+</style>

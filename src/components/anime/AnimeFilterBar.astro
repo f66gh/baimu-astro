@@ -1,0 +1,250 @@
+---
+interface Option {
+	value: string;
+	label: string;
+}
+
+interface Props {
+	seasons: Option[];
+}
+
+const { seasons } = Astro.props;
+
+const rewatchOptions = [
+	{ value: 'first', label: '首看' },
+	{ value: 'rewatch', label: '重看' },
+];
+---
+
+<section class="anime-filter" aria-label="追番筛选">
+	<div class="filter-group season-filter" data-filter-group="season">
+		<span>观看时间</span>
+		<button type="button" data-filter-value="all" aria-pressed="true">全部</button>
+		{seasons.map((option) => (
+			<button type="button" data-filter-value={option.value} aria-pressed="false">{option.label}</button>
+		))}
+	</div>
+	<div class="sort-buttons" aria-label="排序方式">
+		<button type="button" data-sort-value="date-desc" aria-pressed="true">按时间降序</button>
+		<button type="button" data-sort-value="date-asc" aria-pressed="false">按时间升序</button>
+		<button type="button" data-sort-value="rating-desc" aria-pressed="false">按星级降序</button>
+		<button type="button" data-sort-value="rating-asc" aria-pressed="false">按星级升序</button>
+	</div>
+	<div class="filter-group rewatch-filter" data-filter-group="rewatch">
+		<span>是否重看</span>
+		<button type="button" data-filter-value="all" aria-pressed="true">全部</button>
+		{rewatchOptions.map((option) => (
+			<button type="button" data-filter-value={option.value} aria-pressed="false">{option.label}</button>
+		))}
+	</div>
+	<p class="filter-count" data-filter-count></p>
+</section>
+
+<script>
+	(() => {
+		const root = document.querySelector('.anime-filter');
+		const wall = document.querySelector('.anime-wall');
+		const cards = Array.from((wall ?? document).querySelectorAll('[data-anime-entry]'));
+		const count = document.querySelector('[data-filter-count]');
+		const sortButtons = Array.from(root?.querySelectorAll('button[data-sort-value]') ?? []);
+
+		if (!root || !wall || cards.length === 0) return;
+
+		const state = {
+			season: 'all',
+			rewatch: 'all',
+			sort: 'date-desc',
+		};
+
+		const matches = (card) => {
+			const dataset = card.dataset;
+
+			return (
+				(state.season === 'all' || dataset.season === state.season) &&
+				(state.rewatch === 'all' || dataset.rewatch === state.rewatch)
+			);
+		};
+
+		const sortCards = () => {
+			const sorted = [...cards].sort((left, right) => {
+				const leftDate = Number(left.dataset.date ?? 0);
+				const rightDate = Number(right.dataset.date ?? 0);
+				const leftRating = Number(left.dataset.rating ?? 0);
+				const rightRating = Number(right.dataset.rating ?? 0);
+
+				if (state.sort === 'date-asc') return leftDate - rightDate;
+				if (state.sort === 'rating-desc') return rightRating - leftRating || rightDate - leftDate;
+				if (state.sort === 'rating-asc') return leftRating - rightRating || rightDate - leftDate;
+				return rightDate - leftDate;
+			});
+
+			sorted.forEach((card) => wall.append(card));
+		};
+
+		const applyFilters = () => {
+			let visible = 0;
+
+			sortCards();
+
+			cards.forEach((card) => {
+				const isVisible = matches(card);
+				card.hidden = !isVisible;
+				if (isVisible) visible += 1;
+			});
+
+			if (count) {
+				count.textContent = `当前显示 ${visible} / ${cards.length} 条`;
+			}
+		};
+
+		root.addEventListener('click', (event) => {
+			const target = event.target;
+			if (!(target instanceof Element)) return;
+
+			const sortButton = target.closest('button[data-sort-value]');
+			if (sortButton) {
+				state.sort = sortButton.dataset.sortValue ?? 'date-desc';
+				sortButtons.forEach((item) => item.setAttribute('aria-pressed', String(item === sortButton)));
+				applyFilters();
+				return;
+			}
+
+			const button = target.closest('button[data-filter-value]');
+			const group = button?.closest('[data-filter-group]');
+
+			if (!button || !group) return;
+
+			const key = group.dataset.filterGroup;
+			const buttons = Array.from(group.querySelectorAll('button'));
+
+			if (!key || !(key in state)) return;
+
+			state[key] = button.dataset.filterValue ?? 'all';
+			buttons.forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+			applyFilters();
+		});
+
+		applyFilters();
+	})();
+</script>
+
+<style>
+	.anime-filter {
+		display: grid;
+		grid-template-areas:
+			"season sort"
+			"rewatch count";
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 10px;
+		align-items: center;
+		margin: 18px 0 0;
+		padding: 0;
+		border-top: 1px solid var(--line);
+		padding-top: 14px;
+	}
+
+	.filter-group {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.filter-group > span {
+		min-width: 68px;
+		color: var(--ink);
+		font-size: 0.82rem;
+		font-weight: 850;
+	}
+
+	.season-filter {
+		grid-area: season;
+	}
+
+	.rewatch-filter {
+		grid-area: rewatch;
+	}
+
+	button {
+		min-height: 28px;
+		padding: 0 9px;
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		background: var(--button-bg);
+		color: var(--muted);
+		font: inherit;
+		font-size: 0.8rem;
+		font-weight: 750;
+		cursor: pointer;
+	}
+
+	button[aria-pressed="true"],
+	button:hover {
+		background: var(--button-hover);
+		color: var(--teal);
+	}
+
+	.sort-buttons {
+		grid-area: sort;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		flex-wrap: nowrap;
+		gap: 8px;
+		white-space: nowrap;
+	}
+
+	.filter-count {
+		grid-area: count;
+		margin: 0;
+		color: var(--muted);
+		font-size: 0.8rem;
+		font-weight: 750;
+		text-align: right;
+		white-space: nowrap;
+	}
+
+	:global(.anime-wall [hidden]) {
+		display: none !important;
+	}
+
+	@media (max-width: 1100px) {
+		.anime-filter {
+			grid-template-areas:
+				"season"
+				"rewatch"
+				"sort"
+				"count";
+			grid-template-columns: 1fr;
+			align-items: start;
+		}
+
+		.sort-buttons,
+		.filter-count {
+			text-align: left;
+		}
+
+		.sort-buttons {
+			justify-content: flex-start;
+			flex-wrap: wrap;
+			white-space: normal;
+		}
+	}
+
+	@media (max-width: 620px) {
+		.filter-group > span {
+			width: 100%;
+		}
+
+		.sort-buttons {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			width: 100%;
+			white-space: normal;
+		}
+
+		.sort-buttons button {
+			width: 100%;
+		}
+	}
+</style>

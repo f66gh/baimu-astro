@@ -1,0 +1,29 @@
+---
+import CollectionPage from '../../../components/content/CollectionPage.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import Layout from '../../../layouts/Layout.astro';
+import { cardPageSize, getLocalizedEntries, numberedPagePaths, paginateItems } from '../../../lib/content';
+
+const lang = 'zh';
+
+export async function getStaticPaths() {
+	const entries = await getLocalizedEntries('academic', 'zh');
+	return numberedPagePaths(entries, cardPageSize);
+}
+
+const { currentPage } = Astro.props;
+const page = paginateItems(await getLocalizedEntries('academic', 'zh'), currentPage, cardPageSize);
+---
+
+<Layout title={`学术进展 | 第 ${currentPage} 页`}>
+	<PageHeader eyebrow="Academic" title="学术进展" lede="记录论文阅读、组内任务，以及想法与阶段性总结。" />
+	<CollectionPage
+		entries={page.items}
+		collection="academic"
+		lang={lang}
+		view="card"
+		basePath="/academic"
+		currentPage={page.currentPage}
+		totalPages={page.totalPages}
+	/>
+</Layout>

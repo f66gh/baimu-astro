@@ -1,0 +1,22 @@
+---
+import CollectionPage from '../../../../components/content/CollectionPage.astro';
+import PageHeader from '../../../../components/PageHeader.astro';
+import Layout from '../../../../layouts/Layout.astro';
+import { getLocalizedEntries, listPageSize, paginateItems } from '../../../../lib/content';
+
+const lang = 'en';
+const page = paginateItems(await getLocalizedEntries('notes', lang), 1, listPageSize);
+---
+
+<Layout title="Notes List | Aiu Web">
+	<PageHeader eyebrow="Notes" title="Notes" lede="A compact list for scanning learning notes and tool records." />
+	<CollectionPage
+		entries={page.items}
+		collection="notes"
+		lang={lang}
+		view="list"
+		basePath="/notes"
+		currentPage={page.currentPage}
+		totalPages={page.totalPages}
+	/>
+</Layout>

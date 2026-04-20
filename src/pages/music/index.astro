@@ -4,23 +4,23 @@ import ContentCard from '../../components/ContentCard.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import Layout from '../../layouts/Layout.astro';
 
-const entries = (await getCollection('videos')).sort(
+const entries = (await getCollection('music')).sort(
 	(a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
 );
 ---
 
-<Layout title="视频收藏 | Aiu Web">
-	<PageHeader eyebrow="Videos" title="视频收藏" lede="B 站链接、学习视频、长期想回看的材料，可以先用链接收束起来。" />
+<Layout title="音乐专区 | Aiu Web">
+	<PageHeader eyebrow="Music" title="音乐专区" lede="歌单、专辑、单曲、现场和一些听歌时留下的想法，之后都会慢慢长在这里。" />
 	<section class="grid">
 		{
 			entries.map((entry) => (
 				<ContentCard
-					href={`/videos/${entry.id}/`}
+					href={`/music/${entry.id}/`}
 					title={entry.data.title}
 					summary={entry.data.summary}
 					date={entry.data.date}
 					cover={entry.data.cover}
-					tags={[entry.data.platform, ...entry.data.tags]}
+					tags={entry.data.tags}
 					accent="gold"
 				/>
 			))

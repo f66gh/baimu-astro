@@ -3,7 +3,7 @@ import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 
 export async function getStaticPaths() {
-	const entries = await getCollection('videos');
+	const entries = await getCollection('music');
 	return entries.map((entry) => ({
 		params: { slug: entry.id },
 		props: { entry },
@@ -14,12 +14,12 @@ const { entry } = Astro.props;
 const { Content } = await render(entry);
 ---
 
-<Layout title={`${entry.data.title} | 视频`}>
+<Layout title={`${entry.data.title} | 音乐`}>
 	<article class="detail">
-		<p class="eyebrow">Video / {entry.data.platform}</p>
+		<p class="eyebrow">Music</p>
 		<h1 class="page-title">{entry.data.title}</h1>
 		<p class="lede">{entry.data.summary}</p>
-		<p class="video-link"><a href={entry.data.url} target="_blank" rel="noreferrer">打开原视频</a></p>
+		<p class="video-link"><a href={entry.data.url} target="_blank" rel="noreferrer">打开链接</a></p>
 		{entry.data.cover && <img class="hero-image" src={entry.data.cover} alt="" />}
 		<div class="prose">
 			<Content />

@@ -1,49 +1,39 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
+import ArticlePage from '../../components/content/ArticlePage.astro';
 import Layout from '../../layouts/Layout.astro';
+import { getBaseEntries } from '../../lib/content';
+
+const lang = 'zh';
 
 export async function getStaticPaths() {
-	const entries = await getCollection('academic');
-	return entries.map((entry) => ({
+	const entries = await getBaseEntries('academic');
+	return entries.map((entry: any) => ({
 		params: { slug: entry.id },
-		props: { entry },
+		props: {
+			item: {
+				entry,
+				baseId: entry.id,
+				isFallback: false,
+			},
+		},
 	}));
 }
 
-const { entry } = Astro.props;
+const { item } = Astro.props;
+const { entry } = item;
 const { Content } = await render(entry);
-
-const stageLabel = {
-	idea: '想法',
-	reading: '阅读',
-	experiment: '实验',
-	writing: '写作',
-	published: '发表',
-};
 ---
 
 <Layout title={`${entry.data.title} | 学术`}>
-	<article class="detail">
-		<p class="eyebrow">Academic / {stageLabel[entry.data.stage]}</p>
-		<h1 class="page-title">{entry.data.title}</h1>
-		<p class="lede">{entry.data.summary}</p>
-		<ul class="tag-list">
-			<li>{entry.data.date.toLocaleDateString('zh-CN')}</li>
-			{entry.data.tags.map((tag) => <li>{tag}</li>)}
-		</ul>
-		{entry.data.cover && <img class="hero-image" src={entry.data.cover} alt="" />}
-		<div class="prose">
-			<Content />
-		</div>
-	</article>
+	<ArticlePage
+		title={entry.data.title}
+		summary={entry.data.summary}
+		date={entry.data.date}
+		tags={entry.data.tags}
+		collection="academic"
+		lang={lang}
+	>
+		<Content />
+	</ArticlePage>
 </Layout>
-
-<style>
-	.hero-image {
-		width: 100%;
-		max-height: 520px;
-		margin: 30px 0;
-		border-radius: 8px;
-		object-fit: cover;
-	}
-</style>

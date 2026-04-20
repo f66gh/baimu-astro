@@ -1,0 +1,46 @@
+---
+import type { Lang } from '../../lib/i18n';
+import EntryCard from './EntryCard.astro';
+import EntryListItem from './EntryListItem.astro';
+import Pagination from './Pagination.astro';
+import ViewModeLinks from './ViewModeLinks.astro';
+
+interface Props {
+	entries: any[];
+	collection: 'academic' | 'notes';
+	lang: Lang;
+	view: 'card' | 'list';
+	basePath: string;
+	currentPage: number;
+	totalPages: number;
+}
+
+const { entries, collection, lang, view, basePath, currentPage, totalPages } = Astro.props;
+---
+
+<section class="collection-page">
+	<div class="collection-toolbar">
+		<ViewModeLinks basePath={basePath} active={view} lang={lang} />
+	</div>
+
+	<div class="collection-body">
+		{
+			view === 'card' ? (
+				<section class="entry-grid">
+					{entries.map((item) => <EntryCard item={item} collection={collection} lang={lang} />)}
+				</section>
+			) : (
+				<section class="entry-list">
+					{entries.map((item) => <EntryListItem item={item} collection={collection} lang={lang} />)}
+				</section>
+			)
+		}
+	</div>
+
+	<Pagination
+		basePath={view === 'card' ? basePath : `${basePath}/list`}
+		currentPage={currentPage}
+		totalPages={totalPages}
+		lang={lang}
+	/>
+</section>

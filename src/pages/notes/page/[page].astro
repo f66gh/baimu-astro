@@ -1,0 +1,29 @@
+---
+import CollectionPage from '../../../components/content/CollectionPage.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import Layout from '../../../layouts/Layout.astro';
+import { cardPageSize, getLocalizedEntries, numberedPagePaths, paginateItems } from '../../../lib/content';
+
+const lang = 'zh';
+
+export async function getStaticPaths() {
+	const entries = await getLocalizedEntries('notes', 'zh');
+	return numberedPagePaths(entries, cardPageSize);
+}
+
+const { currentPage } = Astro.props;
+const page = paginateItems(await getLocalizedEntries('notes', 'zh'), currentPage, cardPageSize);
+---
+
+<Layout title={`个人笔记 | 第 ${currentPage} 页`}>
+	<PageHeader eyebrow="Notes" title="个人笔记" lede="放置和组内研究不强绑定的学习记录、工具笔记和自由探索。" />
+	<CollectionPage
+		entries={page.items}
+		collection="notes"
+		lang={lang}
+		view="card"
+		basePath="/notes"
+		currentPage={page.currentPage}
+		totalPages={page.totalPages}
+	/>
+</Layout>

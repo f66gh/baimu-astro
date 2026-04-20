@@ -1,0 +1,277 @@
+---
+import { getCollection } from 'astro:content';
+import ContentCard from '../../components/ContentCard.astro';
+import Layout from '../../layouts/Layout.astro';
+import { getLocalizedEntries } from '../../lib/content';
+import { localizePath, t } from '../../lib/i18n';
+
+const lang = 'en';
+const [anime, notes, music, academic] = await Promise.all([
+	getCollection('anime'),
+	getLocalizedEntries('notes', lang),
+	getCollection('music'),
+	getLocalizedEntries('academic', lang),
+]);
+
+const latest = [...notes, ...academic]
+	.sort((a, b) => b.entry.data.date.valueOf() - a.entry.data.date.valueOf())
+	.slice(0, 3);
+
+const stats = [
+	{ label: t(lang, 'academic'), value: academic.length, href: localizePath('/academic/', lang), tone: 'coral' },
+	{ label: t(lang, 'notes'), value: notes.length, href: localizePath('/notes/', lang), tone: 'teal' },
+	{ label: t(lang, 'anime'), value: anime.length, href: '/anime/', tone: 'violet' },
+	{ label: t(lang, 'music'), value: music.length, href: '/music/', tone: 'gold' },
+];
+---
+
+<Layout title="Aiu Content Console">
+	<section class="dashboard-head">
+		<p class="eyebrow">Dashboard</p>
+		<h1 class="page-title">Aiu Content Console</h1>
+		<p class="lede">Academic progress, notes, anime records, and music are kept in one small personal console.</p>
+	</section>
+
+	<section class="stat-grid" aria-label="Content stats">
+		{
+			stats.map((item) => (
+				<a class:list={['stat-card', `tone-${item.tone}`]} href={item.href}>
+					<span>{item.label}</span>
+					<strong>{item.value}</strong>
+					<small>{t(lang, 'open')}</small>
+				</a>
+			))
+		}
+	</section>
+
+	<section class="dashboard-grid">
+		<article class="panel intro-panel">
+			<h2>Site Notes</h2>
+			<p>
+				The site now works like a lightweight personal console. Content still lives in Markdown,
+				and the academic and notes modules are ready for bilingual routes.
+			</p>
+			<div class="action-row">
+				<a href={localizePath('/notes/', lang)}>Write notes</a>
+				<a href="/anime/">Organize anime</a>
+				<a href={localizePath('/academic/', lang)}>Track research</a>
+			</div>
+		</article>
+
+		<article class="panel timeline-panel">
+			<h2>{t(lang, 'latest')}</h2>
+			<ul>
+				{
+					latest.map((item) => (
+						<li>
+							<a href={localizePath(`/${item.entry.collection}/${item.baseId}/`, lang)}>
+								<strong>{item.entry.data.title}</strong>
+								<span>{item.entry.data.date.toLocaleDateString('en-US')}</span>
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</article>
+	</section>
+
+	<section class="panel publication-panel">
+		<h2>{t(lang, 'publications')}</h2>
+		<p>{t(lang, 'noPublications')}</p>
+	</section>
+
+	<div class="section-head">
+		<h2>{t(lang, 'contentPreview')}</h2>
+		<a href={localizePath('/notes/', lang)}>{t(lang, 'allNotes')}</a>
+	</div>
+	<section class="grid preview-grid">
+		{
+			latest.map((item) => (
+				<ContentCard
+					href={localizePath(`/${item.entry.collection}/${item.baseId}/`, lang)}
+					title={item.entry.data.title}
+					summary={item.entry.data.summary}
+					date={item.entry.data.date}
+					cover={item.entry.data.cover}
+					tags={item.entry.data.tags}
+					accent={item.entry.collection === 'academic' ? 'coral' : 'teal'}
+				/>
+			))
+		}
+	</section>
+</Layout>
+
+<style>
+	.dashboard-head,
+	.panel,
+	.stat-card {
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		background: var(--panel);
+		box-shadow: 0 2px 10px var(--shadow);
+	}
+
+	.dashboard-head {
+		padding: 22px 24px;
+	}
+
+	.stat-grid {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 16px;
+		margin: 16px 0;
+	}
+
+	.stat-card {
+		position: relative;
+		min-height: 128px;
+		padding: 18px 18px 16px;
+		overflow: hidden;
+		text-decoration: none;
+	}
+
+	.stat-card::before {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 4px;
+		background: var(--teal);
+		content: "";
+	}
+
+	.stat-card span,
+	.stat-card strong,
+	.stat-card small {
+		display: block;
+	}
+
+	.stat-card span,
+	.stat-card small,
+	.intro-panel p,
+	.publication-panel p,
+	.timeline-panel span {
+		color: var(--muted);
+	}
+
+	.stat-card strong {
+		margin: 18px 0 10px;
+		font-size: 2rem;
+		line-height: 1;
+	}
+
+	.tone-coral::before {
+		background: var(--coral);
+	}
+
+	.tone-violet::before {
+		background: var(--violet);
+	}
+
+	.tone-gold::before {
+		background: var(--gold);
+	}
+
+	.dashboard-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+		gap: 16px;
+	}
+
+	.panel {
+		padding: 18px;
+	}
+
+	.panel h2 {
+		margin: 0 0 12px;
+		font-size: 1rem;
+	}
+
+	.intro-panel p,
+	.publication-panel p {
+		margin: 0;
+		line-height: 1.8;
+	}
+
+	.action-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		margin-top: 18px;
+	}
+
+	.action-row a {
+		padding: 9px 12px;
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		color: var(--teal);
+		font-weight: 750;
+		text-decoration: none;
+	}
+
+	.timeline-panel ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.timeline-panel li + li {
+		border-top: 1px solid var(--line);
+	}
+
+	.timeline-panel a {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 14px;
+		padding: 12px 0;
+		text-decoration: none;
+	}
+
+	.publication-panel {
+		margin-top: 16px;
+	}
+
+	.preview-grid {
+		margin-bottom: 24px;
+	}
+
+	@media (max-width: 820px) {
+		.stat-grid,
+		.dashboard-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.stat-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (max-width: 520px) {
+		.dashboard-head,
+		.panel {
+			padding: 16px;
+		}
+
+		.stat-grid {
+			grid-template-columns: 1fr;
+			gap: 10px;
+		}
+
+		.stat-card {
+			min-height: 96px;
+			padding: 16px;
+		}
+
+		.stat-card strong {
+			margin: 12px 0 8px;
+			font-size: 1.7rem;
+		}
+
+		.timeline-panel a {
+			align-items: flex-start;
+			flex-direction: column;
+			gap: 6px;
+		}
+	}
+</style>

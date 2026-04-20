@@ -1,0 +1,29 @@
+---
+import CollectionPage from '../../../../components/content/CollectionPage.astro';
+import PageHeader from '../../../../components/PageHeader.astro';
+import Layout from '../../../../layouts/Layout.astro';
+import { cardPageSize, getLocalizedEntries, numberedPagePaths, paginateItems } from '../../../../lib/content';
+
+const lang = 'en';
+
+export async function getStaticPaths() {
+	const entries = await getLocalizedEntries('notes', 'en');
+	return numberedPagePaths(entries, cardPageSize);
+}
+
+const { currentPage } = Astro.props;
+const page = paginateItems(await getLocalizedEntries('notes', 'en'), currentPage, cardPageSize);
+---
+
+<Layout title={`Notes | Page ${currentPage}`}>
+	<PageHeader eyebrow="Notes" title="Notes" lede="Learning notes, tool records, and explorations outside the core research workflow." />
+	<CollectionPage
+		entries={page.items}
+		collection="notes"
+		lang={lang}
+		view="card"
+		basePath="/notes"
+		currentPage={page.currentPage}
+		totalPages={page.totalPages}
+	/>
+</Layout>

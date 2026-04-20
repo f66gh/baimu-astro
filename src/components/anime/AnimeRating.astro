@@ -1,0 +1,26 @@
+---
+import { getRatingLabel, getStars } from '../../lib/anime';
+
+interface Props {
+	rating?: number;
+}
+
+const { rating } = Astro.props;
+---
+
+<span class:list={['anime-rating', !rating && 'empty']} aria-label={getRatingLabel(rating)}>
+	{getStars(rating)}
+</span>
+
+<style>
+	.anime-rating {
+		color: var(--gold);
+		font-size: 0.95rem;
+		font-weight: 900;
+		letter-spacing: 0;
+	}
+
+	.empty {
+		color: var(--muted);
+	}
+</style>

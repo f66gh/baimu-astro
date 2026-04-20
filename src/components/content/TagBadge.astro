@@ -1,0 +1,51 @@
+---
+import type { Lang } from '../../lib/i18n';
+import { getTagMeta } from '../../lib/taxonomy';
+
+interface Props {
+	tag: string;
+	collection: 'academic' | 'notes' | 'anime';
+	lang: Lang;
+}
+
+const { tag, collection, lang } = Astro.props;
+const meta = getTagMeta(tag, collection, lang);
+---
+
+<span class:list={['tag-badge', `tone-${meta.tone}`]}>{meta.label}</span>
+
+<style>
+	.tag-badge {
+		display: inline-flex;
+		align-items: center;
+		min-height: 24px;
+		padding: 3px 8px;
+		border: 1px solid var(--line);
+		border-left-width: 3px;
+		border-radius: 8px;
+		background: var(--tag-bg);
+		color: var(--muted);
+		font-size: 0.8rem;
+		font-weight: 700;
+	}
+
+	.tone-teal {
+		border-left-color: var(--teal);
+	}
+
+	.tone-coral {
+		border-left-color: var(--coral);
+	}
+
+	.tone-violet {
+		border-left-color: var(--violet);
+	}
+
+	.tone-gold {
+		border-left-color: var(--gold);
+	}
+
+	.tone-leaf {
+		border-left-color: var(--leaf);
+	}
+</style>

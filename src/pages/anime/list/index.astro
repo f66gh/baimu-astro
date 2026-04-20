@@ -1,0 +1,15 @@
+---
+import { getCollection } from 'astro:content';
+import AnimeArchivePage from '../../../components/anime/AnimeArchivePage.astro';
+import Layout from '../../../layouts/Layout.astro';
+import { sortByDateDesc } from '../../../lib/content';
+
+const entries = sortByDateDesc(await getCollection('anime'));
+---
+
+<Layout title="追番列表 | Aiu Web">
+	<AnimeArchivePage
+		entries={entries}
+		filterEntries={entries}
+	/>
+</Layout>

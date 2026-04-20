@@ -1,5 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
+import AnimeDetail from '../../components/anime/AnimeDetail.astro';
 import Layout from '../../layouts/Layout.astro';
 
 export async function getStaticPaths() {
@@ -12,39 +13,10 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
-
-const statusLabel = {
-	watching: '在看',
-	finished: '看完',
-	paused: '暂停',
-	planned: '想看',
-};
 ---
 
 <Layout title={`${entry.data.title} | 追番`}>
-	<article class="detail">
-		<p class="eyebrow">Anime / {entry.data.year}</p>
-		<h1 class="page-title">{entry.data.title}</h1>
-		<p class="lede">{entry.data.summary}</p>
-		<ul class="tag-list">
-			<li>{statusLabel[entry.data.status]}</li>
-			{entry.data.episodes && <li>{entry.data.episodes} 集</li>}
-			{entry.data.rating && <li>{entry.data.rating} 分</li>}
-			{entry.data.tags.map((tag) => <li>{tag}</li>)}
-		</ul>
-		{entry.data.cover && <img class="hero-image" src={entry.data.cover} alt="" />}
-		<div class="prose">
-			<Content />
-		</div>
-	</article>
+	<AnimeDetail entry={entry}>
+		<Content />
+	</AnimeDetail>
 </Layout>
-
-<style>
-	.hero-image {
-		width: 100%;
-		max-height: 520px;
-		margin: 30px 0;
-		border-radius: 8px;
-		object-fit: cover;
-	}
-</style>

@@ -7,17 +7,21 @@ const baseFields = {
 	summary: z.string(),
 	date: z.coerce.date(),
 	tags: z.array(z.string()).default([]),
-	cover: z.string().url().optional(),
+	cover: z.string().optional(),
 };
 
 const anime = defineCollection({
 	loader: glob({ pattern: '**/*.md', base: './src/content/anime' }),
 	schema: z.object({
 		...baseFields,
-		year: z.number().int(),
-		status: z.enum(['watching', 'finished', 'paused', 'planned']),
-		rating: z.number().min(0).max(10).optional(),
+		rating: z.number().int().min(1).max(5).optional(),
+		rewatchCount: z.number().int().min(1).default(1),
+		format: z.string().optional(),
+		originalType: z.string().optional(),
+		moods: z.array(z.string()).default([]),
 		episodes: z.number().int().positive().optional(),
+		bangumi: z.string().url().optional(),
+		tieba: z.string().url().optional(),
 	}),
 });
 
@@ -25,15 +29,13 @@ const notes = defineCollection({
 	loader: glob({ pattern: '**/*.md', base: './src/content/notes' }),
 	schema: z.object({
 		...baseFields,
-		category: z.string(),
 	}),
 });
 
-const videos = defineCollection({
-	loader: glob({ pattern: '**/*.md', base: './src/content/videos' }),
+const music = defineCollection({
+	loader: glob({ pattern: '**/*.md', base: './src/content/music' }),
 	schema: z.object({
 		...baseFields,
-		platform: z.enum(['bilibili', 'youtube', 'other']),
 		url: z.string().url(),
 	}),
 });
@@ -42,8 +44,7 @@ const academic = defineCollection({
 	loader: glob({ pattern: '**/*.md', base: './src/content/academic' }),
 	schema: z.object({
 		...baseFields,
-		stage: z.enum(['idea', 'reading', 'experiment', 'writing', 'published']),
 	}),
 });
 
-export const collections = { anime, notes, videos, academic };
+export const collections = { anime, notes, music, academic };

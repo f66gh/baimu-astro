@@ -1,0 +1,22 @@
+---
+import CollectionPage from '../../../components/content/CollectionPage.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import Layout from '../../../layouts/Layout.astro';
+import { getLocalizedEntries, listPageSize, paginateItems } from '../../../lib/content';
+
+const lang = 'zh';
+const page = paginateItems(await getLocalizedEntries('notes', lang), 1, listPageSize);
+---
+
+<Layout title="个人笔记列表 | Aiu Web">
+	<PageHeader eyebrow="Notes" title="个人笔记" lede="用列表模式快速扫描零散笔记、工具记录和学习材料。" />
+	<CollectionPage
+		entries={page.items}
+		collection="notes"
+		lang={lang}
+		view="list"
+		basePath="/notes"
+		currentPage={page.currentPage}
+		totalPages={page.totalPages}
+	/>
+</Layout>

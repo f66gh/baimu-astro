@@ -1,0 +1,29 @@
+---
+import CollectionPage from '../../../../components/content/CollectionPage.astro';
+import PageHeader from '../../../../components/PageHeader.astro';
+import Layout from '../../../../layouts/Layout.astro';
+import { cardPageSize, getLocalizedEntries, numberedPagePaths, paginateItems } from '../../../../lib/content';
+
+const lang = 'en';
+
+export async function getStaticPaths() {
+	const entries = await getLocalizedEntries('academic', 'en');
+	return numberedPagePaths(entries, cardPageSize);
+}
+
+const { currentPage } = Astro.props;
+const page = paginateItems(await getLocalizedEntries('academic', 'en'), currentPage, cardPageSize);
+---
+
+<Layout title={`Academic | Page ${currentPage}`}>
+	<PageHeader eyebrow="Academic" title="Academic" lede="Paper reading, group tasks, and ideas that gradually become research memory." />
+	<CollectionPage
+		entries={page.items}
+		collection="academic"
+		lang={lang}
+		view="card"
+		basePath="/academic"
+		currentPage={page.currentPage}
+		totalPages={page.totalPages}
+	/>
+</Layout>

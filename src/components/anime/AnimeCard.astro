@@ -1,0 +1,282 @@
+---
+import { getAnimeSeason, getRewatchBucket, getRewatchLabel } from '../../lib/anime';
+import AnimeRating from './AnimeRating.astro';
+
+interface Props {
+	entry: any;
+}
+
+const { entry } = Astro.props;
+const season = getAnimeSeason(entry.data.date);
+const rewatchBucket = getRewatchBucket(entry.data.rewatchCount);
+const tags = entry.data.tags ?? [];
+const moods = entry.data.moods ?? [];
+const href = `/anime/${entry.id}/`;
+
+const getTagHue = (tag: string) => {
+	let hash = 0;
+
+	for (const char of tag) {
+		hash = (hash * 31 + (char.codePointAt(0) ?? 0)) % 360;
+	}
+
+	return hash;
+};
+---
+
+<article
+	class="anime-card"
+	data-anime-entry
+	data-anime-card
+	data-date={entry.data.date.valueOf()}
+	data-rating={entry.data.rating ?? 0}
+	data-season={season.value}
+	data-rewatch={rewatchBucket}
+>
+	<a class="poster-link" href={href} aria-label={entry.data.title}>
+		<div class="poster">
+			{
+				entry.data.cover ? (
+					<img src={entry.data.cover} alt="" loading="lazy" />
+				) : (
+					<span>{entry.data.title.slice(0, 2)}</span>
+				)
+			}
+		</div>
+	</a>
+	<div class="body">
+		<div class="meta-line">
+			<span>{season.label}</span>
+			<span>{getRewatchLabel(entry.data.rewatchCount)}</span>
+		</div>
+		<h2><a class="title-link" href={href}>{entry.data.title}</a></h2>
+		<AnimeRating rating={entry.data.rating} />
+	</div>
+	<a class="hover-panel" href={href} aria-label={`查看 ${entry.data.title} 归档`}>
+		<span class="hover-label">查看归档</span>
+		<p>{entry.data.summary}</p>
+		{
+			tags.length > 0 && (
+				<div class="hover-tags" aria-label="题材标签">
+					{tags.slice(0, 3).map((tag: string) => <span style={`--tag-hue: ${getTagHue(tag)}`}>{tag}</span>)}
+				</div>
+			)
+		}
+		{
+			moods.length > 0 && (
+				<div class="moods">
+					{moods.slice(0, 3).map((mood: string) => <span>{mood}</span>)}
+				</div>
+			)
+		}
+	</a>
+</article>
+
+<style>
+	.anime-card {
+		position: relative;
+		overflow: hidden;
+		display: grid;
+		grid-template-rows: var(--anime-poster-height, 250px) minmax(0, 1fr);
+		width: 100%;
+		height: var(--anime-card-height, 358px);
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		background: var(--panel);
+		box-shadow: 0 2px 10px var(--shadow);
+		transform: translateZ(0);
+		transition:
+			transform 180ms ease,
+			box-shadow 180ms ease,
+			border-color 180ms ease,
+			filter 180ms ease;
+		will-change: transform;
+	}
+
+	.anime-card[hidden] {
+		display: none;
+	}
+
+	.anime-card:hover,
+	.anime-card:focus-within {
+		border-color: color-mix(in srgb, var(--teal) 58%, var(--line));
+		box-shadow: 0 18px 34px color-mix(in srgb, var(--ink) 20%, transparent);
+		filter: saturate(1.06);
+		transform: translateY(-6px) rotateX(2deg) rotateY(-2deg);
+	}
+
+	.poster-link,
+	.title-link,
+	.hover-panel {
+		color: inherit !important;
+		text-decoration: none !important;
+	}
+
+	.poster-link {
+		position: relative;
+		display: block;
+		min-height: 0;
+		overflow: hidden;
+	}
+
+	.poster-link::after {
+		position: absolute;
+		inset: 0;
+		content: "";
+		background:
+			linear-gradient(115deg, transparent 18%, rgba(255, 255, 255, 0.18) 45%, transparent 68%);
+		opacity: 0;
+		pointer-events: none;
+		transform: translateX(-42%);
+		transition:
+			opacity 180ms ease,
+			transform 240ms ease;
+	}
+
+	.anime-card:hover .poster-link::after,
+	.anime-card:focus-within .poster-link::after {
+		opacity: 1;
+		transform: translateX(42%);
+	}
+
+	.poster {
+		display: grid;
+		place-items: center;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		background: var(--wash);
+		color: var(--teal);
+		font-size: 1.5rem;
+		font-weight: 900;
+	}
+
+	.poster img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.body {
+		display: grid;
+		align-content: start;
+		gap: 6px;
+		min-height: 0;
+		overflow: hidden;
+		padding: 9px 10px 10px;
+	}
+
+	.meta-line {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		color: var(--muted);
+		font-size: 0.72rem;
+		font-weight: 800;
+	}
+
+	h2 {
+		overflow: hidden;
+		margin: 0;
+		font-size: 0.95rem;
+		line-height: 1.32;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.title-link {
+		display: block;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.title-link:hover,
+	.title-link:focus-visible {
+		color: var(--teal);
+	}
+
+	p {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 4;
+		overflow: hidden;
+		margin: 0;
+		color: rgba(255, 255, 255, 0.84);
+		font-size: 0.82rem;
+		line-height: 1.62;
+	}
+
+	.hover-panel {
+		position: absolute;
+		inset: auto 0 0;
+		display: grid;
+		gap: 9px;
+		padding: 54px 12px 12px;
+		color: white;
+		background:
+			linear-gradient(180deg, transparent 0%, rgba(15, 22, 28, 0.76) 34%, rgba(15, 22, 28, 0.96) 100%);
+		opacity: 0;
+		pointer-events: none;
+		transform: translateY(14px);
+		transition:
+			opacity 180ms ease,
+			transform 180ms ease;
+	}
+
+	.anime-card:hover .hover-panel,
+	.anime-card:focus-within .hover-panel {
+		opacity: 1;
+		pointer-events: auto;
+		transform: translateY(0);
+	}
+
+	.hover-label {
+		width: fit-content;
+		padding: 3px 7px;
+		border: 1px solid rgba(255, 255, 255, 0.24);
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.14);
+		font-size: 0.72rem;
+		font-weight: 850;
+	}
+
+	.hover-tags,
+	.moods {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+
+	.hover-tags span {
+		padding: 3px 7px;
+		border: 1px solid hsl(var(--tag-hue) 76% 70% / 0.72);
+		border-radius: 8px;
+		background: hsl(var(--tag-hue) 78% 58% / 0.18);
+		color: hsl(var(--tag-hue) 86% 82%);
+		font-size: 0.72rem;
+		font-weight: 800;
+	}
+
+	.moods span {
+		padding: 3px 7px;
+		border: 1px solid rgba(255, 255, 255, 0.16);
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.08);
+		color: rgba(255, 255, 255, 0.74);
+		font-size: 0.72rem;
+		font-weight: 750;
+	}
+
+	@media (max-width: 620px) {
+		.anime-card:hover,
+		.anime-card:focus-within {
+			transform: translateY(-3px);
+		}
+
+		.hover-panel {
+			display: none;
+		}
+	}
+</style>

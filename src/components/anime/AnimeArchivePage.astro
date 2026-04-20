@@ -1,0 +1,78 @@
+---
+import AnimeCard from './AnimeCard.astro';
+import AnimeFilterBar from './AnimeFilterBar.astro';
+import PageHeader from '../PageHeader.astro';
+import { getAnimeSeason } from '../../lib/anime';
+
+interface Option {
+	value: string;
+	label: string;
+}
+
+interface Props {
+	entries: any[];
+	filterEntries: any[];
+}
+
+const { entries, filterEntries } = Astro.props;
+
+const seasonMap = new Map();
+
+filterEntries.forEach((entry) => {
+	const season = getAnimeSeason(entry.data.date);
+	seasonMap.set(season.value, season);
+});
+
+const seasons: Option[] = Array.from(seasonMap.values())
+	.sort((a, b) => b.sort - a.sort)
+	.map((season) => ({ value: season.value, label: season.label }));
+---
+
+<PageHeader eyebrow="Anime" title="追番列表" lede="这是类似 Steam 界面的番剧墙。">
+	<AnimeFilterBar seasons={seasons} />
+</PageHeader>
+
+<section class="anime-wall" aria-label="追番作品墙">
+	{entries.map((entry) => <AnimeCard entry={entry} />)}
+</section>
+
+<style>
+	.anime-wall {
+		--anime-card-width: 188px;
+		--anime-poster-height: calc(var(--anime-card-width) * 1.5);
+		--anime-card-height: calc(var(--anime-poster-height) + 84px);
+
+		display: grid;
+		grid-template-columns: repeat(auto-fill, var(--anime-card-width));
+		align-items: start;
+		justify-content: start;
+		gap: 18px;
+		min-height: max(360px, calc(100dvh - 350px));
+		perspective: 1100px;
+	}
+
+	@media (min-width: 1480px) {
+		.anime-wall {
+			gap: 20px;
+		}
+	}
+
+	@media (max-width: 760px) {
+		.anime-wall {
+			--anime-card-width: clamp(150px, calc((100vw - 56px) / 2), 176px);
+			--anime-poster-height: calc(var(--anime-card-width) * 1.5);
+			--anime-card-height: calc(var(--anime-poster-height) + 82px);
+
+			grid-template-columns: repeat(auto-fill, var(--anime-card-width));
+			gap: 12px;
+		}
+	}
+
+	@media (max-width: 350px) {
+		.anime-wall {
+			--anime-card-width: min(188px, 100%);
+			--anime-poster-height: calc(var(--anime-card-width) * 1.5);
+			--anime-card-height: calc(var(--anime-poster-height) + 84px);
+		}
+	}
+</style>

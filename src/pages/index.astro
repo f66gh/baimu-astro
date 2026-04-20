@@ -3,10 +3,10 @@ import { getCollection } from 'astro:content';
 import ContentCard from '../components/ContentCard.astro';
 import Layout from '../layouts/Layout.astro';
 
-const [anime, notes, videos, academic] = await Promise.all([
+const [anime, notes, music, academic] = await Promise.all([
 	getCollection('anime'),
 	getCollection('notes'),
-	getCollection('videos'),
+	getCollection('music'),
 	getCollection('academic'),
 ]);
 
@@ -16,9 +16,9 @@ const latest = [...notes, ...academic]
 
 const stats = [
 	{ label: '学术进展', value: academic.length, href: '/academic/', tone: 'coral' },
-	{ label: '追番条目', value: anime.length, href: '/anime/', tone: 'violet' },
 	{ label: '个人笔记', value: notes.length, href: '/notes/', tone: 'teal' },
-	{ label: '视频收藏', value: videos.length, href: '/videos/', tone: 'gold' },
+	{ label: '追番条目', value: anime.length, href: '/anime/', tone: 'violet' },
+	{ label: '音乐专区', value: music.length, href: '/music/', tone: 'gold' },
 ];
 ---
 
@@ -26,7 +26,7 @@ const stats = [
 	<section class="dashboard-head">
 		<p class="eyebrow">Dashboard</p>
 		<h1 class="page-title">Aiu 内容控制台</h1>
-		<p class="lede">把学术进展、追番记录、个人笔记和视频收藏放进同一套后台式工作台。</p>
+		<p class="lede">把学术进展、个人笔记、追番记录和音乐收藏放进同一套后台式工作台。</p>
 	</section>
 
 	<section class="stat-grid" aria-label="内容统计">
@@ -72,6 +72,11 @@ const stats = [
 		</article>
 	</section>
 
+	<section class="panel publication-panel">
+		<h2>个人论文</h2>
+		<p>暂无发表论文。先把阅读、实验和想法整理好。</p>
+	</section>
+
 	<div class="section-head">
 		<h2>内容预览</h2>
 		<a href="/notes/">全部笔记</a>
@@ -100,7 +105,7 @@ const stats = [
 		border: 1px solid var(--line);
 		border-radius: 8px;
 		background: var(--panel);
-		box-shadow: 0 2px 10px rgba(32, 35, 39, 0.04);
+		box-shadow: 0 2px 10px var(--shadow);
 	}
 
 	.dashboard-head {
@@ -237,6 +242,16 @@ const stats = [
 		margin-bottom: 24px;
 	}
 
+	.publication-panel {
+		margin-top: 16px;
+	}
+
+	.publication-panel p {
+		margin: 0;
+		color: var(--muted);
+		line-height: 1.75;
+	}
+
 	@media (max-width: 820px) {
 		.stat-grid,
 		.dashboard-grid {
@@ -249,8 +264,30 @@ const stats = [
 	}
 
 	@media (max-width: 520px) {
+		.dashboard-head,
+		.panel {
+			padding: 16px;
+		}
+
 		.stat-grid {
 			grid-template-columns: 1fr;
+			gap: 10px;
+		}
+
+		.stat-card {
+			min-height: 96px;
+			padding: 16px;
+		}
+
+		.stat-card strong {
+			margin: 12px 0 8px;
+			font-size: 1.7rem;
+		}
+
+		.timeline-panel a {
+			align-items: flex-start;
+			flex-direction: column;
+			gap: 6px;
 		}
 	}
 </style>
