@@ -18,8 +18,8 @@ const entries = filterMusicGroup(await getLocalizedEntries('music', lang), 'pop'
 const page = paginateItems(entries, currentPage, musicPageSize);
 ---
 
-<Layout title={`流行鉴赏第 ${page.currentPage} 页 | 白木的个人主页`}>
-	<PageHeader eyebrow={t(lang, 'musicEyebrow')} title={getMusicGroupLabel('pop', lang)} lede="这里放完整的流行鉴赏卡片墙。按时间降序排列，每页 16 张。" />
+<Layout title={t(lang, 'titleWithPageLabel', { title: getMusicGroupLabel('pop', lang), pageLabel: t(lang, 'page', { page: page.currentPage }) })}>
+	<PageHeader eyebrow={t(lang, 'musicEyebrow')} title={getMusicGroupLabel('pop', lang)} lede={t(lang, 'popLede')} />
 	<MusicCategoryPage
 		group="pop"
 		entries={page.items}

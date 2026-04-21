@@ -13,7 +13,7 @@ const cardHref = localizePath(`${basePath}/`, lang);
 const listHref = localizePath(`${basePath}/list/`, lang);
 ---
 
-<div class="view-links" aria-label="视图切换">
+<div class="view-links" aria-label={t(lang, 'viewSwitch')}>
 	<a href={cardHref} aria-current={active === 'card' ? 'page' : undefined}>{t(lang, 'cardView')}</a>
 	<a href={listHref} aria-current={active === 'list' ? 'page' : undefined}>{t(lang, 'listView')}</a>
 </div>

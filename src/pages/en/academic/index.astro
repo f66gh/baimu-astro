@@ -3,13 +3,14 @@ import CollectionPage from '../../../components/content/CollectionPage.astro';
 import PageHeader from '../../../components/PageHeader.astro';
 import Layout from '../../../layouts/Layout.astro';
 import { cardPageSize, getLocalizedEntries, paginateItems } from '../../../lib/content';
+import { t } from '../../../lib/i18n';
 
 const lang = 'en';
 const page = paginateItems(await getLocalizedEntries('academic', lang), 1, cardPageSize);
 ---
 
-<Layout title="Academic | Aiu Web">
-	<PageHeader eyebrow="Academic" title="Academic" lede="Paper reading, group tasks, and ideas that gradually become research memory." />
+<Layout title={t(lang, 'titleWithSite', { title: t(lang, 'academic'), site: t(lang, 'siteShortName') })}>
+	<PageHeader eyebrow={t(lang, 'academicEyebrow')} title={t(lang, 'academic')} lede={t(lang, 'homeAcademicDescription')} />
 	<CollectionPage
 		entries={page.items}
 		collection="academic"

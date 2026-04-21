@@ -1,11 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getLangFromPath, localizePath, t } from '../lib/i18n';
+import { siteName } from '../lib/site';
 
 const lang = getLangFromPath(Astro.url.pathname);
 ---
 
-<Layout title="404 | 白木的个人主页">
+<Layout title={t(lang, 'titleWithSite', { title: t(lang, 'notFoundPageTitle'), site: siteName })}>
 	<section class="not-found">
 		<p class="eyebrow">404</p>
 		<h1 class="page-title">{t(lang, 'notFoundTitle')}</h1>

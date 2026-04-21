@@ -61,7 +61,7 @@ const moods = entry.data.moods ?? [];
 			{
 				(entry.data.bangumi || entry.data.tieba) && (
 					<div class="links">
-						{entry.data.bangumi && <a href={entry.data.bangumi} target="_blank" rel="noreferrer">Bangumi</a>}
+						{entry.data.bangumi && <a href={entry.data.bangumi} target="_blank" rel="noreferrer">{t(lang, 'bangumiLink')}</a>}
 						{entry.data.tieba && <a href={entry.data.tieba} target="_blank" rel="noreferrer">{t(lang, 'tiebaPost')}</a>}
 					</div>
 				)

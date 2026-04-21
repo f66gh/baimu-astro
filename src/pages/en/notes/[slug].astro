@@ -3,6 +3,7 @@ import { render } from 'astro:content';
 import ArticlePage from '../../../components/content/ArticlePage.astro';
 import Layout from '../../../layouts/Layout.astro';
 import { getLocalizedEntries, type LocalizedItem } from '../../../lib/content';
+import { t } from '../../../lib/i18n';
 
 const lang = 'en';
 
@@ -19,7 +20,7 @@ const { entry, isFallback } = item;
 const { Content } = await render(entry);
 ---
 
-<Layout title={`${entry.data.title} | Notes`}>
+<Layout title={t(lang, 'titleWithSection', { title: entry.data.title, section: t(lang, 'notes') })}>
 	<ArticlePage
 		title={entry.data.title}
 		summary={entry.data.summary}

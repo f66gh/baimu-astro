@@ -45,6 +45,13 @@ const nextLangPath = toggleLangPath(currentPath);
 const langLabel = lang === 'en' ? '中文' : 'EN';
 const themeLightLabel = t(lang, 'themeLight');
 const themeDarkLabel = t(lang, 'themeDark');
+const openNavLabel = t(lang, 'openNav');
+const closeNavLabel = t(lang, 'closeNav');
+const siteNavLabel = t(lang, 'siteNav');
+const breadcrumbNavLabel = t(lang, 'breadcrumbNav');
+const socialNavLabel = t(lang, 'socialNav');
+const toggleLanguageLabel = t(lang, 'toggleLanguage');
+const toggleThemeLabel = t(lang, 'toggleTheme');
 ---
 
 <!doctype html>
@@ -77,8 +84,8 @@ const themeDarkLabel = t(lang, 'themeDark');
 	</head>
 	<body>
 		<div class="admin-shell">
-			<button class="drawer-backdrop" type="button" data-drawer-close aria-label="关闭导航"></button>
-				<aside class="sidebar" id="site-sidebar" aria-label="站点导航">
+			<button class="drawer-backdrop" type="button" data-drawer-close aria-label={closeNavLabel}></button>
+				<aside class="sidebar" id="site-sidebar" aria-label={siteNavLabel}>
 					<a class="brand" href={localizePath('/', lang)}>
 						<img class="brand-avatar" src={siteAvatar} alt="" />
 						<span>{siteName}</span>
@@ -112,11 +119,11 @@ const themeDarkLabel = t(lang, 'themeDark');
 							data-drawer-toggle
 							aria-controls="site-sidebar"
 							aria-expanded="false"
-							aria-label="打开导航"
+							aria-label={openNavLabel}
 						>
 							<Icon name="mdi:menu" size="22" aria-hidden="true" />
 						</button>
-						<div class="breadcrumb" aria-label="页面层级">
+						<div class="breadcrumb" aria-label={breadcrumbNavLabel}>
 							{
 								breadcrumb.map((item, index) => (
 									<>
@@ -128,7 +135,7 @@ const themeDarkLabel = t(lang, 'themeDark');
 						</div>
 					</div>
 					<div class="top-actions">
-						<nav class="social-nav" aria-label="社交平台">
+						<nav class="social-nav" aria-label={socialNavLabel}>
 							{
 								socialItems.map((item) =>
 									item.kind === 'link' ? (
@@ -152,7 +159,7 @@ const themeDarkLabel = t(lang, 'themeDark');
 								)
 							}
 						</nav>
-						<a class="lang-toggle" href={nextLangPath} aria-label="切换语言" title="切换语言">
+						<a class="lang-toggle" href={nextLangPath} aria-label={toggleLanguageLabel} title={toggleLanguageLabel}>
 							<Icon name="mdi:translate" size="18" aria-hidden="true" />
 							<span>{langLabel}</span>
 						</a>
@@ -162,7 +169,7 @@ const themeDarkLabel = t(lang, 'themeDark');
 							data-theme-toggle
 							data-theme-light={themeLightLabel}
 							data-theme-dark={themeDarkLabel}
-							aria-label="切换深浅色"
+							aria-label={toggleThemeLabel}
 							aria-pressed="false"
 						>
 							<Icon class="theme-icon theme-icon-light" name="mdi:weather-sunny" size="18" aria-hidden="true" />
@@ -217,7 +224,7 @@ const themeDarkLabel = t(lang, 'themeDark');
 					root.dataset.drawer = isOpen ? 'open' : 'closed';
 					document.body.style.overflow = isOpen ? 'hidden' : '';
 					toggle?.setAttribute('aria-expanded', String(isOpen));
-					toggle?.setAttribute('aria-label', isOpen ? '关闭导航' : '打开导航');
+					toggle?.setAttribute('aria-label', isOpen ? closeNavLabel : openNavLabel);
 				};
 
 				toggle?.addEventListener('click', () => {

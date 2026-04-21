@@ -17,6 +17,16 @@ export const siteDescriptions: Record<Lang, string> = {
 	en: 'This site is built through pure vibe coding with Codex. I write posts to practice expression and keep track of study progress and hobbies.',
 };
 
+export const siteHomeTitles: Record<Lang, string> = {
+	zh: siteName,
+	en: "Baimu's Homepage",
+};
+
+export const siteIdentityLines: Record<Lang, string> = {
+	zh: '计算机专业研究生 / EDA 后端 / STA / 宅家练琴型选手',
+	en: 'Graduate student / Backend EDA / STA / desk-to-practice-room commuter',
+};
+
 export const aboutTags = [
 	{ zh: '宅男', en: 'Homebody' },
 	{ zh: '计算机', en: 'Computer' },

@@ -19,7 +19,7 @@ const rewatchOptions = [
 	{ value: 'rewatch', label: t(lang, 'rewatchShort') },
 ];
 
-const countTemplate = lang === 'en' ? 'Showing {visible} / {total}' : '当前显示 {visible} / {total} 条';
+const countTemplate = t(lang, 'showingCount', { visible: '{visible}', total: '{total}' });
 ---
 
 <section class="anime-filter" aria-label={t(lang, 'animeFilterLabel')} data-count-template={countTemplate}>
@@ -30,7 +30,7 @@ const countTemplate = lang === 'en' ? 'Showing {visible} / {total}' : '当前显
 			<button type="button" data-filter-value={option.value} aria-pressed="false">{option.label}</button>
 		))}
 	</div>
-	<div class="sort-buttons" aria-label="sort">
+	<div class="sort-buttons" aria-label={t(lang, 'animeSortLabel')}>
 		<button type="button" data-sort-value="date-desc" aria-pressed="true">{t(lang, 'sortDateDesc')}</button>
 		<button type="button" data-sort-value="date-asc" aria-pressed="false">{t(lang, 'sortDateAsc')}</button>
 		<button type="button" data-sort-value="rating-desc" aria-pressed="false">{t(lang, 'sortRatingDesc')}</button>

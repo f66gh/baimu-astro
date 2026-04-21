@@ -4,7 +4,7 @@ import PageHeader from '../../components/PageHeader.astro';
 import { getLocalizedEntries } from '../../lib/content';
 import { localizePath, t } from '../../lib/i18n';
 import { getMusicTagHue } from '../../lib/music';
-import { aboutParagraphs, aboutTags, siteDescriptions, siteEyebrow } from '../../lib/site';
+import { aboutParagraphs, aboutTags, siteDescriptions, siteEyebrow, siteHomeTitles, siteIdentityLines } from '../../lib/site';
 
 const lang = 'en';
 const [anime, notes, music, academic] = await Promise.all([
@@ -37,36 +37,36 @@ const stats = [
 		value: academic.length,
 		href: localizePath('/academic/', lang),
 		tone: 'coral',
-		description: 'Paper reading, group tasks, and ideas that slowly become research memory.',
+		description: t(lang, 'homeAcademicDescription'),
 	},
 	{
 		label: t(lang, 'notes'),
 		value: notes.length,
 		href: localizePath('/notes/', lang),
 		tone: 'teal',
-		description: 'Learning notes, tool records, and explorations outside the main research thread.',
+		description: t(lang, 'homeNotesDescription'),
 	},
 	{
 		label: t(lang, 'anime'),
 		value: anime.length,
 		href: localizePath('/anime/', lang),
 		tone: 'violet',
-		description: 'A wall for the shows that keep echoing for a while after the credits are over.',
+		description: t(lang, 'animeLede'),
 	},
 	{
 		label: t(lang, 'music'),
 		value: music.length,
 		href: localizePath('/music/', lang),
 		tone: 'gold',
-		description: 'Every favorite piece makes me imagine that one day I might play it well myself.',
+		description: t(lang, 'homeMusicDescription'),
 	},
 ];
 ---
 
-<Layout title="Baimu's Homepage" description={siteDescriptions[lang]}>
-	<PageHeader eyebrow={siteEyebrow} title="Baimu's Homepage" lede={siteDescriptions[lang]} />
+<Layout title={siteHomeTitles[lang]} description={siteDescriptions[lang]}>
+	<PageHeader eyebrow={siteEyebrow} title={siteHomeTitles[lang]} lede={siteDescriptions[lang]} />
 
-	<section class="stat-grid" aria-label="Content stats">
+	<section class="stat-grid" aria-label={t(lang, 'contentStats')}>
 		{
 			stats.map((item) => (
 				<a class:list={['stat-card', `tone-${item.tone}`]} href={item.href}>
@@ -82,7 +82,7 @@ const stats = [
 		<div class="about-head">
 			<div>
 				<h2>{t(lang, 'about')}</h2>
-				<p class="identity-line">Graduate student / Backend EDA / STA / desk-to-practice-room commuter</p>
+				<p class="identity-line">{siteIdentityLines[lang]}</p>
 			</div>
 			<div class="about-tags">
 				{

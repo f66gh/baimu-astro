@@ -11,8 +11,8 @@ const entries = filterMusicGroup(await getLocalizedEntries('music', lang), 'clas
 const page = paginateItems(entries, 1, musicPageSize);
 ---
 
-<Layout title="古典鉴赏 | 白木的个人主页">
-	<PageHeader eyebrow={t(lang, 'musicEyebrow')} title={getMusicGroupLabel('classical', lang)} lede="这里放完整的古典鉴赏卡片墙。按时间降序排列，每页 16 张。" />
+<Layout title={t(lang, 'titleWithSite', { title: getMusicGroupLabel('classical', lang), site: t(lang, 'siteShortName') })}>
+	<PageHeader eyebrow={t(lang, 'musicEyebrow')} title={getMusicGroupLabel('classical', lang)} lede={t(lang, 'classicalLede')} />
 	<MusicCategoryPage
 		group="classical"
 		entries={page.items}

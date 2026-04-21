@@ -3,13 +3,14 @@ import CollectionPage from '../../components/content/CollectionPage.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import Layout from '../../layouts/Layout.astro';
 import { cardPageSize, getLocalizedEntries, paginateItems } from '../../lib/content';
+import { t } from '../../lib/i18n';
 
 const lang = 'zh';
 const page = paginateItems(await getLocalizedEntries('academic', lang), 1, cardPageSize);
 ---
 
-<Layout title="学术进展 | Aiu Web">
-	<PageHeader eyebrow="Academic" title="学术进展" lede="记录论文阅读、组内任务，以及想法与阶段性总结。" />
+<Layout title={t(lang, 'titleWithSite', { title: t(lang, 'academic'), site: t(lang, 'siteShortName') })}>
+	<PageHeader eyebrow={t(lang, 'academicEyebrow')} title={t(lang, 'academic')} lede={t(lang, 'homeAcademicDescription')} />
 	<CollectionPage
 		entries={page.items}
 		collection="academic"

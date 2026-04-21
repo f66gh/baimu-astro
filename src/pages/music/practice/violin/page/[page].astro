@@ -18,8 +18,8 @@ const entries = filterMusicGroup(await getLocalizedEntries('music', lang), 'viol
 const page = paginateItems(entries, currentPage, musicPageSize);
 ---
 
-<Layout title={`小提琴练习第 ${page.currentPage} 页 | 白木的个人主页`}>
-	<PageHeader eyebrow={t(lang, 'musicEyebrow')} title={getMusicGroupLabel('violin', lang)} lede="这里放完整的小提琴练习视频卡片墙。按时间降序排列，每页 16 张。" />
+<Layout title={t(lang, 'titleWithPageLabel', { title: getMusicGroupLabel('violin', lang), pageLabel: t(lang, 'page', { page: page.currentPage }) })}>
+	<PageHeader eyebrow={t(lang, 'musicEyebrow')} title={getMusicGroupLabel('violin', lang)} lede={t(lang, 'violinLede')} />
 	<MusicCategoryPage
 		group="violin"
 		entries={page.items}

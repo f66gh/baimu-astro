@@ -19,7 +19,7 @@ function pageHref(page: number) {
 const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
 ---
 
-<nav class="pagination-shell" aria-label="分页">
+<nav class="pagination-shell" aria-label={t(lang, 'paginationNav')}>
 	<div class="pagination">
 		<a href={pageHref(Math.max(1, currentPage - 1))} aria-disabled={currentPage === 1 ? 'true' : undefined}>
 			{t(lang, 'previous')}

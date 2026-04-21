@@ -9,7 +9,7 @@ const lang = 'en';
 const entries = await getLocalizedEntries('anime', lang);
 ---
 
-<Layout title="Anime Archive | Baimu">
+<Layout title={t(lang, 'titleWithSite', { title: t(lang, 'animeTitle'), site: t(lang, 'siteShortName') })}>
 	<PageHeader eyebrow={t(lang, 'animeEyebrow')} title={t(lang, 'animeTitle')} lede={t(lang, 'animeLede')} />
 	<section class="entry-list">
 		{entries.map((item) => <AnimeListItem item={item} lang={lang} />)}

@@ -16,16 +16,16 @@ const piano = filterMusicGroup(entries, 'piano').slice(0, 8);
 const violin = filterMusicGroup(entries, 'violin').slice(0, 8);
 ---
 
-<Layout title="音乐专区 | 白木的个人主页">
+<Layout title={t(lang, 'titleWithSite', { title: t(lang, 'musicTitle'), site: t(lang, 'siteShortName') })}>
 	<PageHeader eyebrow={t(lang, 'musicEyebrow')} title={t(lang, 'musicTitle')} lede={t(lang, 'musicLede')} />
 
 	<section class="music-page">
-		<MusicSection title={t(lang, 'appreciation')} lede={t(lang, 'appreciationLede')}>
+		<MusicSection title={t(lang, 'appreciation')} lede={t(lang, 'appreciationLede')} lang={lang}>
 			<MusicShelf title={getMusicGroupLabel('classical', lang)} group="classical" entries={classical} href="/music/library/classical/" lang={lang} />
 			<MusicShelf title={getMusicGroupLabel('pop', lang)} group="pop" entries={pop} href="/music/library/pop/" lang={lang} />
 		</MusicSection>
 
-		<MusicSection title={t(lang, 'practice')} lede={t(lang, 'practiceLede')}>
+		<MusicSection title={t(lang, 'practice')} lede={t(lang, 'practiceLede')} lang={lang}>
 			<MusicShelf title={getMusicGroupLabel('piano', lang)} group="piano" entries={piano} href="/music/practice/piano/" lang={lang} />
 			<MusicShelf title={getMusicGroupLabel('violin', lang)} group="violin" entries={violin} href="/music/practice/violin/" lang={lang} />
 		</MusicSection>

@@ -4,7 +4,7 @@ import PageHeader from '../components/PageHeader.astro';
 import { getLocalizedEntries } from '../lib/content';
 import { localizePath, t } from '../lib/i18n';
 import { getMusicTagHue } from '../lib/music';
-import { aboutParagraphs, aboutTags, siteDescriptions, siteEyebrow, siteName } from '../lib/site';
+import { aboutParagraphs, aboutTags, siteDescriptions, siteEyebrow, siteHomeTitles, siteIdentityLines } from '../lib/site';
 
 const lang = 'zh';
 const [anime, notes, music, academic] = await Promise.all([
@@ -33,40 +33,40 @@ const latest = [...academic, ...notes, ...anime, ...music]
 
 const stats = [
 	{
-		label: '学术进展',
+		label: t(lang, 'academic'),
 		value: academic.length,
 		href: '/academic/',
 		tone: 'coral',
-		description: '记录论文阅读、组内任务，以及想法与阶段性总结。',
+		description: t(lang, 'homeAcademicDescription'),
 	},
 	{
-		label: '个人笔记',
+		label: t(lang, 'notes'),
 		value: notes.length,
 		href: '/notes/',
 		tone: 'teal',
-		description: '放置和组内研究不强绑定的学习记录、工具笔记和自由探索。',
+		description: t(lang, 'homeNotesDescription'),
 	},
 	{
-		label: '追番列表',
+		label: t(lang, 'anime'),
 		value: anime.length,
 		href: '/anime/',
 		tone: 'violet',
-		description: '把那些看完之后还会在心里留一阵回声的作品，慢慢排成一面墙。',
+		description: t(lang, 'animeLede'),
 	},
 	{
-		label: '音乐专区',
+		label: t(lang, 'music'),
 		value: music.length,
 		href: '/music/',
 		tone: 'gold',
-		description: '每次听到喜欢的曲子，都会忍不住幻想自己也能把它弹出来。',
+		description: t(lang, 'homeMusicDescription'),
 	},
 ];
 ---
 
-<Layout title={siteName} description={siteDescriptions[lang]}>
-	<PageHeader eyebrow={siteEyebrow} title={siteName} lede={siteDescriptions[lang]} />
+<Layout title={siteHomeTitles[lang]} description={siteDescriptions[lang]}>
+	<PageHeader eyebrow={siteEyebrow} title={siteHomeTitles[lang]} lede={siteDescriptions[lang]} />
 
-	<section class="stat-grid" aria-label="内容统计">
+	<section class="stat-grid" aria-label={t(lang, 'contentStats')}>
 		{
 			stats.map((item) => (
 				<a class:list={['stat-card', `tone-${item.tone}`]} href={item.href}>
@@ -82,7 +82,7 @@ const stats = [
 		<div class="about-head">
 			<div>
 				<h2>{t(lang, 'about')}</h2>
-				<p class="identity-line">计算机专业研究生 / EDA 后端 / STA / 宅家练琴型选手</p>
+				<p class="identity-line">{siteIdentityLines[lang]}</p>
 			</div>
 			<div class="about-tags">
 				{

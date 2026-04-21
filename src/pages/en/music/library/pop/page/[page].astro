@@ -18,7 +18,7 @@ const entries = filterMusicGroup(await getLocalizedEntries('music', lang), 'pop'
 const page = paginateItems(entries, currentPage, musicPageSize);
 ---
 
-<Layout title={`Pop Page ${page.currentPage} | Music`}>
-	<PageHeader eyebrow={t(lang, 'musicEyebrow')} title={getMusicGroupLabel('pop', lang)} lede="The full pop shelf, sorted by date in descending order, 16 cards per page." />
+<Layout title={t(lang, 'titleWithPageLabel', { title: getMusicGroupLabel('pop', lang), pageLabel: t(lang, 'page', { page: page.currentPage }) })}>
+	<PageHeader eyebrow={t(lang, 'musicEyebrow')} title={getMusicGroupLabel('pop', lang)} lede={t(lang, 'popLede')} />
 	<MusicCategoryPage group="pop" entries={page.items} basePath="/music/library/pop" currentPage={page.currentPage} totalPages={page.totalPages} lang={lang} />
 </Layout>

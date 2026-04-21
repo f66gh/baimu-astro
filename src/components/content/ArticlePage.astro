@@ -22,7 +22,7 @@ const {
 	lang,
 	tags = [],
 	isFallback = false,
-	eyebrow = collection === 'academic' ? 'Academic' : 'Notes',
+	eyebrow = collection === 'academic' ? t(lang, 'academicEyebrow') : t(lang, 'notesEyebrow'),
 } = Astro.props;
 
 const formattedDate = date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN');
