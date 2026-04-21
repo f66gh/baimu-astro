@@ -1,0 +1,86 @@
+---
+interface Props {
+	title: string;
+	lede: string;
+	moreHref?: string;
+	moreLabel?: string;
+}
+
+const { title, lede, moreHref, moreLabel = '查看全部' } = Astro.props;
+---
+
+<section class="music-section">
+	<div class="section-head">
+		<div class="section-copy">
+			<h2>{title}</h2>
+			<p>{lede}</p>
+		</div>
+		{moreHref && <a class="more-link" href={moreHref}>{moreLabel}</a>}
+	</div>
+	<div class="section-body">
+		<slot />
+	</div>
+</section>
+
+<style>
+	.music-section {
+		padding: 18px 20px 20px;
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		background: var(--panel);
+		box-shadow: 0 2px 10px var(--shadow);
+	}
+
+	.section-head {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 16px;
+		margin-bottom: 18px;
+	}
+
+	.section-copy h2 {
+		margin: 0 0 8px;
+		font-size: 1.18rem;
+	}
+
+	.section-copy p {
+		max-width: 720px;
+		margin: 0;
+		color: var(--muted);
+		line-height: 1.72;
+	}
+
+	.more-link {
+		flex: 0 0 auto;
+		display: inline-flex;
+		align-items: center;
+		padding: 10px 14px;
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		color: var(--teal);
+		font-size: 0.92rem;
+		font-weight: 800;
+		text-decoration: none;
+	}
+
+	.section-body {
+		display: grid;
+		gap: 18px;
+	}
+
+	@media (max-width: 760px) {
+		.music-section {
+			padding: 16px;
+		}
+
+		.section-head {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.more-link {
+			justify-content: center;
+		}
+	}
+</style>

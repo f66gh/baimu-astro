@@ -1,0 +1,40 @@
+---
+import MusicSection from '../../../components/music/MusicSection.astro';
+import MusicShelf from '../../../components/music/MusicShelf.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import { getLocalizedEntries } from '../../../lib/content';
+import { filterMusicGroup, getMusicGroupLabel } from '../../../lib/music';
+import { t } from '../../../lib/i18n';
+import Layout from '../../../layouts/Layout.astro';
+
+const lang = 'en';
+const entries = await getLocalizedEntries('music', lang);
+
+const classical = filterMusicGroup(entries, 'classical').slice(0, 8);
+const pop = filterMusicGroup(entries, 'pop').slice(0, 8);
+const piano = filterMusicGroup(entries, 'piano').slice(0, 8);
+const violin = filterMusicGroup(entries, 'violin').slice(0, 8);
+---
+
+<Layout title="Music | Baimu">
+	<PageHeader eyebrow={t(lang, 'musicEyebrow')} title={t(lang, 'musicTitle')} lede={t(lang, 'musicLede')} />
+
+	<section class="music-page">
+		<MusicSection title={t(lang, 'appreciation')} lede={t(lang, 'appreciationLede')}>
+			<MusicShelf title={getMusicGroupLabel('classical', lang)} group="classical" entries={classical} href="/music/library/classical/" lang={lang} />
+			<MusicShelf title={getMusicGroupLabel('pop', lang)} group="pop" entries={pop} href="/music/library/pop/" lang={lang} />
+		</MusicSection>
+
+		<MusicSection title={t(lang, 'practice')} lede={t(lang, 'practiceLede')}>
+			<MusicShelf title={getMusicGroupLabel('piano', lang)} group="piano" entries={piano} href="/music/practice/piano/" lang={lang} />
+			<MusicShelf title={getMusicGroupLabel('violin', lang)} group="violin" entries={violin} href="/music/practice/violin/" lang={lang} />
+		</MusicSection>
+	</section>
+</Layout>
+
+<style>
+	.music-page {
+		display: grid;
+		gap: 18px;
+	}
+</style>

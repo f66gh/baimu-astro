@@ -2,25 +2,19 @@
 import { render } from 'astro:content';
 import ArticlePage from '../../components/content/ArticlePage.astro';
 import Layout from '../../layouts/Layout.astro';
-import { getBaseEntries } from '../../lib/content';
+import { getLocalizedEntries, type LocalizedItem } from '../../lib/content';
 
 const lang = 'zh';
 
 export async function getStaticPaths() {
-	const entries = await getBaseEntries('notes');
-	return entries.map((entry: any) => ({
-		params: { slug: entry.id },
-		props: {
-			item: {
-				entry,
-				baseId: entry.id,
-				isFallback: false,
-			},
-		},
+	const items = await getLocalizedEntries('notes', 'zh');
+	return items.map((item) => ({
+		params: { slug: item.baseId },
+		props: { item },
 	}));
 }
 
-const { item } = Astro.props;
+const { item } = Astro.props as { item: LocalizedItem<'notes'> };
 const { entry } = item;
 const { Content } = await render(entry);
 ---

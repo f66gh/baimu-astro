@@ -1,0 +1,12 @@
+---
+import AnimeArchivePage from '../../../components/anime/AnimeArchivePage.astro';
+import Layout from '../../../layouts/Layout.astro';
+import { getLocalizedEntries } from '../../../lib/content';
+
+const lang = 'en';
+const entries = await getLocalizedEntries('anime', lang);
+---
+
+<Layout title="Anime Archive | Baimu">
+	<AnimeArchivePage entries={entries} filterEntries={entries} lang={lang} />
+</Layout>

@@ -1,6 +1,7 @@
 ---
 import { Icon } from 'astro-icon/components';
 import { getLangFromPath, localizePath, stripLangPrefix, t, toggleLangPath } from '../lib/i18n';
+import { gmailAddress, siteAvatar, siteDescriptions, siteName, socialLinks } from '../lib/site';
 
 interface Props {
 	title?: string;
@@ -8,28 +9,29 @@ interface Props {
 }
 
 const {
-	title = 'Aiu 的个人站',
-	description = '学术进展、个人笔记、追番记录和音乐收藏。',
+	title = siteName,
+	description,
 } = Astro.props;
+
+const currentPath = Astro.url.pathname;
+const cleanPath = stripLangPrefix(currentPath);
+const lang = getLangFromPath(currentPath);
+const pageDescription = description ?? siteDescriptions[lang];
 
 const navItems = [
 	{ href: '/', labelKey: 'home', icon: 'mdi:view-dashboard-outline', localized: true },
 	{ href: '/academic/', labelKey: 'academic', icon: 'mdi:school-outline', localized: true },
 	{ href: '/notes/', labelKey: 'notes', icon: 'mdi:notebook-edit-outline', localized: true },
-	{ href: '/anime/', labelKey: 'anime', icon: 'mdi:television-classic', localized: false },
-	{ href: '/music/', labelKey: 'music', icon: 'mdi:music', localized: false },
+	{ href: '/anime/', labelKey: 'anime', icon: 'mdi:television-classic', localized: true },
+	{ href: '/music/', labelKey: 'music', icon: 'mdi:music', localized: true },
 ];
 
 const socialItems = [
-	{ href: 'https://github.com/', label: 'GitHub', icon: 'mdi:github' },
-	{ href: 'https://space.bilibili.com/', label: 'Bilibili', icon: 'simple-icons:bilibili' },
-	{ href: 'https://tieba.baidu.com/', label: '贴吧', icon: 'simple-icons:baidu' },
-	{ href: 'mailto:yourname@gmail.com', label: 'Gmail', icon: 'mdi:gmail' },
+	{ href: socialLinks.github, label: 'GitHub', icon: 'mdi:github', kind: 'link' },
+	{ href: socialLinks.bilibili, label: 'Bilibili', icon: 'simple-icons:bilibili', kind: 'link' },
+	{ href: socialLinks.tieba, label: '贴吧', icon: 'simple-icons:baidu', kind: 'link' },
+	{ label: t(lang, 'copyMail'), icon: 'mdi:gmail', kind: 'copy' },
 ];
-
-const currentPath = Astro.url.pathname;
-const cleanPath = stripLangPrefix(currentPath);
-const lang = getLangFromPath(currentPath);
 const activeItem =
 	navItems
 		.filter((item) => item.href !== '/')
@@ -39,12 +41,10 @@ const activeLabel = t(lang, activeItem.labelKey);
 const breadcrumb = cleanPath === '/'
 	? [t(lang, 'home')]
 	: [t(lang, 'home'), activeLabel, ...(pageName && pageName !== activeLabel ? [pageName] : [])];
-const supportsLocalizedContent =
-	cleanPath === '/' || cleanPath.startsWith('/academic/') || cleanPath.startsWith('/notes/');
-const nextLangPath = supportsLocalizedContent
-	? toggleLangPath(currentPath)
-	: localizePath('/', lang === 'en' ? 'zh' : 'en');
+const nextLangPath = toggleLangPath(currentPath);
 const langLabel = lang === 'en' ? '中文' : 'EN';
+const themeLightLabel = t(lang, 'themeLight');
+const themeDarkLabel = t(lang, 'themeDark');
 ---
 
 <!doctype html>
@@ -52,10 +52,11 @@ const langLabel = lang === 'en' ? '中文' : 'EN';
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<link rel="icon" type="image/jpeg" href={siteAvatar} />
+		<link rel="shortcut icon" type="image/jpeg" href={siteAvatar} />
+		<link rel="apple-touch-icon" href={siteAvatar} />
 		<meta name="generator" content={Astro.generator} />
-		<meta name="description" content={description} />
+		<meta name="description" content={pageDescription} />
 		<title>{title}</title>
 		<script is:inline>
 			(() => {
@@ -114,14 +115,14 @@ const langLabel = lang === 'en' ? '中文' : 'EN';
 				max-width: 300px;
 			}
 
-			@media (max-width: 620px) {
+			@media (max-width: 820px) {
 				.collection-toolbar {
 					justify-content: flex-start;
 				}
 
 				.grid,
 				.entry-grid {
-					grid-template-columns: 1fr;
+					grid-template-columns: repeat(2, minmax(0, 1fr));
 					justify-content: stretch;
 				}
 
@@ -130,16 +131,23 @@ const langLabel = lang === 'en' ? '中文' : 'EN';
 					max-width: none;
 				}
 			}
+
+			@media (max-width: 430px) {
+				.grid,
+				.entry-grid {
+					grid-template-columns: 1fr;
+				}
+			}
 		</style>
 	</head>
 	<body>
 		<div class="admin-shell">
 			<button class="drawer-backdrop" type="button" data-drawer-close aria-label="关闭导航"></button>
-			<aside class="sidebar" id="site-sidebar" aria-label="站点导航">
-				<a class="brand" href={localizePath('/', lang)}>
-					<span class="brand-mark">A</span>
-					<span>Aiu 控制台</span>
-				</a>
+				<aside class="sidebar" id="site-sidebar" aria-label="站点导航">
+					<a class="brand" href={localizePath('/', lang)}>
+						<img class="brand-avatar" src={siteAvatar} alt="" />
+						<span>{siteName}</span>
+					</a>
 				<nav>
 						{
 							navItems.map((item) => {
@@ -187,22 +195,44 @@ const langLabel = lang === 'en' ? '中文' : 'EN';
 					<div class="top-actions">
 						<nav class="social-nav" aria-label="社交平台">
 							{
-								socialItems.map((item) => (
-									<a href={item.href} target="_blank" rel="noreferrer" aria-label={item.label}>
-										<Icon name={item.icon} size="18" aria-hidden="true" />
-										<span>{item.label}</span>
-									</a>
-								))
+								socialItems.map((item) =>
+									item.kind === 'link' ? (
+										<a href={item.href} target="_blank" rel="noreferrer" aria-label={item.label}>
+											<Icon name={item.icon} size="18" aria-hidden="true" />
+											<span>{item.label}</span>
+										</a>
+									) : (
+										<button
+											type="button"
+											class="social-button"
+											data-copy-email={gmailAddress}
+											data-copy-label={t(lang, 'copyMail')}
+											data-copy-done={t(lang, 'copyMailDone')}
+											aria-label={item.label}
+										>
+											<Icon name={item.icon} size="18" aria-hidden="true" />
+											<span data-copy-text>{item.label}</span>
+										</button>
+									),
+								)
 							}
 						</nav>
 						<a class="lang-toggle" href={nextLangPath} aria-label="切换语言" title="切换语言">
 							<Icon name="mdi:translate" size="18" aria-hidden="true" />
 							<span>{langLabel}</span>
 						</a>
-						<button class="theme-toggle" type="button" data-theme-toggle aria-label="切换深浅色" aria-pressed="false">
+						<button
+							class="theme-toggle"
+							type="button"
+							data-theme-toggle
+							data-theme-light={themeLightLabel}
+							data-theme-dark={themeDarkLabel}
+							aria-label="切换深浅色"
+							aria-pressed="false"
+						>
 							<Icon class="theme-icon theme-icon-light" name="mdi:weather-sunny" size="18" aria-hidden="true" />
 							<Icon class="theme-icon theme-icon-dark" name="mdi:weather-night" size="18" aria-hidden="true" />
-							<span data-theme-label>白天</span>
+							<span data-theme-label>{themeLightLabel}</span>
 						</button>
 					</div>
 				</header>
@@ -217,6 +247,8 @@ const langLabel = lang === 'en' ? '中文' : 'EN';
 				const root = document.documentElement;
 				const button = document.querySelector('[data-theme-toggle]');
 				const label = document.querySelector('[data-theme-label]');
+				const lightLabel = button?.dataset.themeLight ?? 'Light';
+				const darkLabel = button?.dataset.themeDark ?? 'Dark';
 
 				const setTheme = (theme) => {
 					root.dataset.theme = theme;
@@ -228,7 +260,7 @@ const langLabel = lang === 'en' ? '中文' : 'EN';
 					}
 
 					if (label) {
-						label.textContent = theme === 'dark' ? '黑夜' : '白天';
+						label.textContent = theme === 'dark' ? darkLabel : lightLabel;
 					}
 				};
 
@@ -275,6 +307,37 @@ const langLabel = lang === 'en' ? '中文' : 'EN';
 					if (event.matches) {
 						setDrawer(false);
 					}
+				});
+			})();
+		</script>
+		<script is:inline>
+			(() => {
+				const buttons = document.querySelectorAll('[data-copy-email]');
+
+				buttons.forEach((button) => {
+					button.addEventListener('click', async () => {
+						if (!(button instanceof HTMLElement)) return;
+
+						const email = button.dataset.copyEmail;
+						const defaultLabel = button.dataset.copyLabel ?? 'Gmail';
+						const doneLabel = button.dataset.copyDone ?? 'Copied';
+						const text = button.querySelector('[data-copy-text]');
+
+						if (!email || !(text instanceof HTMLElement)) return;
+
+						try {
+							await navigator.clipboard.writeText(email);
+							text.textContent = doneLabel;
+							window.setTimeout(() => {
+								text.textContent = defaultLabel;
+							}, 1600);
+						} catch {
+							text.textContent = email;
+							window.setTimeout(() => {
+								text.textContent = defaultLabel;
+							}, 2000);
+						}
+					});
 				});
 			})();
 		</script>
@@ -383,15 +446,12 @@ const langLabel = lang === 'en' ? '中文' : 'EN';
 		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 	}
 
-	.brand-mark {
-		display: inline-grid;
-		place-items: center;
+	.brand-avatar {
 		width: 28px;
 		height: 28px;
-		border: 1px solid rgba(0, 150, 136, 0.7);
+		border: 1px solid rgba(0, 150, 136, 0.45);
 		border-radius: 8px;
-		background: rgba(0, 150, 136, 0.16);
-		color: #5eead4;
+		object-fit: cover;
 	}
 
 	nav {
@@ -507,6 +567,7 @@ const langLabel = lang === 'en' ? '中文' : 'EN';
 	}
 
 	.social-nav a,
+	.social-button,
 	.lang-toggle,
 	.theme-toggle {
 		display: inline-flex;
@@ -525,12 +586,17 @@ const langLabel = lang === 'en' ? '中文' : 'EN';
 		text-decoration: none;
 	}
 
+	.social-button {
+		cursor: pointer;
+	}
+
 	.lang-toggle,
 	.theme-toggle {
 		cursor: pointer;
 	}
 
 	.social-nav a:hover,
+	.social-button:hover,
 	.lang-toggle:hover,
 	.theme-toggle:hover {
 		background: var(--button-hover);
@@ -575,7 +641,7 @@ const langLabel = lang === 'en' ? '中文' : 'EN';
 	}
 
 	:global(.lede) {
-		max-width: 720px;
+		max-width: 100%;
 		margin: 10px 0 0;
 		color: var(--muted);
 		font-size: 0.98rem;
@@ -768,12 +834,14 @@ const langLabel = lang === 'en' ? '中文' : 'EN';
 			gap: 6px;
 		}
 
-		.social-nav a {
+		.social-nav a,
+		.social-button {
 			width: 36px;
 			padding: 0;
 		}
 
-		.social-nav a span {
+		.social-nav a span,
+		.social-button span {
 			position: absolute;
 			width: 1px;
 			height: 1px;
@@ -791,21 +859,28 @@ const langLabel = lang === 'en' ? '中文' : 'EN';
 		}
 	}
 
-	@media (max-width: 620px) {
-		:global(.collection-toolbar) {
-			justify-content: flex-start;
+		@media (max-width: 820px) {
+			:global(.collection-toolbar) {
+				justify-content: flex-start;
+			}
+
+			:global(.grid) {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				justify-content: stretch;
+			}
+
+			:global(.entry-grid) {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				justify-content: stretch;
+			}
 		}
 
-		:global(.grid) {
-			grid-template-columns: 1fr;
-			justify-content: stretch;
+		@media (max-width: 430px) {
+			:global(.grid),
+			:global(.entry-grid) {
+				grid-template-columns: 1fr;
+			}
 		}
-
-		:global(.entry-grid) {
-			grid-template-columns: 1fr;
-			justify-content: stretch;
-		}
-	}
 
 	@media (max-width: 520px) {
 		.lang-toggle span,

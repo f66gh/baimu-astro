@@ -1,22 +1,25 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
 import AnimeDetail from '../../components/anime/AnimeDetail.astro';
 import Layout from '../../layouts/Layout.astro';
+import { getLocalizedEntries, type LocalizedItem } from '../../lib/content';
+
+const lang = 'zh';
 
 export async function getStaticPaths() {
-	const entries = await getCollection('anime');
-	return entries.map((entry) => ({
-		params: { slug: entry.id },
-		props: { entry },
+	const items = await getLocalizedEntries('anime', 'zh');
+	return items.map((item) => ({
+		params: { slug: item.baseId },
+		props: { item },
 	}));
 }
 
-const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { item } = Astro.props as { item: LocalizedItem<'anime'> };
+const { Content } = await render(item.entry);
 ---
 
-<Layout title={`${entry.data.title} | 追番`}>
-	<AnimeDetail entry={entry}>
+<Layout title={`${item.entry.data.title} | 追番`}>
+	<AnimeDetail item={item} lang={lang}>
 		<Content />
 	</AnimeDetail>
 </Layout>

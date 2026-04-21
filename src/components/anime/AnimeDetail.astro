@@ -1,14 +1,19 @@
 ---
+import type { Lang } from '../../lib/i18n';
+import { t } from '../../lib/i18n';
+import type { LocalizedItem } from '../../lib/content';
 import { getAnimeSeason, getRewatchLabel } from '../../lib/anime';
 import TagBadge from '../content/TagBadge.astro';
 import AnimeRating from './AnimeRating.astro';
 
 interface Props {
-	entry: any;
+	item: LocalizedItem<'anime'>;
+	lang?: Lang;
 }
 
-const { entry } = Astro.props;
-const season = getAnimeSeason(entry.data.date);
+const { item, lang = 'zh' } = Astro.props;
+const { entry, isFallback } = item;
+const season = getAnimeSeason(entry.data.date, lang);
 const tags = entry.data.tags ?? [];
 const moods = entry.data.moods ?? [];
 ---
@@ -25,27 +30,30 @@ const moods = entry.data.moods ?? [];
 			}
 		</div>
 		<div class="intro">
-			<p class="eyebrow">Anime / {season.label}</p>
-			<h1>{entry.data.title}</h1>
+			<p class="eyebrow">{t(lang, 'animeEyebrow')} / {season.label}</p>
+			<div class="title-line">
+				<h1>{entry.data.title}</h1>
+				{isFallback && lang === 'en' && <span class="fallback">{t(lang, 'onlyChineseCard')}</span>}
+			</div>
 			<p class="summary">{entry.data.summary}</p>
 			<div class="rating-line">
-				<AnimeRating rating={entry.data.rating} />
-				<span>{getRewatchLabel(entry.data.rewatchCount)}</span>
+				<AnimeRating rating={entry.data.rating} lang={lang} />
+				<span>{getRewatchLabel(entry.data.rewatchCount, lang)}</span>
 			</div>
 			<dl class="facts">
 				<div>
-					<dt>观看日期</dt>
-					<dd>{entry.data.date.toLocaleDateString('zh-CN')}</dd>
+					<dt>{t(lang, 'watchDate')}</dt>
+					<dd>{entry.data.date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN')}</dd>
 				</div>
 				{entry.data.format && (
 					<div>
-						<dt>形式</dt>
+						<dt>{t(lang, 'animeFormat')}</dt>
 						<dd>{entry.data.format}</dd>
 					</div>
 				)}
 				{entry.data.originalType && (
 					<div>
-						<dt>原作类型</dt>
+						<dt>{t(lang, 'originalType')}</dt>
 						<dd>{entry.data.originalType}</dd>
 					</div>
 				)}
@@ -54,15 +62,15 @@ const moods = entry.data.moods ?? [];
 				(entry.data.bangumi || entry.data.tieba) && (
 					<div class="links">
 						{entry.data.bangumi && <a href={entry.data.bangumi} target="_blank" rel="noreferrer">Bangumi</a>}
-						{entry.data.tieba && <a href={entry.data.tieba} target="_blank" rel="noreferrer">贴吧原帖</a>}
+						{entry.data.tieba && <a href={entry.data.tieba} target="_blank" rel="noreferrer">{t(lang, 'tiebaPost')}</a>}
 					</div>
 				)
 			}
 			{
 				(tags.length > 0 || moods.length > 0) && (
 					<div class="tags">
-						{tags.map((tag: string) => <TagBadge tag={tag} collection="anime" lang="zh" />)}
-						{moods.map((mood: string) => <TagBadge tag={mood} collection="anime" lang="zh" />)}
+						{tags.map((tag: string) => <TagBadge tag={tag} collection="anime" lang={lang} />)}
+						{moods.map((mood: string) => <TagBadge tag={mood} collection="anime" lang={lang} />)}
 					</div>
 				)
 			}
@@ -108,13 +116,20 @@ const moods = entry.data.moods ?? [];
 		object-fit: cover;
 	}
 
-	.eyebrow {
-		margin: 0 0 10px;
+	.title-line {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+
+	.fallback {
+		padding: 4px 8px;
+		border: 1px solid var(--line);
+		border-radius: 8px;
 		color: var(--teal);
-		font-size: 0.86rem;
+		font-size: 0.8rem;
 		font-weight: 800;
-		letter-spacing: 0;
-		text-transform: uppercase;
 	}
 
 	h1 {

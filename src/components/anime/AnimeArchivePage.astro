@@ -1,8 +1,11 @@
 ---
+import type { Lang } from '../../lib/i18n';
+import { t } from '../../lib/i18n';
+import type { LocalizedItem } from '../../lib/content';
+import { getAnimeSeason } from '../../lib/anime';
 import AnimeCard from './AnimeCard.astro';
 import AnimeFilterBar from './AnimeFilterBar.astro';
 import PageHeader from '../PageHeader.astro';
-import { getAnimeSeason } from '../../lib/anime';
 
 interface Option {
 	value: string;
@@ -10,16 +13,18 @@ interface Option {
 }
 
 interface Props {
-	entries: any[];
-	filterEntries: any[];
+	entries: LocalizedItem<'anime'>[];
+	filterEntries: LocalizedItem<'anime'>[];
+	lang?: Lang;
 }
 
-const { entries, filterEntries } = Astro.props;
+const { entries, filterEntries, lang = 'zh' } = Astro.props;
 
 const seasonMap = new Map();
 
-filterEntries.forEach((entry) => {
-	const season = getAnimeSeason(entry.data.date);
+filterEntries.forEach((item) => {
+	const { entry } = item;
+	const season = getAnimeSeason(entry.data.date, lang);
 	seasonMap.set(season.value, season);
 });
 
@@ -28,12 +33,12 @@ const seasons: Option[] = Array.from(seasonMap.values())
 	.map((season) => ({ value: season.value, label: season.label }));
 ---
 
-<PageHeader eyebrow="Anime" title="追番列表" lede="这是类似 Steam 界面的番剧墙。">
-	<AnimeFilterBar seasons={seasons} />
+<PageHeader eyebrow={t(lang, 'animeEyebrow')} title={t(lang, 'animeTitle')} lede={t(lang, 'animeLede')}>
+	<AnimeFilterBar seasons={seasons} lang={lang} />
 </PageHeader>
 
-<section class="anime-wall" aria-label="追番作品墙">
-	{entries.map((entry) => <AnimeCard entry={entry} />)}
+<section class="anime-wall" aria-label={t(lang, 'animeWallLabel')}>
+	{entries.map((item) => <AnimeCard item={item} lang={lang} />)}
 </section>
 
 <style>
@@ -59,20 +64,16 @@ const seasons: Option[] = Array.from(seasonMap.values())
 
 	@media (max-width: 760px) {
 		.anime-wall {
-			--anime-card-width: clamp(150px, calc((100vw - 56px) / 2), 176px);
-			--anime-poster-height: calc(var(--anime-card-width) * 1.5);
-			--anime-card-height: calc(var(--anime-poster-height) + 82px);
-
-			grid-template-columns: repeat(auto-fill, var(--anime-card-width));
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			justify-content: stretch;
 			gap: 12px;
+			min-height: auto;
 		}
 	}
 
-	@media (max-width: 350px) {
+	@media (max-width: 380px) {
 		.anime-wall {
-			--anime-card-width: min(188px, 100%);
-			--anime-poster-height: calc(var(--anime-card-width) * 1.5);
-			--anime-card-height: calc(var(--anime-poster-height) + 84px);
+			grid-template-columns: 1fr;
 		}
 	}
 </style>

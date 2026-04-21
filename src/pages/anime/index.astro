@@ -1,15 +1,12 @@
 ---
-import { getCollection } from 'astro:content';
 import AnimeArchivePage from '../../components/anime/AnimeArchivePage.astro';
 import Layout from '../../layouts/Layout.astro';
-import { sortByDateDesc } from '../../lib/content';
+import { getLocalizedEntries } from '../../lib/content';
 
-const entries = sortByDateDesc(await getCollection('anime'));
+const lang = 'zh';
+const entries = await getLocalizedEntries('anime', lang);
 ---
 
-<Layout title="追番列表 | Aiu Web">
-	<AnimeArchivePage
-		entries={entries}
-		filterEntries={entries}
-	/>
+<Layout title="追番列表 | 白木的个人主页">
+	<AnimeArchivePage entries={entries} filterEntries={entries} lang={lang} />
 </Layout>

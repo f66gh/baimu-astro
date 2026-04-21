@@ -2,7 +2,7 @@
 import { render } from 'astro:content';
 import ArticlePage from '../../../components/content/ArticlePage.astro';
 import Layout from '../../../layouts/Layout.astro';
-import { getLocalizedEntries } from '../../../lib/content';
+import { getLocalizedEntries, type LocalizedItem } from '../../../lib/content';
 
 const lang = 'en';
 
@@ -14,7 +14,7 @@ export async function getStaticPaths() {
 	}));
 }
 
-const { item } = Astro.props;
+const { item } = Astro.props as { item: LocalizedItem<'academic'> };
 const { entry, isFallback } = item;
 const { Content } = await render(entry);
 ---

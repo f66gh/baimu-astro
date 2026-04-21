@@ -1,17 +1,22 @@
 ---
+import type { Lang } from '../../lib/i18n';
+import { localizePath, t } from '../../lib/i18n';
+import type { LocalizedItem } from '../../lib/content';
 import { getAnimeSeason, getRewatchBucket, getRewatchLabel } from '../../lib/anime';
 import AnimeRating from './AnimeRating.astro';
 
 interface Props {
-	entry: any;
+	item: LocalizedItem<'anime'>;
+	lang?: Lang;
 }
 
-const { entry } = Astro.props;
-const season = getAnimeSeason(entry.data.date);
+const { item, lang = 'zh' } = Astro.props;
+const { entry, baseId, isFallback } = item;
+const season = getAnimeSeason(entry.data.date, lang);
 const rewatchBucket = getRewatchBucket(entry.data.rewatchCount);
 const tags = entry.data.tags ?? [];
 const moods = entry.data.moods ?? [];
-const href = `/anime/${entry.id}/`;
+const href = localizePath(`/anime/${baseId}/`, lang);
 
 const getTagHue = (tag: string) => {
 	let hash = 0;
@@ -43,21 +48,22 @@ const getTagHue = (tag: string) => {
 				)
 			}
 		</div>
+		{isFallback && lang === 'en' && <span class="poster-fallback">{t(lang, 'onlyChineseCard')}</span>}
 	</a>
 	<div class="body">
 		<div class="meta-line">
 			<span>{season.label}</span>
-			<span>{getRewatchLabel(entry.data.rewatchCount)}</span>
+			<span>{getRewatchLabel(entry.data.rewatchCount, lang)}</span>
 		</div>
 		<h2><a class="title-link" href={href}>{entry.data.title}</a></h2>
-		<AnimeRating rating={entry.data.rating} />
+		<AnimeRating rating={entry.data.rating} lang={lang} />
 	</div>
-	<a class="hover-panel" href={href} aria-label={`查看 ${entry.data.title} 归档`}>
-		<span class="hover-label">查看归档</span>
+	<a class="hover-panel" href={href} aria-label={`${t(lang, 'animeArchiveOpen')} ${entry.data.title}`}>
+		<span class="hover-label">{t(lang, 'animeArchiveOpen')}</span>
 		<p>{entry.data.summary}</p>
 		{
 			tags.length > 0 && (
-				<div class="hover-tags" aria-label="题材标签">
+				<div class="hover-tags" aria-label={t(lang, 'subjectTags')}>
 					{tags.slice(0, 3).map((tag: string) => <span style={`--tag-hue: ${getTagHue(tag)}`}>{tag}</span>)}
 				</div>
 			)
@@ -169,10 +175,25 @@ const getTagHue = (tag: string) => {
 	.meta-line {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: 8px;
+		flex-wrap: wrap;
+		gap: 6px;
 		color: var(--muted);
 		font-size: 0.72rem;
+		font-weight: 800;
+	}
+
+	.poster-fallback {
+		position: absolute;
+		top: 8px;
+		right: 8px;
+		z-index: 1;
+		padding: 3px 7px;
+		border: 1px solid rgba(255, 255, 255, 0.26);
+		border-radius: 8px;
+		color: white;
+		background: rgba(15, 22, 28, 0.68);
+		backdrop-filter: blur(6px);
+		font-size: 0.7rem;
 		font-weight: 800;
 	}
 
@@ -269,7 +290,7 @@ const getTagHue = (tag: string) => {
 		font-weight: 750;
 	}
 
-	@media (max-width: 620px) {
+	@media (hover: none), (pointer: coarse) {
 		.anime-card:hover,
 		.anime-card:focus-within {
 			transform: translateY(-3px);
@@ -277,6 +298,22 @@ const getTagHue = (tag: string) => {
 
 		.hover-panel {
 			display: none;
+		}
+	}
+
+	@media (max-width: 760px) {
+		.anime-card {
+			height: auto;
+			grid-template-rows: auto auto;
+		}
+
+		.poster-link {
+			min-height: auto;
+		}
+
+		.poster {
+			aspect-ratio: 2 / 3;
+			height: auto;
 		}
 	}
 </style>

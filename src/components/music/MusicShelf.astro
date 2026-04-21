@@ -1,0 +1,141 @@
+---
+import type { Lang } from '../../lib/i18n';
+import { t } from '../../lib/i18n';
+import type { LocalizedItem } from '../../lib/content';
+import { musicGroups, type MusicGroup } from '../../lib/music';
+import MusicAlbumCard from './MusicAlbumCard.astro';
+import MusicVideoCard from './MusicVideoCard.astro';
+
+interface Props {
+	title: string;
+	group: MusicGroup;
+	entries: LocalizedItem<'music'>[];
+	href?: string;
+	linkLabel?: string;
+	lang?: Lang;
+}
+
+const { title, group, entries, href, linkLabel, lang = 'zh' } = Astro.props;
+const variant = musicGroups[group].variant;
+const resolvedLinkLabel = linkLabel ?? t(lang, 'viewAll');
+---
+
+<section class="music-shelf-section" aria-label={title}>
+	<div class="shelf-head">
+		<div class="shelf-title">
+			<h3>{title}</h3>
+			<span>{t(lang, 'musicItemCount', { count: entries.length })}</span>
+		</div>
+		{href && <a class="shelf-link" href={href}>{resolvedLinkLabel}</a>}
+	</div>
+	<div class="shelf-viewport">
+		<div class:list={['music-shelf', variant === 'video' && 'video-shelf']}>
+			{
+				entries.map((entry) =>
+					variant === 'album' ? <MusicAlbumCard item={entry} lang={lang} /> : <MusicVideoCard item={entry} lang={lang} />,
+				)
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.music-shelf-section {
+		display: grid;
+		gap: 12px;
+		min-width: 0;
+		overflow: visible;
+	}
+
+	.shelf-viewport {
+		min-width: 0;
+		max-width: 100%;
+		overflow-x: auto;
+		overflow-y: hidden;
+		padding: 10px 0 18px;
+		scrollbar-width: thin;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.shelf-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.shelf-title {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.shelf-head h3 {
+		margin: 0;
+		font-size: 1rem;
+	}
+
+	.shelf-head span {
+		color: var(--muted);
+		font-size: 0.84rem;
+		font-weight: 700;
+	}
+
+	.shelf-link {
+		flex: 0 0 auto;
+		color: var(--teal);
+		font-size: 0.84rem;
+		font-weight: 800;
+		text-decoration: none;
+	}
+
+	.music-shelf {
+		--album-card-width: 182px;
+
+		display: grid;
+		width: max-content;
+		min-width: 100%;
+		grid-auto-flow: column;
+		grid-auto-columns: var(--album-card-width);
+		gap: 16px;
+		overflow: visible;
+		scroll-snap-type: x proximity;
+	}
+
+	.video-shelf {
+		--video-card-width: 252px;
+
+		grid-auto-columns: var(--video-card-width);
+	}
+
+	.music-shelf > * {
+		scroll-snap-align: start;
+	}
+
+	@media (max-width: 760px) {
+		.shelf-head {
+			align-items: flex-start;
+			flex-direction: column;
+		}
+
+		.music-shelf {
+			--album-card-width: min(158px, calc(50vw - 34px));
+
+			gap: 12px;
+		}
+
+		.video-shelf {
+			--video-card-width: min(240px, calc(50vw - 28px));
+		}
+	}
+
+	@media (max-width: 380px) {
+		.music-shelf {
+			--album-card-width: 148px;
+		}
+
+		.video-shelf {
+			--video-card-width: 220px;
+		}
+	}
+</style>

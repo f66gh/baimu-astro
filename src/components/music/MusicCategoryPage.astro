@@ -1,0 +1,82 @@
+---
+import type { Lang } from '../../lib/i18n';
+import type { LocalizedItem } from '../../lib/content';
+import Pagination from '../content/Pagination.astro';
+import type { MusicGroup } from '../../lib/music';
+import MusicAlbumCard from './MusicAlbumCard.astro';
+import MusicVideoCard from './MusicVideoCard.astro';
+import { musicGroups } from '../../lib/music';
+
+interface Props {
+	group: MusicGroup;
+	entries: LocalizedItem<'music'>[];
+	basePath: string;
+	currentPage: number;
+	totalPages: number;
+	lang?: Lang;
+}
+
+const { group, entries, basePath, currentPage, totalPages, lang = 'zh' } = Astro.props;
+const variant = musicGroups[group].variant;
+---
+
+<section class="music-category-page">
+	<div class="music-category-body">
+		<div class:list={['music-category-grid', variant === 'video' && 'video-grid']}>
+			{
+				entries.map((entry) =>
+					variant === 'album' ? <MusicAlbumCard item={entry} lang={lang} /> : <MusicVideoCard item={entry} lang={lang} />,
+				)
+			}
+		</div>
+	</div>
+
+	<Pagination basePath={basePath} currentPage={currentPage} totalPages={totalPages} lang={lang} />
+</section>
+
+<style>
+	.music-category-page {
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		min-height: max(420px, calc(100dvh - 280px));
+	}
+
+	.music-category-body {
+		flex: 0 0 auto;
+		margin-bottom: 20px;
+	}
+
+	.music-category-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(160px, 182px));
+		gap: 16px;
+		align-items: start;
+	}
+
+	.video-grid {
+		grid-template-columns: repeat(auto-fill, minmax(220px, 252px));
+	}
+
+	.music-category-page > :global(.pagination-shell) {
+		margin-top: auto;
+	}
+
+	@media (max-width: 760px) {
+		.music-category-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 12px;
+		}
+
+		.video-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 380px) {
+		.music-category-grid,
+		.video-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

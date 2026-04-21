@@ -36,6 +36,10 @@ const music = defineCollection({
 	loader: glob({ pattern: '**/*.md', base: './src/content/music' }),
 	schema: z.object({
 		...baseFields,
+		section: z.enum(['appreciation', 'practice']),
+		group: z.enum(['classical', 'pop', 'piano', 'violin']),
+		formats: z.array(z.string()).default([]),
+		materials: z.array(z.string()).default([]),
 		url: z.string().url(),
 	}),
 });

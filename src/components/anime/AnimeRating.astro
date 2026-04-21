@@ -1,14 +1,16 @@
 ---
+import type { Lang } from '../../lib/i18n';
 import { getRatingLabel, getStars } from '../../lib/anime';
 
 interface Props {
 	rating?: number;
+	lang?: Lang;
 }
 
-const { rating } = Astro.props;
+const { rating, lang = 'zh' } = Astro.props;
 ---
 
-<span class:list={['anime-rating', !rating && 'empty']} aria-label={getRatingLabel(rating)}>
+<span class:list={['anime-rating', !rating && 'empty']} aria-label={getRatingLabel(rating, lang)}>
 	{getStars(rating)}
 </span>
 

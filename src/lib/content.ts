@@ -1,11 +1,19 @@
 import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
 import type { Lang } from './i18n';
 
-export interface LocalizedEntry {
-	entry: any;
+export type ContentCollectionKey = 'academic' | 'notes' | 'anime' | 'music';
+export type ContentEntry<C extends ContentCollectionKey = ContentCollectionKey> = CollectionEntry<C>;
+
+export interface LocalizedItem<C extends ContentCollectionKey = ContentCollectionKey> {
+	entry: ContentEntry<C>;
 	baseId: string;
+	lang: Lang;
 	isFallback: boolean;
 }
+
+type DatedEntry = { data: { date: Date } };
+type DatedItem = DatedEntry | { entry: DatedEntry };
 
 export const cardPageSize = 6;
 export const listPageSize = 12;
@@ -18,41 +26,49 @@ export function isEnglishEntry(id: string): boolean {
 	return id.endsWith('.en');
 }
 
-export function sortByDateDesc<T extends { entry?: any; data?: any }>(items: T[]): T[] {
-	return [...items].sort((a, b) => {
-		const aDate = (a.entry?.data.date ?? a.data.date).valueOf();
-		const bDate = (b.entry?.data.date ?? b.data.date).valueOf();
-		return bDate - aDate;
-	});
+function getDateValue(item: DatedItem): number {
+	const date = 'entry' in item ? item.entry.data.date : item.data.date;
+	return date.valueOf();
 }
 
-export async function getBaseEntries(collection: string) {
-	const entries = await getCollection(collection as never);
-	return sortByDateDesc(entries.filter((entry: any) => !isEnglishEntry(entry.id)));
+function makeLocalizedItem<C extends ContentCollectionKey>(entry: ContentEntry<C>, lang: Lang, isFallback: boolean): LocalizedItem<C> {
+	return {
+		entry,
+		baseId: baseEntryId(entry.id),
+		lang,
+		isFallback,
+	};
 }
 
-export async function getLocalizedEntries(collection: string, lang: Lang): Promise<LocalizedEntry[]> {
-	const entries = await getCollection(collection as never);
-	const baseEntries = sortByDateDesc(entries.filter((entry: any) => !isEnglishEntry(entry.id)));
+export function sortByDateDesc<T extends DatedItem>(items: T[]): T[] {
+	return [...items].sort((a, b) => getDateValue(b) - getDateValue(a));
+}
+
+export async function getBaseEntries<C extends ContentCollectionKey>(collection: C): Promise<LocalizedItem<C>[]> {
+	const entries = await getCollection(collection);
+	const baseEntries = sortByDateDesc(entries.filter((entry) => !isEnglishEntry(entry.id)));
+
+	return baseEntries.map((entry) => makeLocalizedItem(entry, 'zh', false));
+}
+
+export async function getLocalizedEntries<C extends ContentCollectionKey>(collection: C, lang: Lang): Promise<LocalizedItem<C>[]> {
+	const entries = await getCollection(collection);
+	const baseEntries = sortByDateDesc(entries.filter((entry) => !isEnglishEntry(entry.id)));
 	const englishEntries = new Map(
-		entries
-			.filter((entry: any) => isEnglishEntry(entry.id))
-			.map((entry: any) => [baseEntryId(entry.id), entry]),
+		entries.filter((entry) => isEnglishEntry(entry.id)).map((entry) => [baseEntryId(entry.id), entry]),
 	);
 
-	return baseEntries.map((entry: any) => {
-		const baseId = baseEntryId(entry.id);
-		const localized = lang === 'en' ? englishEntries.get(baseId) : undefined;
-
-		return {
-			entry: localized ?? entry,
-			baseId,
-			isFallback: lang === 'en' && !localized,
-		};
+	return baseEntries.map((entry) => {
+		const localized = lang === 'en' ? englishEntries.get(baseEntryId(entry.id)) : undefined;
+		return makeLocalizedItem(localized ?? entry, lang, lang === 'en' && !localized);
 	});
 }
 
-export async function getLocalizedEntry(collection: string, slug: string, lang: Lang): Promise<LocalizedEntry | undefined> {
+export async function getLocalizedEntry<C extends ContentCollectionKey>(
+	collection: C,
+	slug: string,
+	lang: Lang,
+): Promise<LocalizedItem<C> | undefined> {
 	const entries = await getLocalizedEntries(collection, lang);
 	return entries.find((item) => item.baseId === slug);
 }

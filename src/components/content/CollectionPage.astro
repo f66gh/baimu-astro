@@ -1,12 +1,13 @@
 ---
 import type { Lang } from '../../lib/i18n';
+import type { LocalizedItem } from '../../lib/content';
 import EntryCard from './EntryCard.astro';
 import EntryListItem from './EntryListItem.astro';
 import Pagination from './Pagination.astro';
 import ViewModeLinks from './ViewModeLinks.astro';
 
 interface Props {
-	entries: any[];
+	entries: LocalizedItem<'academic'>[] | LocalizedItem<'notes'>[];
 	collection: 'academic' | 'notes';
 	lang: Lang;
 	view: 'card' | 'list';

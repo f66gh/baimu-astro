@@ -1,0 +1,17 @@
+---
+import MusicCategoryPage from '../../../../../components/music/MusicCategoryPage.astro';
+import PageHeader from '../../../../../components/PageHeader.astro';
+import { paginateItems, getLocalizedEntries } from '../../../../../lib/content';
+import { filterMusicGroup, getMusicGroupLabel, musicPageSize } from '../../../../../lib/music';
+import { t } from '../../../../../lib/i18n';
+import Layout from '../../../../../layouts/Layout.astro';
+
+const lang = 'en';
+const entries = filterMusicGroup(await getLocalizedEntries('music', lang), 'pop');
+const page = paginateItems(entries, 1, musicPageSize);
+---
+
+<Layout title="Pop | Music">
+	<PageHeader eyebrow={t(lang, 'musicEyebrow')} title={getMusicGroupLabel('pop', lang)} lede="The full pop shelf, sorted by date in descending order, 16 cards per page." />
+	<MusicCategoryPage group="pop" entries={page.items} basePath="/music/library/pop" currentPage={page.currentPage} totalPages={page.totalPages} lang={lang} />
+</Layout>

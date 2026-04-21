@@ -1,0 +1,24 @@
+---
+import MusicCategoryPage from '../../../../components/music/MusicCategoryPage.astro';
+import PageHeader from '../../../../components/PageHeader.astro';
+import { paginateItems, getLocalizedEntries } from '../../../../lib/content';
+import { filterMusicGroup, getMusicGroupLabel, musicPageSize } from '../../../../lib/music';
+import { t } from '../../../../lib/i18n';
+import Layout from '../../../../layouts/Layout.astro';
+
+const lang = 'zh';
+const entries = filterMusicGroup(await getLocalizedEntries('music', lang), 'piano');
+const page = paginateItems(entries, 1, musicPageSize);
+---
+
+<Layout title="钢琴练习 | 白木的个人主页">
+	<PageHeader eyebrow={t(lang, 'musicEyebrow')} title={getMusicGroupLabel('piano', lang)} lede="这里放完整的钢琴练习视频卡片墙。按时间降序排列，每页 16 张。" />
+	<MusicCategoryPage
+		group="piano"
+		entries={page.items}
+		basePath="/music/practice/piano"
+		currentPage={page.currentPage}
+		totalPages={page.totalPages}
+		lang={lang}
+	/>
+</Layout>

@@ -1,0 +1,17 @@
+---
+import { getLocalizedEntries } from '../../../../lib/content';
+import Layout from '../../../../layouts/Layout.astro';
+import AnimeListItem from '../../../../components/anime/AnimeListItem.astro';
+import PageHeader from '../../../../components/PageHeader.astro';
+import { t } from '../../../../lib/i18n';
+
+const lang = 'en';
+const entries = await getLocalizedEntries('anime', lang);
+---
+
+<Layout title="Anime Archive | Baimu">
+	<PageHeader eyebrow={t(lang, 'animeEyebrow')} title={t(lang, 'animeTitle')} lede={t(lang, 'animeLede')} />
+	<section class="entry-list">
+		{entries.map((item) => <AnimeListItem item={item} lang={lang} />)}
+	</section>
+</Layout>

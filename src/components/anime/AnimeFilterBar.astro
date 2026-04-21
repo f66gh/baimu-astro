@@ -1,4 +1,7 @@
 ---
+import type { Lang } from '../../lib/i18n';
+import { t } from '../../lib/i18n';
+
 interface Option {
 	value: string;
 	label: string;
@@ -6,33 +9,36 @@ interface Option {
 
 interface Props {
 	seasons: Option[];
+	lang?: Lang;
 }
 
-const { seasons } = Astro.props;
+const { seasons, lang = 'zh' } = Astro.props;
 
 const rewatchOptions = [
-	{ value: 'first', label: '首看' },
-	{ value: 'rewatch', label: '重看' },
+	{ value: 'first', label: t(lang, 'firstWatch') },
+	{ value: 'rewatch', label: t(lang, 'rewatchShort') },
 ];
+
+const countTemplate = lang === 'en' ? 'Showing {visible} / {total}' : '当前显示 {visible} / {total} 条';
 ---
 
-<section class="anime-filter" aria-label="追番筛选">
+<section class="anime-filter" aria-label={t(lang, 'animeFilterLabel')} data-count-template={countTemplate}>
 	<div class="filter-group season-filter" data-filter-group="season">
-		<span>观看时间</span>
-		<button type="button" data-filter-value="all" aria-pressed="true">全部</button>
+		<span>{t(lang, 'watchTime')}</span>
+		<button type="button" data-filter-value="all" aria-pressed="true">{t(lang, 'all')}</button>
 		{seasons.map((option) => (
 			<button type="button" data-filter-value={option.value} aria-pressed="false">{option.label}</button>
 		))}
 	</div>
-	<div class="sort-buttons" aria-label="排序方式">
-		<button type="button" data-sort-value="date-desc" aria-pressed="true">按时间降序</button>
-		<button type="button" data-sort-value="date-asc" aria-pressed="false">按时间升序</button>
-		<button type="button" data-sort-value="rating-desc" aria-pressed="false">按星级降序</button>
-		<button type="button" data-sort-value="rating-asc" aria-pressed="false">按星级升序</button>
+	<div class="sort-buttons" aria-label="sort">
+		<button type="button" data-sort-value="date-desc" aria-pressed="true">{t(lang, 'sortDateDesc')}</button>
+		<button type="button" data-sort-value="date-asc" aria-pressed="false">{t(lang, 'sortDateAsc')}</button>
+		<button type="button" data-sort-value="rating-desc" aria-pressed="false">{t(lang, 'sortRatingDesc')}</button>
+		<button type="button" data-sort-value="rating-asc" aria-pressed="false">{t(lang, 'sortRatingAsc')}</button>
 	</div>
 	<div class="filter-group rewatch-filter" data-filter-group="rewatch">
-		<span>是否重看</span>
-		<button type="button" data-filter-value="all" aria-pressed="true">全部</button>
+		<span>{t(lang, 'rewatch')}</span>
+		<button type="button" data-filter-value="all" aria-pressed="true">{t(lang, 'all')}</button>
 		{rewatchOptions.map((option) => (
 			<button type="button" data-filter-value={option.value} aria-pressed="false">{option.label}</button>
 		))}
@@ -50,6 +56,7 @@ const rewatchOptions = [
 
 		if (!root || !wall || cards.length === 0) return;
 
+		const countTemplate = root.dataset.countTemplate ?? 'Showing {visible} / {total}';
 		const state = {
 			season: 'all',
 			rewatch: 'all',
@@ -93,7 +100,9 @@ const rewatchOptions = [
 			});
 
 			if (count) {
-				count.textContent = `当前显示 ${visible} / ${cards.length} 条`;
+				count.textContent = countTemplate
+					.replace('{visible}', String(visible))
+					.replace('{total}', String(cards.length));
 			}
 		};
 

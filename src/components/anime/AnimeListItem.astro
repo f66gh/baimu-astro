@@ -1,18 +1,24 @@
 ---
+import type { Lang } from '../../lib/i18n';
+import { localizePath, t } from '../../lib/i18n';
+import type { LocalizedItem } from '../../lib/content';
 import { getAnimeSeason, getRewatchBucket, getRewatchLabel } from '../../lib/anime';
 import TagBadge from '../content/TagBadge.astro';
 import AnimeRating from './AnimeRating.astro';
 
 interface Props {
-	entry: any;
+	item: LocalizedItem<'anime'>;
+	lang?: Lang;
 }
 
-const { entry } = Astro.props;
-const season = getAnimeSeason(entry.data.date);
+const { item, lang = 'zh' } = Astro.props;
+const { entry, baseId, isFallback } = item;
+const season = getAnimeSeason(entry.data.date, lang);
 const rewatchBucket = getRewatchBucket(entry.data.rewatchCount);
 const tags = entry.data.tags ?? [];
 const moods = entry.data.moods ?? [];
 const filterTags = tags.join('|');
+const href = localizePath(`/anime/${baseId}/`, lang);
 ---
 
 <article
@@ -24,7 +30,7 @@ const filterTags = tags.join('|');
 	data-rewatch={rewatchBucket}
 	data-tags={filterTags}
 >
-	<a class="thumb" href={`/anime/${entry.id}/`} aria-label={entry.data.title}>
+	<a class="thumb" href={href} aria-label={entry.data.title}>
 		{
 			entry.data.cover ? (
 				<img src={entry.data.cover} alt="" loading="lazy" />
@@ -36,17 +42,18 @@ const filterTags = tags.join('|');
 	<div class="content">
 		<div class="meta-line">
 			<span>{season.label}</span>
-			<span>{entry.data.date.toLocaleDateString('zh-CN')}</span>
-			<span>{getRewatchLabel(entry.data.rewatchCount)}</span>
+			<span>{entry.data.date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN')}</span>
+			<span>{getRewatchLabel(entry.data.rewatchCount, lang)}</span>
+			{isFallback && lang === 'en' && <span class="fallback">{t(lang, 'onlyChineseCard')}</span>}
 		</div>
-		<h2><a href={`/anime/${entry.id}/`}>{entry.data.title}</a></h2>
-		<AnimeRating rating={entry.data.rating} />
+		<h2><a href={href}>{entry.data.title}</a></h2>
+		<AnimeRating rating={entry.data.rating} lang={lang} />
 		<p>{entry.data.summary}</p>
 		{
 			(tags.length > 0 || moods.length > 0) && (
 				<div class="tags">
-					{tags.map((tag: string) => <TagBadge tag={tag} collection="anime" lang="zh" />)}
-					{moods.map((mood: string) => <TagBadge tag={mood} collection="anime" lang="zh" />)}
+					{tags.map((tag: string) => <TagBadge tag={tag} collection="anime" lang={lang} />)}
+					{moods.map((mood: string) => <TagBadge tag={mood} collection="anime" lang={lang} />)}
 				</div>
 			)
 		}
@@ -95,6 +102,14 @@ const filterTags = tags.join('|');
 		color: var(--muted);
 		font-size: 0.78rem;
 		font-weight: 800;
+	}
+
+	.fallback {
+		padding: 2px 7px;
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		color: var(--teal);
+		background: var(--tag-bg);
 	}
 
 	h2 {
