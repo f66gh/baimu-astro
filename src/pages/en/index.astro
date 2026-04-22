@@ -31,6 +31,20 @@ const latest = [...academic, ...notes, ...anime, ...music]
 		};
 	});
 
+function getPinnedPreview(items) {
+	const pinnedItem = items.find((item) => item.entry.data.pinned);
+	if (!pinnedItem) return undefined;
+
+	const { entry, baseId } = pinnedItem;
+	const collection = entry.collection as 'academic' | 'notes' | 'anime' | 'music';
+	const href = collection === 'music' ? entry.data.url : localizePath(`/${collection}/${baseId}/`, lang);
+
+	return {
+		title: entry.data.title,
+		href,
+	};
+}
+
 const stats = [
 	{
 		label: t(lang, 'academic'),
@@ -38,6 +52,7 @@ const stats = [
 		href: localizePath('/academic/', lang),
 		tone: 'coral',
 		description: t(lang, 'homeAcademicDescription'),
+		pinned: getPinnedPreview(academic),
 	},
 	{
 		label: t(lang, 'notes'),
@@ -45,6 +60,7 @@ const stats = [
 		href: localizePath('/notes/', lang),
 		tone: 'teal',
 		description: t(lang, 'homeNotesDescription'),
+		pinned: getPinnedPreview(notes),
 	},
 	{
 		label: t(lang, 'anime'),
@@ -52,6 +68,7 @@ const stats = [
 		href: localizePath('/anime/', lang),
 		tone: 'violet',
 		description: t(lang, 'animeLede'),
+		pinned: getPinnedPreview(anime),
 	},
 	{
 		label: t(lang, 'music'),
@@ -59,6 +76,7 @@ const stats = [
 		href: localizePath('/music/', lang),
 		tone: 'gold',
 		description: t(lang, 'homeMusicDescription'),
+		pinned: getPinnedPreview(music),
 	},
 ];
 ---
@@ -73,6 +91,13 @@ const stats = [
 					<span>{item.label}</span>
 					<strong>{item.value}</strong>
 					<small>{item.description}</small>
+					{
+						item.pinned && (
+							<em class="stat-pinned">
+								{t(lang, 'currentPinned', { title: item.pinned.title })}
+							</em>
+						)
+					}
 				</a>
 			))
 		}
@@ -184,6 +209,18 @@ const stats = [
 		color: var(--muted);
 		font-size: 0.84rem;
 		line-height: 1.75;
+	}
+
+	.stat-pinned {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		overflow: hidden;
+		color: var(--teal);
+		font-size: 0.78rem;
+		font-style: normal;
+		font-weight: 800;
+		line-height: 1.6;
 	}
 
 	.tone-coral::before {

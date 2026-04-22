@@ -21,6 +21,7 @@ const date = entry.data.date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN
 	<div class="content">
 		<div class="title-line">
 			<h2><a href={href}>{entry.data.title}</a></h2>
+			{entry.data.pinned && <span class="pinned">{t(lang, 'pinnedBadge')}</span>}
 			{isFallback && <span class="fallback">{t(lang, 'chineseOnly')}</span>}
 		</div>
 		<p>{entry.data.summary}</p>
@@ -74,6 +75,16 @@ const date = entry.data.date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN
 		border: 1px solid var(--line);
 		border-radius: 8px;
 		color: var(--teal);
+		font-size: 0.78rem;
+		font-weight: 800;
+	}
+
+	.pinned {
+		padding: 2px 7px;
+		border: 1px solid color-mix(in srgb, var(--teal) 42%, var(--line));
+		border-radius: 8px;
+		color: var(--teal);
+		background: color-mix(in srgb, var(--teal) 12%, transparent);
 		font-size: 0.78rem;
 		font-weight: 800;
 	}

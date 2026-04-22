@@ -35,6 +35,7 @@ const getTagHue = (tag: string) => {
 	data-anime-card
 	data-date={entry.data.date.valueOf()}
 	data-rating={entry.data.rating ?? 0}
+	data-pinned={entry.data.pinned ? 1 : 0}
 	data-season={season.value}
 	data-rewatch={rewatchBucket}
 >
@@ -49,6 +50,7 @@ const getTagHue = (tag: string) => {
 			}
 		</div>
 		{isFallback && lang === 'en' && <span class="poster-fallback">{t(lang, 'onlyChineseCard')}</span>}
+		{entry.data.pinned && <span class="poster-pinned">{t(lang, 'pinnedBadge')}</span>}
 	</a>
 	<div class="body">
 		<div class="meta-line">
@@ -197,6 +199,22 @@ const getTagHue = (tag: string) => {
 		font-weight: 800;
 	}
 
+	.poster-pinned {
+		position: absolute;
+		top: 10px;
+		left: 10px;
+		z-index: 2;
+		padding: 4px 9px;
+		border: 1px solid rgba(13, 148, 136, 0.34);
+		border-radius: 8px;
+		color: white;
+		background: rgba(13, 148, 136, 0.82);
+		backdrop-filter: blur(6px);
+		font-size: 0.76rem;
+		font-weight: 800;
+		line-height: 1;
+	}
+
 	h2 {
 		overflow: hidden;
 		margin: 0;
@@ -259,6 +277,7 @@ const getTagHue = (tag: string) => {
 		border: 1px solid rgba(255, 255, 255, 0.24);
 		border-radius: 8px;
 		background: rgba(255, 255, 255, 0.14);
+		color: white;
 		font-size: 0.72rem;
 		font-weight: 850;
 	}

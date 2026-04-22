@@ -1,17 +1,18 @@
 ---
 title: "剃须。然后捡到女高中生"
 summary: "很庆幸自己没在节奏最大的那会看这部番"
-date: 2026-04-19
+date: 2026-04-12
 rating: 5
 rewatchCount: 1
 format: "TV"
 originalType: "轻小说改"
 episodes: 13
-tags: ["治愈", "青春", "恋爱", "救赎"]
-moods: ["静下心", "有点遗憾", "想补治愈番"]
+tags: ["治愈", "亲情", "青春"]
+moods: ["静下心", "遗憾", "想补治愈番"]
 cover: "/images/anime/higehiro/cover.webp"
 bangumi: "https://bgm.tv/subject/297254"
 tieba: "https://tieba.baidu.com/p/10632491210?fr=personpage"
+pinned: true
 ---
 
 很久没静下心来看一部番了。
@@ -22,6 +23,8 @@ tieba: "https://tieba.baidu.com/p/10632491210?fr=personpage"
 
 从读者角度，从两人相互救赎的角度出发，我确实很希望沙优和男主最后在一起，有一点点遗憾。但是我岁数也快到男主捡到沙优的年龄了，作者让男主选择后藤，确实是遵循男主一开始的本意和 XP，很能理解男主坚持的原因。
 
+好可惜没看到沙优抱着男主告白，被男主拒绝后任命然后撒娇多抱一会的场景。
+
 总之就是豪堪。我以后也想着开始补一补治愈番。
 
-![剃须视觉图](/images/anime/higehiro/key-visual.webp)
+![剃须视觉图](/images/anime/higehiro/1.jpg)

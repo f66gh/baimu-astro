@@ -12,6 +12,8 @@ interface Props {
 	tags?: string[];
 	isFallback?: boolean;
 	eyebrow?: string;
+	externalUrl?: string;
+	externalLabel?: string;
 }
 
 const {
@@ -23,9 +25,12 @@ const {
 	tags = [],
 	isFallback = false,
 	eyebrow = collection === 'academic' ? t(lang, 'academicEyebrow') : t(lang, 'notesEyebrow'),
+	externalUrl,
+	externalLabel,
 } = Astro.props;
 
 const formattedDate = date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN');
+const externalButtonLabel = externalLabel?.trim() || t(lang, 'openExternal');
 ---
 
 <article class="article-shell">
@@ -38,6 +43,13 @@ const formattedDate = date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN')
 			{isFallback && <span class="fallback">{t(lang, 'chineseOnly')}</span>}
 			{tags.map((tag) => <TagBadge tag={tag} collection={collection} lang={lang} />)}
 		</div>
+		{
+			externalUrl && (
+				<div class="article-actions">
+					<a href={externalUrl} target="_blank" rel="noreferrer">{externalButtonLabel}</a>
+				</div>
+			)
+		}
 	</header>
 	<div class="article-prose">
 		<slot />
@@ -90,6 +102,28 @@ const formattedDate = date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN')
 		color: var(--muted);
 		font-size: 0.88rem;
 		font-weight: 750;
+	}
+
+	.article-actions {
+		margin-top: 16px;
+	}
+
+	.article-actions a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 38px;
+		padding: 0 14px;
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		background: var(--button-bg);
+		color: var(--teal);
+		font-size: 0.9rem;
+		font-weight: 800;
+		text-decoration: none;
+	}
+
+	.article-actions a:hover {
+		background: var(--button-hover);
 	}
 
 	.fallback {

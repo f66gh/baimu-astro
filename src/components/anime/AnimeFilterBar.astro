@@ -72,17 +72,22 @@ const countTemplate = t(lang, 'showingCount', { visible: '{visible}', total: '{t
 			);
 		};
 
-		const sortCards = () => {
-			const sorted = [...cards].sort((left, right) => {
-				const leftDate = Number(left.dataset.date ?? 0);
-				const rightDate = Number(right.dataset.date ?? 0);
-				const leftRating = Number(left.dataset.rating ?? 0);
-				const rightRating = Number(right.dataset.rating ?? 0);
+			const sortCards = () => {
+				const sorted = [...cards].sort((left, right) => {
+					const leftDate = Number(left.dataset.date ?? 0);
+					const rightDate = Number(right.dataset.date ?? 0);
+					const leftRating = Number(left.dataset.rating ?? 0);
+					const rightRating = Number(right.dataset.rating ?? 0);
+					const leftPinned = Number(left.dataset.pinned ?? 0);
+					const rightPinned = Number(right.dataset.pinned ?? 0);
+					const pinnedDiff = rightPinned - leftPinned;
 
-				if (state.sort === 'date-asc') return leftDate - rightDate;
-				if (state.sort === 'rating-desc') return rightRating - leftRating || rightDate - leftDate;
-				if (state.sort === 'rating-asc') return leftRating - rightRating || rightDate - leftDate;
-				return rightDate - leftDate;
+					if (pinnedDiff !== 0) return pinnedDiff;
+
+					if (state.sort === 'date-asc') return leftDate - rightDate;
+					if (state.sort === 'rating-desc') return rightRating - leftRating || rightDate - leftDate;
+					if (state.sort === 'rating-asc') return leftRating - rightRating || rightDate - leftDate;
+					return rightDate - leftDate;
 			});
 
 			sorted.forEach((card) => wall.append(card));

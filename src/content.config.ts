@@ -8,13 +8,16 @@ const baseFields = {
 	date: z.coerce.date(),
 	tags: z.array(z.string()).default([]),
 	cover: z.string().optional(),
+	pinned: z.boolean().default(false),
+	externalUrl: z.string().url().optional(),
+	externalLabel: z.string().optional(),
 };
 
 const anime = defineCollection({
 	loader: glob({ pattern: '**/*.md', base: './src/content/anime' }),
 	schema: z.object({
 		...baseFields,
-		rating: z.number().int().min(1).max(5).optional(),
+		rating: z.number().int().min(0).max(5).optional(),
 		rewatchCount: z.number().int().min(1).default(1),
 		format: z.string().optional(),
 		originalType: z.string().optional(),

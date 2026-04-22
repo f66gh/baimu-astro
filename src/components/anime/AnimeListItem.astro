@@ -44,6 +44,7 @@ const href = localizePath(`/anime/${baseId}/`, lang);
 			<span>{season.label}</span>
 			<span>{entry.data.date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN')}</span>
 			<span>{getRewatchLabel(entry.data.rewatchCount, lang)}</span>
+			{entry.data.pinned && <span class="pinned">{t(lang, 'pinnedBadge')}</span>}
 			{isFallback && lang === 'en' && <span class="fallback">{t(lang, 'onlyChineseCard')}</span>}
 		</div>
 		<h2><a href={href}>{entry.data.title}</a></h2>
@@ -110,6 +111,14 @@ const href = localizePath(`/anime/${baseId}/`, lang);
 		border-radius: 8px;
 		color: var(--teal);
 		background: var(--tag-bg);
+	}
+
+	.pinned {
+		padding: 2px 7px;
+		border: 1px solid color-mix(in srgb, var(--teal) 42%, var(--line));
+		border-radius: 8px;
+		color: var(--teal);
+		background: color-mix(in srgb, var(--teal) 12%, transparent);
 	}
 
 	h2 {

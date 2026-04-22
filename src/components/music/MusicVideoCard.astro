@@ -16,6 +16,7 @@ const materials = entry.data.materials ?? [];
 ---
 
 <article class="music-card music-video-card">
+	{entry.data.pinned && <span class="card-pinned">{t(lang, 'pinnedBadge')}</span>}
 	<a class="card-link" href={entry.data.url} target="_blank" rel="noreferrer" aria-label={`${t(lang, 'openBilibili')} ${entry.data.title}`}>
 		<div class="cover">
 			{
@@ -26,11 +27,11 @@ const materials = entry.data.materials ?? [];
 				)
 			}
 		</div>
-		<div class="body">
-			<div class="meta-line">
-				<span>{entry.data.date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN')}</span>
-				<span>Bilibili</span>
-			</div>
+			<div class="body">
+				<div class="meta-line">
+					<span>{entry.data.date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN')}</span>
+					<span>Bilibili</span>
+				</div>
 			<h3>{entry.data.title}</h3>
 			{isFallback && lang === 'en' && <span class="fallback">{t(lang, 'onlyChineseCard')}</span>}
 		</div>
@@ -140,11 +141,27 @@ const materials = entry.data.materials ?? [];
 	.meta-line {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
+		flex-wrap: wrap;
 		gap: 8px;
 		color: var(--muted);
 		font-size: 0.72rem;
 		font-weight: 800;
+	}
+
+	.card-pinned {
+		position: absolute;
+		top: 10px;
+		left: 10px;
+		z-index: 2;
+		padding: 4px 9px;
+		border: 1px solid rgba(13, 148, 136, 0.34);
+		border-radius: 8px;
+		color: white;
+		background: rgba(13, 148, 136, 0.82);
+		backdrop-filter: blur(6px);
+		font-size: 0.76rem;
+		font-weight: 800;
+		line-height: 1;
 	}
 
 	h3 {

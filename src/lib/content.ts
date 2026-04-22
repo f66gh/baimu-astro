@@ -12,7 +12,7 @@ export interface LocalizedItem<C extends ContentCollectionKey = ContentCollectio
 	isFallback: boolean;
 }
 
-type DatedEntry = { data: { date: Date } };
+type DatedEntry = { data: { date: Date; pinned?: boolean } };
 type DatedItem = DatedEntry | { entry: DatedEntry };
 
 export const cardPageSize = 6;
@@ -31,6 +31,11 @@ function getDateValue(item: DatedItem): number {
 	return date.valueOf();
 }
 
+function getPinnedValue(item: DatedItem): number {
+	const pinned = 'entry' in item ? item.entry.data.pinned : item.data.pinned;
+	return pinned ? 1 : 0;
+}
+
 function makeLocalizedItem<C extends ContentCollectionKey>(entry: ContentEntry<C>, lang: Lang, isFallback: boolean): LocalizedItem<C> {
 	return {
 		entry,
@@ -44,16 +49,24 @@ export function sortByDateDesc<T extends DatedItem>(items: T[]): T[] {
 	return [...items].sort((a, b) => getDateValue(b) - getDateValue(a));
 }
 
+export function sortPinnedThenDateDesc<T extends DatedItem>(items: T[]): T[] {
+	return [...items].sort((a, b) => {
+		const pinnedDiff = getPinnedValue(b) - getPinnedValue(a);
+		if (pinnedDiff !== 0) return pinnedDiff;
+		return getDateValue(b) - getDateValue(a);
+	});
+}
+
 export async function getBaseEntries<C extends ContentCollectionKey>(collection: C): Promise<LocalizedItem<C>[]> {
 	const entries = await getCollection(collection);
-	const baseEntries = sortByDateDesc(entries.filter((entry) => !isEnglishEntry(entry.id)));
+	const baseEntries = sortPinnedThenDateDesc(entries.filter((entry) => !isEnglishEntry(entry.id)));
 
 	return baseEntries.map((entry) => makeLocalizedItem(entry, 'zh', false));
 }
 
 export async function getLocalizedEntries<C extends ContentCollectionKey>(collection: C, lang: Lang): Promise<LocalizedItem<C>[]> {
 	const entries = await getCollection(collection);
-	const baseEntries = sortByDateDesc(entries.filter((entry) => !isEnglishEntry(entry.id)));
+	const baseEntries = sortPinnedThenDateDesc(entries.filter((entry) => !isEnglishEntry(entry.id)));
 	const englishEntries = new Map(
 		entries.filter((entry) => isEnglishEntry(entry.id)).map((entry) => [baseEntryId(entry.id), entry]),
 	);

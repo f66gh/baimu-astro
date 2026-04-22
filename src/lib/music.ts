@@ -1,4 +1,5 @@
 import type { Lang } from './i18n';
+import { sortPinnedThenDateDesc } from './content';
 import type { LocalizedItem } from './content';
 
 export const musicGroups = {
@@ -49,5 +50,5 @@ export function sortMusicByDateDesc(entries: LocalizedItem<'music'>[]) {
 }
 
 export function filterMusicGroup(entries: LocalizedItem<'music'>[], group: MusicGroup) {
-	return sortMusicByDateDesc(entries.filter((entry) => entry.entry.data.group === group));
+	return sortPinnedThenDateDesc(entries.filter((entry) => entry.entry.data.group === group));
 }

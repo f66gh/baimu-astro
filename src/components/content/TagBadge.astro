@@ -10,9 +10,10 @@ interface Props {
 
 const { tag, collection, lang } = Astro.props;
 const meta = getTagMeta(tag, collection, lang);
+const useSoftPill = collection === 'academic' || collection === 'notes';
 ---
 
-<span class:list={['tag-badge', `tone-${meta.tone}`]}>{meta.label}</span>
+<span class:list={['tag-badge', `tone-${meta.tone}`, useSoftPill && 'soft-pill']}>{meta.label}</span>
 
 <style>
 	.tag-badge {
@@ -29,23 +30,42 @@ const meta = getTagMeta(tag, collection, lang);
 		font-weight: 700;
 	}
 
+	.soft-pill {
+		padding: 4px 12px;
+		border-color: color-mix(in srgb, var(--tag-accent) 42%, var(--line));
+		border-left-color: color-mix(in srgb, var(--tag-accent) 42%, var(--line));
+		border-radius: 12px;
+		background: color-mix(in srgb, var(--tag-accent) 12%, white);
+		color: color-mix(in srgb, var(--tag-accent) 72%, var(--ink));
+	}
+
 	.tone-teal {
+		--tag-accent: var(--teal);
 		border-left-color: var(--teal);
 	}
 
 	.tone-coral {
+		--tag-accent: var(--coral);
 		border-left-color: var(--coral);
 	}
 
 	.tone-violet {
+		--tag-accent: var(--violet);
 		border-left-color: var(--violet);
 	}
 
 	.tone-gold {
+		--tag-accent: var(--gold);
 		border-left-color: var(--gold);
 	}
 
 	.tone-leaf {
+		--tag-accent: var(--leaf);
 		border-left-color: var(--leaf);
+	}
+
+	html[data-theme='dark'] .soft-pill {
+		background: color-mix(in srgb, var(--tag-accent) 18%, transparent);
+		color: color-mix(in srgb, var(--tag-accent) 78%, white);
 	}
 </style>
