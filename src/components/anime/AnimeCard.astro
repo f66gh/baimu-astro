@@ -14,8 +14,8 @@ const { item, lang = 'zh' } = Astro.props;
 const { entry, baseId, isFallback } = item;
 const season = getAnimeSeason(entry.data.date, lang);
 const rewatchBucket = getRewatchBucket(entry.data.rewatchCount);
-const tags = entry.data.tags ?? [];
-const moods = entry.data.moods ?? [];
+const tags = (entry.data.tags ?? []).filter((tag) => tag.trim().length > 0);
+const moods = (entry.data.moods ?? []).filter((mood) => mood.trim().length > 0);
 const href = localizePath(`/anime/${baseId}/`, lang);
 
 const getTagHue = (tag: string) => {
@@ -29,8 +29,8 @@ const getTagHue = (tag: string) => {
 };
 ---
 
-<article
-	class="anime-card"
+<div
+	class="anime-card-frame"
 	data-anime-entry
 	data-anime-card
 	data-date={entry.data.date.valueOf()}
@@ -39,55 +39,64 @@ const getTagHue = (tag: string) => {
 	data-season={season.value}
 	data-rewatch={rewatchBucket}
 >
-	<a class="poster-link" href={href} aria-label={entry.data.title}>
-		<div class="poster">
+	<article class="anime-card">
+		<a class="poster-link" href={href} aria-label={entry.data.title}>
+			<div class="poster">
+				{
+					entry.data.cover ? (
+						<img src={entry.data.cover} alt="" loading="lazy" />
+					) : (
+						<span>{entry.data.title.slice(0, 2)}</span>
+					)
+				}
+			</div>
+			{isFallback && lang === 'en' && <span class="poster-fallback">{t(lang, 'onlyChineseCard')}</span>}
+			{entry.data.pinned && <span class="poster-pinned">{t(lang, 'pinnedBadge')}</span>}
+		</a>
+		<div class="body">
+			<div class="meta-line">
+				<span>{season.label}</span>
+				<span>{getRewatchLabel(entry.data.rewatchCount, lang)}</span>
+			</div>
+			<h2><a class="title-link" href={href}>{entry.data.title}</a></h2>
+			<AnimeRating rating={entry.data.rating} lang={lang} />
+		</div>
+		<a class="hover-panel" href={href} aria-label={`${t(lang, 'animeArchiveOpen')} ${entry.data.title}`}>
+			<span class="hover-label">{t(lang, 'animeArchiveOpen')}</span>
+			<p>{entry.data.summary}</p>
 			{
-				entry.data.cover ? (
-					<img src={entry.data.cover} alt="" loading="lazy" />
-				) : (
-					<span>{entry.data.title.slice(0, 2)}</span>
+				tags.length > 0 && (
+					<div class="hover-tags" aria-label={t(lang, 'subjectTags')}>
+						{tags.slice(0, 3).map((tag: string) => <span style={`--tag-hue: ${getTagHue(tag)}`}>{tag}</span>)}
+					</div>
 				)
 			}
-		</div>
-		{isFallback && lang === 'en' && <span class="poster-fallback">{t(lang, 'onlyChineseCard')}</span>}
-		{entry.data.pinned && <span class="poster-pinned">{t(lang, 'pinnedBadge')}</span>}
-	</a>
-	<div class="body">
-		<div class="meta-line">
-			<span>{season.label}</span>
-			<span>{getRewatchLabel(entry.data.rewatchCount, lang)}</span>
-		</div>
-		<h2><a class="title-link" href={href}>{entry.data.title}</a></h2>
-		<AnimeRating rating={entry.data.rating} lang={lang} />
-	</div>
-	<a class="hover-panel" href={href} aria-label={`${t(lang, 'animeArchiveOpen')} ${entry.data.title}`}>
-		<span class="hover-label">{t(lang, 'animeArchiveOpen')}</span>
-		<p>{entry.data.summary}</p>
-		{
-			tags.length > 0 && (
-				<div class="hover-tags" aria-label={t(lang, 'subjectTags')}>
-					{tags.slice(0, 3).map((tag: string) => <span style={`--tag-hue: ${getTagHue(tag)}`}>{tag}</span>)}
-				</div>
-			)
-		}
-		{
-			moods.length > 0 && (
-				<div class="moods">
-					{moods.slice(0, 3).map((mood: string) => <span>{mood}</span>)}
-				</div>
-			)
-		}
-	</a>
-</article>
+			{
+				moods.length > 0 && (
+					<div class="moods">
+						{moods.slice(0, 3).map((mood: string) => <span>{mood}</span>)}
+					</div>
+				)
+			}
+		</a>
+	</article>
+</div>
 
 <style>
+	.anime-card-frame {
+		width: 100%;
+		height: var(--anime-card-height, 358px);
+		perspective: 1100px;
+		perspective-origin: center center;
+	}
+
 	.anime-card {
 		position: relative;
 		overflow: hidden;
 		display: grid;
 		grid-template-rows: var(--anime-poster-height, 250px) minmax(0, 1fr);
 		width: 100%;
-		height: var(--anime-card-height, 358px);
+		height: 100%;
 		border: 1px solid var(--line);
 		border-radius: 8px;
 		background: var(--panel);
@@ -101,16 +110,16 @@ const getTagHue = (tag: string) => {
 		will-change: transform;
 	}
 
-	.anime-card[hidden] {
+	.anime-card-frame[hidden] {
 		display: none;
 	}
 
-	.anime-card:hover,
-	.anime-card:focus-within {
+	.anime-card-frame:hover .anime-card,
+	.anime-card-frame:focus-within .anime-card {
 		border-color: color-mix(in srgb, var(--teal) 58%, var(--line));
 		box-shadow: 0 18px 34px color-mix(in srgb, var(--ink) 20%, transparent);
 		filter: saturate(1.06);
-		transform: translateY(-6px) rotateX(2deg) rotateY(-2deg);
+		transform: translateY(-6px) rotateX(3deg) rotateY(-3deg);
 	}
 
 	.poster-link,
@@ -141,11 +150,11 @@ const getTagHue = (tag: string) => {
 			transform 240ms ease;
 	}
 
-	.anime-card:hover .poster-link::after,
-	.anime-card:focus-within .poster-link::after {
-		opacity: 1;
-		transform: translateX(42%);
-	}
+		.anime-card-frame:hover .poster-link::after,
+		.anime-card-frame:focus-within .poster-link::after {
+			opacity: 1;
+			transform: translateX(42%);
+		}
 
 	.poster {
 		display: grid;
@@ -264,8 +273,8 @@ const getTagHue = (tag: string) => {
 			transform 180ms ease;
 	}
 
-	.anime-card:hover .hover-panel,
-	.anime-card:focus-within .hover-panel {
+	.anime-card-frame:hover .hover-panel,
+	.anime-card-frame:focus-within .hover-panel {
 		opacity: 1;
 		pointer-events: auto;
 		transform: translateY(0);
@@ -310,8 +319,8 @@ const getTagHue = (tag: string) => {
 	}
 
 	@media (hover: none), (pointer: coarse) {
-		.anime-card:hover,
-		.anime-card:focus-within {
+		.anime-card-frame:hover .anime-card,
+		.anime-card-frame:focus-within .anime-card {
 			transform: translateY(-3px);
 		}
 
@@ -320,10 +329,15 @@ const getTagHue = (tag: string) => {
 		}
 	}
 
-	@media (max-width: 760px) {
-		.anime-card {
-			height: auto;
-			grid-template-rows: auto auto;
+		@media (max-width: 760px) {
+			.anime-card-frame {
+				height: auto;
+				perspective: none;
+			}
+
+			.anime-card {
+				height: auto;
+				grid-template-rows: auto auto;
 		}
 
 		.poster-link {

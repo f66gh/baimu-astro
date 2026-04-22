@@ -15,8 +15,8 @@ const { item, lang = 'zh' } = Astro.props;
 const { entry, baseId, isFallback } = item;
 const season = getAnimeSeason(entry.data.date, lang);
 const rewatchBucket = getRewatchBucket(entry.data.rewatchCount);
-const tags = entry.data.tags ?? [];
-const moods = entry.data.moods ?? [];
+const tags = (entry.data.tags ?? []).filter((tag) => tag.trim().length > 0);
+const moods = (entry.data.moods ?? []).filter((mood) => mood.trim().length > 0);
 const filterTags = tags.join('|');
 const href = localizePath(`/anime/${baseId}/`, lang);
 ---

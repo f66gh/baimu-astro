@@ -10,10 +10,15 @@ import Layout from '../../layouts/Layout.astro';
 const lang = 'zh';
 const entries = await getLocalizedEntries('music', lang);
 
-const classical = filterMusicGroup(entries, 'classical').slice(0, 8);
-const pop = filterMusicGroup(entries, 'pop').slice(0, 8);
-const piano = filterMusicGroup(entries, 'piano').slice(0, 8);
-const violin = filterMusicGroup(entries, 'violin').slice(0, 8);
+const classicalEntries = filterMusicGroup(entries, 'classical');
+const popEntries = filterMusicGroup(entries, 'pop');
+const pianoEntries = filterMusicGroup(entries, 'piano');
+const violinEntries = filterMusicGroup(entries, 'violin');
+
+const classical = classicalEntries.slice(0, 8);
+const pop = popEntries.slice(0, 8);
+const piano = pianoEntries.slice(0, 8);
+const violin = violinEntries.slice(0, 8);
 ---
 
 <Layout title={t(lang, 'titleWithSite', { title: t(lang, 'musicTitle'), site: t(lang, 'siteShortName') })}>
@@ -21,13 +26,13 @@ const violin = filterMusicGroup(entries, 'violin').slice(0, 8);
 
 	<section class="music-page">
 		<MusicSection title={t(lang, 'appreciation')} lede={t(lang, 'appreciationLede')} lang={lang}>
-			<MusicShelf title={getMusicGroupLabel('classical', lang)} group="classical" entries={classical} href="/music/library/classical/" lang={lang} />
-			<MusicShelf title={getMusicGroupLabel('pop', lang)} group="pop" entries={pop} href="/music/library/pop/" lang={lang} />
+			<MusicShelf title={getMusicGroupLabel('classical', lang)} group="classical" entries={classical} totalCount={classicalEntries.length} href="/music/library/classical/" lang={lang} />
+			<MusicShelf title={getMusicGroupLabel('pop', lang)} group="pop" entries={pop} totalCount={popEntries.length} href="/music/library/pop/" lang={lang} />
 		</MusicSection>
 
 		<MusicSection title={t(lang, 'practice')} lede={t(lang, 'practiceLede')} lang={lang}>
-			<MusicShelf title={getMusicGroupLabel('piano', lang)} group="piano" entries={piano} href="/music/practice/piano/" lang={lang} />
-			<MusicShelf title={getMusicGroupLabel('violin', lang)} group="violin" entries={violin} href="/music/practice/violin/" lang={lang} />
+			<MusicShelf title={getMusicGroupLabel('piano', lang)} group="piano" entries={piano} totalCount={pianoEntries.length} href="/music/practice/piano/" lang={lang} />
+			<MusicShelf title={getMusicGroupLabel('violin', lang)} group="violin" entries={violin} totalCount={violinEntries.length} href="/music/practice/violin/" lang={lang} />
 		</MusicSection>
 	</section>
 </Layout>

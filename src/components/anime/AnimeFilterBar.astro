@@ -46,31 +46,69 @@ const countTemplate = t(lang, 'showingCount', { visible: '{visible}', total: '{t
 	<p class="filter-count" data-filter-count></p>
 </section>
 
-<script>
-	(() => {
-		const root = document.querySelector('.anime-filter');
-		const wall = document.querySelector('.anime-wall');
-		const cards = Array.from((wall ?? document).querySelectorAll('[data-anime-entry]'));
-		const count = document.querySelector('[data-filter-count]');
-		const sortButtons = Array.from(root?.querySelectorAll('button[data-sort-value]') ?? []);
+	<script>
+		(() => {
+			const root = document.querySelector('.anime-filter');
+			const wall = document.querySelector('.anime-wall');
+			const cards = Array.from((wall ?? document).querySelectorAll('[data-anime-entry]'));
+			const count = document.querySelector('[data-filter-count]');
+			const sortButtons = Array.from(root?.querySelectorAll('button[data-sort-value]') ?? []);
+			const seasonButtons = Array.from(root?.querySelectorAll('.season-filter button[data-filter-value]') ?? []);
+			const rewatchButtons = Array.from(root?.querySelectorAll('.rewatch-filter button[data-filter-value]') ?? []);
 
-		if (!root || !wall || cards.length === 0) return;
+			if (!root || !wall || cards.length === 0) return;
 
-		const countTemplate = root.dataset.countTemplate ?? 'Showing {visible} / {total}';
-		const state = {
-			season: 'all',
-			rewatch: 'all',
-			sort: 'date-desc',
-		};
+			const countTemplate = root.dataset.countTemplate ?? 'Showing {visible} / {total}';
+			const params = new URLSearchParams(window.location.search);
+			const validSeasons = new Set(['all', ...seasonButtons.map((button) => button.dataset.filterValue ?? 'all')]);
+			const validRewatch = new Set(['all', 'first', 'rewatch']);
+			const validSorts = new Set(['date-desc', 'date-asc', 'rating-desc', 'rating-asc']);
+			const state = {
+				season: validSeasons.has(params.get('season') ?? '') ? (params.get('season') ?? 'all') : 'all',
+				rewatch: validRewatch.has(params.get('rewatch') ?? '') ? (params.get('rewatch') ?? 'all') : 'all',
+				sort: validSorts.has(params.get('sort') ?? '') ? (params.get('sort') ?? 'date-desc') : 'date-desc',
+			};
 
-		const matches = (card) => {
+			const matches = (card) => {
 			const dataset = card.dataset;
 
 			return (
 				(state.season === 'all' || dataset.season === state.season) &&
 				(state.rewatch === 'all' || dataset.rewatch === state.rewatch)
-			);
-		};
+				);
+			};
+
+			const syncUrl = () => {
+				const next = new URL(window.location.href);
+				const nextParams = next.searchParams;
+
+				if (state.season === 'all') nextParams.delete('season');
+				else nextParams.set('season', state.season);
+
+				if (state.rewatch === 'all') nextParams.delete('rewatch');
+				else nextParams.set('rewatch', state.rewatch);
+
+				if (state.sort === 'date-desc') nextParams.delete('sort');
+				else nextParams.set('sort', state.sort);
+
+				const nextSearch = nextParams.toString();
+				const nextUrl = `${next.pathname}${nextSearch ? `?${nextSearch}` : ''}${next.hash}`;
+				window.history.replaceState({}, '', nextUrl);
+			};
+
+			const syncPressed = () => {
+				sortButtons.forEach((button) => {
+					button.setAttribute('aria-pressed', String((button.dataset.sortValue ?? 'date-desc') === state.sort));
+				});
+
+				seasonButtons.forEach((button) => {
+					button.setAttribute('aria-pressed', String((button.dataset.filterValue ?? 'all') === state.season));
+				});
+
+				rewatchButtons.forEach((button) => {
+					button.setAttribute('aria-pressed', String((button.dataset.filterValue ?? 'all') === state.rewatch));
+				});
+			};
 
 			const sortCards = () => {
 				const sorted = [...cards].sort((left, right) => {
@@ -88,12 +126,12 @@ const countTemplate = t(lang, 'showingCount', { visible: '{visible}', total: '{t
 					if (state.sort === 'rating-desc') return rightRating - leftRating || rightDate - leftDate;
 					if (state.sort === 'rating-asc') return leftRating - rightRating || rightDate - leftDate;
 					return rightDate - leftDate;
-			});
+				});
 
-			sorted.forEach((card) => wall.append(card));
-		};
+				sorted.forEach((card) => wall.append(card));
+			};
 
-		const applyFilters = () => {
+			const applyFilters = () => {
 			let visible = 0;
 
 			sortCards();
@@ -105,23 +143,25 @@ const countTemplate = t(lang, 'showingCount', { visible: '{visible}', total: '{t
 			});
 
 			if (count) {
-				count.textContent = countTemplate
-					.replace('{visible}', String(visible))
-					.replace('{total}', String(cards.length));
-			}
-		};
+					count.textContent = countTemplate
+						.replace('{visible}', String(visible))
+						.replace('{total}', String(cards.length));
+				}
 
-		root.addEventListener('click', (event) => {
+				syncPressed();
+				syncUrl();
+			};
+
+			root.addEventListener('click', (event) => {
 			const target = event.target;
 			if (!(target instanceof Element)) return;
 
-			const sortButton = target.closest('button[data-sort-value]');
-			if (sortButton) {
-				state.sort = sortButton.dataset.sortValue ?? 'date-desc';
-				sortButtons.forEach((item) => item.setAttribute('aria-pressed', String(item === sortButton)));
-				applyFilters();
-				return;
-			}
+				const sortButton = target.closest('button[data-sort-value]');
+				if (sortButton) {
+					state.sort = sortButton.dataset.sortValue ?? 'date-desc';
+					applyFilters();
+					return;
+				}
 
 			const button = target.closest('button[data-filter-value]');
 			const group = button?.closest('[data-filter-group]');
@@ -131,12 +171,11 @@ const countTemplate = t(lang, 'showingCount', { visible: '{visible}', total: '{t
 			const key = group.dataset.filterGroup;
 			const buttons = Array.from(group.querySelectorAll('button'));
 
-			if (!key || !(key in state)) return;
+				if (!key || !(key in state)) return;
 
-			state[key] = button.dataset.filterValue ?? 'all';
-			buttons.forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
-			applyFilters();
-		});
+				state[key] = button.dataset.filterValue ?? 'all';
+				applyFilters();
+			});
 
 		applyFilters();
 	})();

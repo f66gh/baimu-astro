@@ -10,12 +10,13 @@ interface Props {
 	title: string;
 	group: MusicGroup;
 	entries: LocalizedItem<'music'>[];
+	totalCount?: number;
 	href?: string;
 	linkLabel?: string;
 	lang?: Lang;
 }
 
-const { title, group, entries, href, linkLabel, lang = 'zh' } = Astro.props;
+const { title, group, entries, totalCount = entries.length, href, linkLabel, lang = 'zh' } = Astro.props;
 const variant = musicGroups[group].variant;
 const resolvedLinkLabel = linkLabel ?? t(lang, 'viewAll');
 ---
@@ -24,7 +25,7 @@ const resolvedLinkLabel = linkLabel ?? t(lang, 'viewAll');
 	<div class="shelf-head">
 		<div class="shelf-title">
 			<h3>{title}</h3>
-			<span>{t(lang, 'musicItemCount', { count: entries.length })}</span>
+			<span>{t(lang, 'musicTotalCount', { count: totalCount })}</span>
 		</div>
 		{href && <a class="shelf-link" href={href}>{resolvedLinkLabel}</a>}
 	</div>

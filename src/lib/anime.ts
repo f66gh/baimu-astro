@@ -12,20 +12,42 @@ export const animeListPageSize = 12;
 export function getAnimeSeason(date: Date, lang: Lang = 'zh'): AnimeSeason {
 	const year = date.getFullYear();
 
-	if (year < 2026) {
+	if (year >= 2026) {
 		return {
-			value: 'pre-2026',
-			label: lang === 'en' ? 'Before 2026' : '2026 之前',
-			sort: 0,
+			value: '2026',
+			label: '2026',
+			sort: 2026,
 		};
 	}
 
-	const quarter = Math.floor(date.getMonth() / 3) + 1;
+	if (year >= 2021) {
+		return {
+			value: '2025-2021',
+			label: lang === 'en' ? '2025-2021' : '2025-2021',
+			sort: 2025,
+		};
+	}
+
+	if (year >= 2016) {
+		return {
+			value: '2020-2016',
+			label: lang === 'en' ? '2020-2016' : '2020-2016',
+			sort: 2020,
+		};
+	}
+
+	if (year >= 2011) {
+		return {
+			value: '2015-2011',
+			label: lang === 'en' ? '2015-2011' : '2015-2011',
+			sort: 2015,
+		};
+	}
 
 	return {
-		value: `${year}-q${quarter}`,
-		label: `${year} Q${quarter}`,
-		sort: year * 10 + quarter,
+		value: 'pre-2011',
+		label: lang === 'en' ? '2010 & Earlier' : '2010及之前',
+		sort: 2010,
 	};
 }
 

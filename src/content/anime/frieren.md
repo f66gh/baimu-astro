@@ -9,7 +9,7 @@ originalType: "漫画改"
 episodes: 28
 tags: ["时间", "公路片"]
 moods: ["故事描写太强了"]
-cover: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=80"
+cover: "/images/anime/frieren/cover.jpg"
 ---
 
 我大四那会二战的时候，春天那会还没毕业，自己快看完了催着牢肖看。当时他已经保了科带直博，事情不多，我也不太忙，我就拉着牢肖中午和我一块在寝室边吃饭边看番。

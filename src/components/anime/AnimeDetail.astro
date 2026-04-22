@@ -14,8 +14,8 @@ interface Props {
 const { item, lang = 'zh' } = Astro.props;
 const { entry, isFallback } = item;
 const season = getAnimeSeason(entry.data.date, lang);
-const tags = entry.data.tags ?? [];
-const moods = entry.data.moods ?? [];
+const tags = (entry.data.tags ?? []).filter((tag) => tag.trim().length > 0);
+const moods = (entry.data.moods ?? []).filter((mood) => mood.trim().length > 0);
 ---
 
 <article class="anime-detail">
