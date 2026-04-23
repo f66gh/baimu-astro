@@ -6,7 +6,7 @@ section: "practice"
 group: "piano"
 formats: ["练习视频", "钢琴"]
 materials: ["车尔尼599", "No.32"]
-url: "https://www.https://bilibili.com/video/BV1r9SKB5Ec5/?spm_id_from=333.1387.collection.video_card.click"
+url: "https://bilibili.com/video/BV1r9SKB5Ec5/?spm_id_from=333.1387.collection.video_card.click"
 tags: ["钢琴", "车尔尼599", "练习记录", "基础练习"]
 cover: "/images/music/czerny-599-no-32/cover.jpg"
 ---

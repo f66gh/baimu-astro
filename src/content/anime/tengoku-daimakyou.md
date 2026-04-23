@@ -7,6 +7,11 @@ originalType: "漫画改"
 episodes: 13
 cover: "/images/anime/tengoku-daimakyou/cover.jpg"
 bangumi: "https://bangumi.tv/subject/404804"
-rating: 4
+rating: 5
 tags: ["末世", "战斗"]
+moods: ["和本科室友一起看的"]
+pinned: true
 ---
+
+回忆again
+![](/images/anime/tengoku-daimakyou/1.jpg)

@@ -37,6 +37,43 @@ export const aboutTags = [
 	{ zh: '抽象', en: 'Absurd' },
 ] as const;
 
+export const mainQuestItems: Record<Lang, { title: string; description: string; date: string }[]> = {
+	zh: [
+		{
+			title: 'OpenRCX',
+			description: '不想干活',
+			date: '2026.04',
+		},
+		{
+			title: '集创赛（华大九天）',
+			description: '不想打比赛',
+			date: '2026.04',
+		},
+		{
+			title: '异环',
+			description: '第一次玩二游，异环 启动！',
+			date: '2026.04',
+		},
+	],
+	en: [
+		{
+			title: 'OpenRCX',
+			description: 'Technically on the agenda. Emotionally not ready to work.',
+			date: '2026.04',
+		},
+		{
+			title: 'IC Innovation Contest',
+			description: 'Huada Empyrean track. Supposedly a competition, currently a test of my willpower.',
+			date: '2026.04',
+		},
+		{
+			title: 'Neverness to Everness',
+			description: 'My first anime-style gacha game. NTE, launch!',
+			date: '2026.04',
+		},
+	],
+};
+
 export const aboutParagraphs: Record<Lang, string[]> = {
 	zh: [
 		'我是计算机专业的在读研究生，主要研究 EDA 后端中的 STA 问题。喜欢音乐和日漫，支持我天天来工位的原因之一，是学琴和练琴的地方离我的工位很近，晚饭后通常会练一个半到两个小时的琴。',
@@ -44,6 +81,7 @@ export const aboutParagraphs: Record<Lang, string[]> = {
 		'我在看了 B 站 UP 主“尔东和小明”之后，又很喜欢《四月是你的谎言》的 OP《若能绽放光芒》，于是对小提琴产生了兴趣，并在 2025 年 10 月开始学小提琴。小提琴比钢琴难很多，到我写这个介绍的时候，学了半年还是拉得像锯木头一样。',
 		'我不爱运动，也不太善社交，非常喜欢家里蹲，算是标准宅男。只有天暖和的时候，才会偶尔出去跑步。学乐器除了从小对音乐感兴趣之外，也因为我总会幻想自己有朝一日能上台或者在路边把喜欢的曲子演奏出来，顺便装个大的。',
 		'毕竟，练琴和敲代码没有什么本质区别，都是动动手指的事。',
+		'奶奶滴，文字水平被大学同学吐槽像小学生文笔，还说我页面做的一股老登味，一点都不青春'
 	],
 	en: [
 		'I am a graduate student in computer science, mainly working on STA in backend EDA. I like music and anime, and one reason I show up at my desk every day is that the rooms for practicing instruments are very close to it. After dinner I usually practice for one and a half to two hours.',
@@ -51,5 +89,6 @@ export const aboutParagraphs: Record<Lang, string[]> = {
 		'After watching the Bilibili creator Erdong and Xiaoming, and after getting obsessed with Hikaru Nara, the opening of Your Lie in April, I became interested in the violin and started learning it in October 2025. The violin is much harder than the piano, and by April 2026 it still sounds like I am sawing wood.',
 		'I am not much into sports, not especially social, and honestly a full-on homebody. I only go out for running when the weather gets warm. Part of why I learn instruments is that I always imagine myself one day playing a piece I love on stage or on the street and absolutely showing off.',
 		'After all, practicing an instrument and writing code are not that different. In both cases, you are really just moving your fingers.',
+		'Damn it, my college classmate roasted my writing, saying it sounds like it was written by a kid, and that my page gives off serious old-man vibes with zero youthful energy.'
 	],
 };

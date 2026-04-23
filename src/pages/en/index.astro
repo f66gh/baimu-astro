@@ -4,7 +4,7 @@ import PageHeader from '../../components/PageHeader.astro';
 import { getLocalizedEntries } from '../../lib/content';
 import { localizePath, t } from '../../lib/i18n';
 import { getMusicTagHue } from '../../lib/music';
-import { aboutParagraphs, aboutTags, siteDescriptions, siteEyebrow, siteHomeTitles, siteIdentityLines } from '../../lib/site';
+import { aboutParagraphs, aboutTags, mainQuestItems, siteDescriptions, siteEyebrow, siteHomeTitles, siteIdentityLines } from '../../lib/site';
 
 const lang = 'en';
 const [anime, notes, music, academic] = await Promise.all([
@@ -126,6 +126,23 @@ const stats = [
 		<article class="panel publication-panel">
 			<h2>{t(lang, 'publications')}</h2>
 			<p>{t(lang, 'noPublications')}</p>
+		</article>
+
+		<article class="panel quest-panel">
+			<h2>{t(lang, 'mainQuest')}</h2>
+			<ul>
+				{
+					mainQuestItems[lang].map((item) => (
+						<li>
+							<div class="timeline-copy">
+								<strong>{item.title}</strong>
+								<small>{item.description}</small>
+							</div>
+							<span>{item.date}</span>
+						</li>
+					))
+				}
+			</ul>
 		</article>
 
 		<article class="panel timeline-panel">
@@ -294,13 +311,13 @@ const stats = [
 	}
 
 	.about-copy .quote {
-		color: var(--ink);
+		color: var(--teal);
 		font-weight: 800;
 	}
 
 	.dashboard-grid {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(300px, 0.9fr);
+		grid-template-columns: minmax(220px, 0.8fr) minmax(280px, 1fr) minmax(320px, 1.15fr);
 		gap: 16px;
 		margin-top: 16px;
 	}
@@ -309,16 +326,19 @@ const stats = [
 		padding: 18px;
 	}
 
+	.quest-panel ul,
 	.timeline-panel ul {
 		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
 
+	.quest-panel li + li,
 	.timeline-panel li + li {
 		border-top: 1px solid var(--line);
 	}
 
+	.quest-panel li,
 	.timeline-panel a {
 		display: flex;
 		align-items: center;
@@ -334,11 +354,18 @@ const stats = [
 		min-width: 0;
 	}
 
+	.timeline-copy small {
+		color: var(--muted);
+		font-size: 0.82rem;
+		line-height: 1.65;
+	}
+
 	.timeline-copy strong {
 		font-size: 0.95rem;
 		line-height: 1.55;
 	}
 
+	.quest-panel > ul span,
 	.timeline-panel > ul span:last-child {
 		flex: 0 0 auto;
 		color: var(--muted);
@@ -371,13 +398,15 @@ const stats = [
 		color: var(--gold);
 	}
 
+	@media (max-width: 1120px) {
+		.dashboard-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
 	@media (max-width: 960px) {
 		.stat-grid {
 			grid-template-columns: repeat(2, 1fr);
-		}
-
-		.dashboard-grid {
-			grid-template-columns: 1fr;
 		}
 
 		.about-head {
@@ -400,6 +429,7 @@ const stats = [
 			gap: 10px;
 		}
 
+		.quest-panel li,
 		.timeline-panel a {
 			align-items: flex-start;
 			flex-direction: column;

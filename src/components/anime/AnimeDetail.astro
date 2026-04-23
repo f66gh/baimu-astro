@@ -237,12 +237,23 @@ const moods = (entry.data.moods ?? []).filter((mood) => mood.trim().length > 0);
 			grid-template-columns: 1fr;
 		}
 
+		.facts {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			max-width: 100%;
+		}
+
 		.poster {
 			width: min(100%, 260px);
 		}
 
 		h1 {
 			font-size: 1.55rem;
+		}
+	}
+
+	@media (max-width: 420px) {
+		.facts {
+			grid-template-columns: 1fr;
 		}
 	}
 </style>
