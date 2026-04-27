@@ -5,8 +5,8 @@ import type { LocalizedItem } from '../../lib/content';
 import TagBadge from './TagBadge.astro';
 
 interface Props {
-	item: LocalizedItem<'academic'> | LocalizedItem<'notes'>;
-	collection: 'academic' | 'notes';
+	item: LocalizedItem<'academic'> | LocalizedItem<'notes'> | LocalizedItem<'logbook'>;
+	collection: 'academic' | 'notes' | 'logbook';
 	lang: Lang;
 }
 
@@ -14,15 +14,16 @@ const { item, collection, lang } = Astro.props;
 const { entry, baseId, isFallback } = item;
 const href = localizePath(`/${collection}/${baseId}/`, lang);
 const date = entry.data.date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN');
-const cardTags = entry.data.tags.slice(0, 2);
+const cover = 'cover' in entry.data ? entry.data.cover : undefined;
+const cardTags = 'tags' in entry.data ? entry.data.tags.slice(0, 2) : [];
 ---
 
 <article class="entry-card">
 	{entry.data.pinned && <span class="card-pinned">{t(lang, 'pinnedBadge')}</span>}
 	{
-		entry.data.cover && (
+		cover && (
 			<a class="cover" href={href} aria-label={entry.data.title}>
-				<img src={entry.data.cover} alt="" loading="lazy" />
+				<img src={cover} alt="" loading="lazy" />
 			</a>
 		)
 	}

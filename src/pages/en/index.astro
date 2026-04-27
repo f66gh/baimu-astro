@@ -7,19 +7,34 @@ import { getMusicTagHue } from '../../lib/music';
 import { aboutParagraphs, aboutTags, mainQuestItems, siteDescriptions, siteEyebrow, siteHomeTitles, siteIdentityLines } from '../../lib/site';
 
 const lang = 'en';
-const [anime, notes, music, academic] = await Promise.all([
+const [anime, notes, logbook, music, academic] = await Promise.all([
 	getLocalizedEntries('anime', lang),
 	getLocalizedEntries('notes', lang),
+	getLocalizedEntries('logbook', lang),
 	getLocalizedEntries('music', lang),
 	getLocalizedEntries('academic', lang),
 ]);
 
-const latest = [...academic, ...notes, ...anime, ...music]
+type HomeCollection = 'academic' | 'notes' | 'logbook' | 'anime' | 'music';
+
+function getCollectionTone(collection: HomeCollection) {
+	return collection === 'academic'
+		? 'coral'
+		: collection === 'notes'
+			? 'teal'
+			: collection === 'logbook'
+				? 'leaf'
+				: collection === 'anime'
+					? 'violet'
+					: 'gold';
+}
+
+const latest = [...academic, ...notes, ...logbook, ...anime, ...music]
 	.sort((a, b) => b.entry.data.date.valueOf() - a.entry.data.date.valueOf())
 	.slice(0, 3)
 	.map((item) => {
 		const { entry, baseId } = item;
-		const collection = entry.collection as 'academic' | 'notes' | 'anime' | 'music';
+		const collection = entry.collection as HomeCollection;
 		const isExternal = collection === 'music';
 
 		return {
@@ -36,7 +51,7 @@ function getPinnedPreview(items) {
 	if (!pinnedItem) return undefined;
 
 	const { entry, baseId } = pinnedItem;
-	const collection = entry.collection as 'academic' | 'notes' | 'anime' | 'music';
+	const collection = entry.collection as HomeCollection;
 	const href = collection === 'music' ? entry.data.url : localizePath(`/${collection}/${baseId}/`, lang);
 
 	return {
@@ -61,6 +76,14 @@ const stats = [
 		tone: 'teal',
 		description: t(lang, 'homeNotesDescription'),
 		pinned: getPinnedPreview(notes),
+	},
+	{
+		label: t(lang, 'logbook'),
+		value: logbook.length,
+		href: localizePath('/logbook/', lang),
+		tone: 'leaf',
+		description: t(lang, 'homeLogbookDescription'),
+		pinned: getPinnedPreview(logbook),
 	},
 	{
 		label: t(lang, 'anime'),
@@ -153,7 +176,7 @@ const stats = [
 						<li>
 							<a href={item.href} target={item.isExternal ? '_blank' : undefined} rel={item.isExternal ? 'noreferrer' : undefined}>
 								<div class="timeline-copy">
-									<span class:list={['timeline-badge', `tone-${item.collection === 'academic' ? 'coral' : item.collection === 'notes' ? 'teal' : item.collection === 'anime' ? 'violet' : 'gold'}`]}>
+									<span class:list={['timeline-badge', `tone-${getCollectionTone(item.collection)}`]}>
 										{item.label}
 									</span>
 									<strong>{item.entry.data.title}</strong>
@@ -179,7 +202,7 @@ const stats = [
 
 	.stat-grid {
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
+		grid-template-columns: repeat(5, minmax(0, 1fr));
 		gap: 16px;
 		margin: 16px 0;
 	}
@@ -250,6 +273,10 @@ const stats = [
 
 	.tone-gold::before {
 		background: var(--gold);
+	}
+
+	.tone-leaf::before {
+		background: var(--leaf);
 	}
 
 	.about-panel {
@@ -396,6 +423,10 @@ const stats = [
 
 	.timeline-badge.tone-gold {
 		color: var(--gold);
+	}
+
+	.timeline-badge.tone-leaf {
+		color: var(--leaf);
 	}
 
 	@media (max-width: 1120px) {

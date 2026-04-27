@@ -7,8 +7,8 @@ import Pagination from './Pagination.astro';
 import ViewModeLinks from './ViewModeLinks.astro';
 
 interface Props {
-	entries: LocalizedItem<'academic'>[] | LocalizedItem<'notes'>[];
-	collection: 'academic' | 'notes';
+	entries: LocalizedItem<'academic'>[] | LocalizedItem<'notes'>[] | LocalizedItem<'logbook'>[];
+	collection: 'academic' | 'notes' | 'logbook';
 	lang: Lang;
 	view: 'card' | 'list';
 	basePath: string;

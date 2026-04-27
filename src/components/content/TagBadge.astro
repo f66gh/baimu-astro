@@ -4,13 +4,13 @@ import { getTagMeta } from '../../lib/taxonomy';
 
 interface Props {
 	tag: string;
-	collection: 'academic' | 'notes' | 'anime';
+	collection: 'academic' | 'notes' | 'logbook' | 'anime';
 	lang: Lang;
 }
 
 const { tag, collection, lang } = Astro.props;
 const meta = getTagMeta(tag, collection, lang);
-const useSoftPill = collection === 'academic' || collection === 'notes';
+const useSoftPill = collection === 'academic' || collection === 'notes' || collection === 'logbook';
 ---
 
 <span class:list={['tag-badge', `tone-${meta.tone}`, useSoftPill && 'soft-pill']}>{meta.label}</span>

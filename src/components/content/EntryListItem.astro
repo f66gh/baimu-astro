@@ -5,8 +5,8 @@ import type { LocalizedItem } from '../../lib/content';
 import TagBadge from './TagBadge.astro';
 
 interface Props {
-	item: LocalizedItem<'academic'> | LocalizedItem<'notes'>;
-	collection: 'academic' | 'notes';
+	item: LocalizedItem<'academic'> | LocalizedItem<'notes'> | LocalizedItem<'logbook'>;
+	collection: 'academic' | 'notes' | 'logbook';
 	lang: Lang;
 }
 
@@ -14,6 +14,7 @@ const { item, collection, lang } = Astro.props;
 const { entry, baseId, isFallback } = item;
 const href = localizePath(`/${collection}/${baseId}/`, lang);
 const date = entry.data.date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN');
+const tags = 'tags' in entry.data ? entry.data.tags : [];
 ---
 
 <article class="entry-row">
@@ -26,9 +27,9 @@ const date = entry.data.date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN
 		</div>
 		<p>{entry.data.summary}</p>
 		{
-			entry.data.tags.length > 0 && (
+			tags.length > 0 && (
 				<div class="tags">
-					{entry.data.tags.map((tag: string) => <TagBadge tag={tag} collection={collection} lang={lang} />)}
+					{tags.map((tag: string) => <TagBadge tag={tag} collection={collection} lang={lang} />)}
 				</div>
 			)
 		}

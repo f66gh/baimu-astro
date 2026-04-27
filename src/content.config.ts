@@ -35,6 +35,16 @@ const notes = defineCollection({
 	}),
 });
 
+const logbook = defineCollection({
+	loader: glob({ pattern: '**/*.md', base: './src/content/logbook' }),
+	schema: z.object({
+		title: z.string(),
+		summary: z.string(),
+		date: z.coerce.date(),
+		pinned: z.boolean().default(false),
+	}),
+});
+
 const music = defineCollection({
 	loader: glob({ pattern: '**/*.md', base: './src/content/music' }),
 	schema: z.object({
@@ -54,4 +64,4 @@ const academic = defineCollection({
 	}),
 });
 
-export const collections = { anime, notes, music, academic };
+export const collections = { anime, notes, logbook, music, academic };

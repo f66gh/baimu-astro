@@ -1,0 +1,33 @@
+---
+import { render } from 'astro:content';
+import ArticlePage from '../../components/content/ArticlePage.astro';
+import Layout from '../../layouts/Layout.astro';
+import { getLocalizedEntries, type LocalizedItem } from '../../lib/content';
+import { t } from '../../lib/i18n';
+
+const lang = 'zh';
+
+export async function getStaticPaths() {
+	const items = await getLocalizedEntries('logbook', 'zh');
+	return items.map((item) => ({
+		params: { slug: item.baseId },
+		props: { item },
+	}));
+}
+
+const { item } = Astro.props as { item: LocalizedItem<'logbook'> };
+const { entry } = item;
+const { Content } = await render(entry);
+---
+
+<Layout title={t(lang, 'titleWithSection', { title: entry.data.title, section: t(lang, 'logbook') })}>
+	<ArticlePage
+		title={entry.data.title}
+		summary={entry.data.summary}
+		date={entry.data.date}
+		collection="logbook"
+		lang={lang}
+	>
+		<Content />
+	</ArticlePage>
+</Layout>

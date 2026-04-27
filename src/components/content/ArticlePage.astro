@@ -7,7 +7,7 @@ interface Props {
 	title: string;
 	summary: string;
 	date: Date;
-	collection: 'academic' | 'notes';
+	collection: 'academic' | 'notes' | 'logbook';
 	lang: Lang;
 	tags?: string[];
 	isFallback?: boolean;
@@ -24,7 +24,7 @@ const {
 	lang,
 	tags = [],
 	isFallback = false,
-	eyebrow = collection === 'academic' ? t(lang, 'academicEyebrow') : t(lang, 'notesEyebrow'),
+	eyebrow = collection === 'academic' ? t(lang, 'academicEyebrow') : collection === 'logbook' ? t(lang, 'logbookEyebrow') : t(lang, 'notesEyebrow'),
 	externalUrl,
 	externalLabel,
 } = Astro.props;

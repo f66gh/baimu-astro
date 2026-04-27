@@ -2,7 +2,7 @@ import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import type { Lang } from './i18n';
 
-export type ContentCollectionKey = 'academic' | 'notes' | 'anime' | 'music';
+export type ContentCollectionKey = 'academic' | 'notes' | 'logbook' | 'anime' | 'music';
 export type ContentEntry<C extends ContentCollectionKey = ContentCollectionKey> = CollectionEntry<C>;
 
 export interface LocalizedItem<C extends ContentCollectionKey = ContentCollectionKey> {

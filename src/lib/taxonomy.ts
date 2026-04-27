@@ -28,7 +28,7 @@ export function hashTone(value: string): Tone {
 	return tones[hash % tones.length];
 }
 
-export function getTagMeta(tag: string, collection: 'academic' | 'notes' | 'anime', lang: Lang) {
+export function getTagMeta(tag: string, collection: 'academic' | 'notes' | 'logbook' | 'anime', lang: Lang) {
 	if (collection === 'academic') {
 		const meta = academicTags[tag];
 
