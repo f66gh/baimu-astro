@@ -3,7 +3,9 @@ title: "晶体管的原理与制造"
 summary: "简单讲一下MOS管的原理，Mask Layer是什么，以及光刻机的工作原理"
 date: 2026-04-29
 tags: ["MOS", "光刻机"]
-cover: "/images/notes/astro-note/cover.png"
+cover: "/images/notes/transistor/cover.jpg"
+externalUrl: "https://www.jianguoyun.com/p/DZyCbncQ2fCkCxi2yqgGIAA"
+externalLabel: "下载PPT（坚果云）"
 ---
 ## 二极管
 
