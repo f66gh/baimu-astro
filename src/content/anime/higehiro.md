@@ -12,7 +12,6 @@ moods: ["静下心", "遗憾", "想补治愈番"]
 cover: "/images/anime/higehiro/cover.webp"
 bangumi: "https://bgm.tv/subject/297254"
 tieba: "https://tieba.baidu.com/p/10632491210?fr=personpage"
-pinned: true
 ---
 
 很久没静下心来看一部番了。

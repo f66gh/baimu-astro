@@ -11,7 +11,6 @@ rating: 5
 rewatchCount: 2
 tags: ["百合", "音乐"]
 moods: ["致郁"]
-pinned: true
 ---
 在霓虹没抢到啥好玩意，和刘神两人一人买了一本漫画。
 ![](/images/anime/chou-kaguya-hime/1.jpg)

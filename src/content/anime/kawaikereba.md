@@ -7,6 +7,7 @@ originalType: "轻小说改"
 episodes: 12
 cover: "/images/anime/kawaikereba/cover.jpg"
 bangumi: "https://bangumi.tv/subject/275371"
+tieba: "https://tieba.baidu.com/p/10676637816?fr=personpage"
 rating: 5
 tags: ["悬疑", "后宫"]
 moods: ["终于看到正常的兄妹关系了"]
