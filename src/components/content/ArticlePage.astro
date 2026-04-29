@@ -189,6 +189,18 @@ const externalButtonLabel = externalLabel?.trim() || t(lang, 'openExternal');
 		box-shadow: 0 2px 10px var(--shadow);
 	}
 
+	.article-prose :global(.note-interactive) {
+		display: block;
+		width: 100%;
+		height: min(78vh, 760px);
+		min-height: 560px;
+		margin: 24px 0;
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		background: var(--wash);
+		box-shadow: 0 2px 10px var(--shadow);
+	}
+
 	.article-prose :global(blockquote) {
 		margin: 22px 0;
 		padding: 12px 16px;
@@ -232,6 +244,11 @@ const externalButtonLabel = externalLabel?.trim() || t(lang, 'openExternal');
 
 		.article-prose {
 			padding-top: 20px;
+		}
+
+		.article-prose :global(.note-interactive) {
+			height: 720px;
+			min-height: 720px;
 		}
 	}
 

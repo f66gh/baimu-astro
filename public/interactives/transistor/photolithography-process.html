@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>芯片光刻与离子注入工艺演示</title>
+		<style>
+			:root {
+				color-scheme: light;
+				--surface: #ffffff;
+				--surface-container: #f5f7fb;
+				--surface-container-high: #e7ebf2;
+				--surface-container-highest: #cfd6e2;
+				--on-surface-default: #202327;
+				--on-surface-muted: #687282;
+				--outline: #d9dee8;
+				--primary: #2563eb;
+				--chart-1: #9cc7ff;
+				--chart-3: #ffd166;
+				--chart-4: #00a88f;
+				--chart-5: #ef476f;
+				--shadow: rgba(32, 35, 39, 0.1);
+				font-family:
+					Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+					"Microsoft YaHei", sans-serif;
+			}
+
+			@media (prefers-color-scheme: dark) {
+				:root {
+					color-scheme: dark;
+					--surface: #181b1f;
+					--surface-container: #101418;
+					--surface-container-high: #20252c;
+					--surface-container-highest: #333b47;
+					--on-surface-default: #e8eaed;
+					--on-surface-muted: #a8b0bb;
+					--outline: #2f3742;
+					--primary: #7aa7ff;
+					--chart-1: #5f91d2;
+					--chart-3: #d7a63a;
+					--chart-4: #28c6ad;
+					--chart-5: #ff7b9a;
+					--shadow: rgba(0, 0, 0, 0.28);
+				}
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			html,
+			body {
+				width: 100%;
+				height: 100%;
+				margin: 0;
+				overflow: hidden;
+				background: var(--surface-container);
+				color: var(--on-surface-default);
+			}
+
+			body {
+				display: flex;
+				flex-direction: column;
+			}
+
+			button,
+			input {
+				font: inherit;
+			}
+
+			.widget-header {
+				flex: 0 0 auto;
+				padding: 14px 16px 10px;
+				border-bottom: 1px solid var(--outline);
+				background: var(--surface);
+				box-shadow: 0 1px 8px var(--shadow);
+			}
+
+			.header-top {
+				display: flex;
+				align-items: flex-start;
+				justify-content: space-between;
+				gap: 14px;
+			}
+
+			.widget-title {
+				min-width: 160px;
+				margin: 0;
+				color: var(--on-surface-default);
+				font-size: 16px;
+				font-weight: 650;
+				line-height: 24px;
+				letter-spacing: 0;
+			}
+
+			.widget-dashboard {
+				display: grid;
+				grid-template-columns: minmax(130px, 0.72fr) minmax(220px, 1.28fr);
+				gap: 8px;
+				width: min(100%, 620px);
+			}
+
+			.dash-pill {
+				min-width: 0;
+				padding: 8px 10px;
+				border: 1px solid var(--outline);
+				border-radius: 8px;
+				background: var(--surface-container);
+			}
+
+			.dash-label {
+				display: block;
+				margin-bottom: 2px;
+				color: var(--on-surface-muted);
+				font-size: 11px;
+				font-weight: 750;
+				line-height: 16px;
+				letter-spacing: 1px;
+				text-transform: uppercase;
+			}
+
+			.dash-value {
+				display: block;
+				overflow: hidden;
+				color: var(--on-surface-default);
+				font-family:
+					"SF Mono", "Roboto Mono", "Cascadia Code", ui-monospace, Menlo, monospace;
+				font-size: 14px;
+				font-weight: 750;
+				line-height: 20px;
+				letter-spacing: 0;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.header-status {
+				margin-top: 8px;
+				color: var(--on-surface-muted);
+				font-size: 12px;
+				font-weight: 650;
+				line-height: 18px;
+				letter-spacing: 0;
+			}
+
+			.viz-container {
+				position: relative;
+				flex: 1 1 auto;
+				min-height: 0;
+				background:
+					radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 30%),
+					var(--surface-container);
+				overflow: hidden;
+			}
+
+			canvas {
+				position: absolute;
+				inset: 0;
+				width: 100%;
+				height: 100%;
+				outline: none;
+				touch-action: none;
+				cursor: pointer;
+			}
+
+			.control-grid {
+				display: grid;
+				grid-template-columns: minmax(0, 1fr) 128px;
+				gap: 10px;
+				flex: 0 0 auto;
+				width: 100%;
+				padding: 12px 16px 14px;
+				border-top: 1px solid var(--outline);
+				background: var(--surface);
+			}
+
+			.control-row {
+				display: grid;
+				grid-template-columns: 82px minmax(0, 1fr) 74px;
+				align-items: center;
+				gap: 10px;
+				min-width: 0;
+			}
+
+			.control-label {
+				overflow: hidden;
+				color: var(--on-surface-default);
+				font-size: 14px;
+				font-weight: 520;
+				line-height: 20px;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.slider-wrap {
+				display: flex;
+				min-width: 0;
+			}
+
+			.step-slider {
+				width: 100%;
+				accent-color: var(--primary);
+			}
+
+			.step-number {
+				width: 74px;
+				min-height: 36px;
+				padding: 0 8px;
+				border: 1px solid var(--outline);
+				border-radius: 8px;
+				background: var(--surface-container);
+				color: var(--on-surface-default);
+				font-family:
+					"SF Mono", "Roboto Mono", "Cascadia Code", ui-monospace, Menlo, monospace;
+				font-size: 14px;
+				font-weight: 750;
+				line-height: 20px;
+			}
+
+			.reset-button {
+				width: 100%;
+				min-height: 36px;
+				border: 1px solid var(--outline);
+				border-radius: 8px;
+				background: var(--surface-container-high);
+				color: var(--on-surface-default);
+				font-size: 14px;
+				font-weight: 750;
+				cursor: pointer;
+			}
+
+			.reset-button:hover {
+				border-color: color-mix(in srgb, var(--primary), var(--outline) 42%);
+				color: var(--primary);
+			}
+
+			@media (max-width: 720px) {
+				.header-top,
+				.widget-dashboard,
+				.control-grid,
+				.control-row {
+					grid-template-columns: 1fr;
+				}
+
+				.header-top {
+					display: grid;
+				}
+
+				.widget-dashboard {
+					width: 100%;
+				}
+
+				.control-grid {
+					gap: 12px;
+				}
+
+				.control-row {
+					gap: 7px;
+				}
+
+				.step-number {
+					width: 100%;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<header class="widget-header">
+			<div class="header-top">
+				<h1 class="widget-title">芯片光刻与离子注入工艺演示</h1>
+				<div id="widget-dashboard" class="widget-dashboard" aria-live="polite"></div>
+			</div>
+			<div id="app-status" class="header-status">点击画布或拖动滑块来切换工艺步骤</div>
+		</header>
+
+		<main id="viz" class="viz-container" aria-label="芯片光刻与离子注入工艺画布">
+			<canvas aria-hidden="true"></canvas>
+		</main>
+
+		<footer id="controls-root" class="control-grid">
+			<div class="control-row" data-key="step">
+				<label class="control-label" for="step-slider">当前步骤</label>
+				<div class="slider-wrap">
+					<input id="step-slider" class="step-slider" type="range" min="0" max="5" step="1" value="0" />
+				</div>
+				<input id="step-number" class="step-number" type="number" min="0" max="5" step="1" value="0" />
+			</div>
+			<button id="reset-button" class="reset-button" type="button">重置实验</button>
+		</footer>
+
+		<script>
+			const STEPS = [
+				{ title: "纯净硅衬底", desc: "准备单晶硅片作为基础层" },
+				{ title: "涂抹光刻胶", desc: "在表面平铺一层感光性聚合物 (Photoresist)" },
+				{ title: "掩膜与曝光", desc: "紫外线穿过掩膜版，改变特定区域光刻胶的性质" },
+				{ title: "显影", desc: "去除受光照区域的光刻胶，暴露出硅衬底" },
+				{ title: "离子注入", desc: "高能离子束进入暴露区域，改变硅的导电性" },
+				{ title: "去除光刻胶", desc: "完成掺杂，清除剩余的保护层" },
+			];
+
+			const state = {
+				step: 0,
+				ions: [],
+				dopedPoints: [],
+				exposureValue: 0,
+				showMask: false,
+			};
+
+			const dashboard = document.querySelector("#widget-dashboard");
+			const statusEl = document.querySelector("#app-status");
+			const viz = document.querySelector("#viz");
+			const canvas = document.querySelector("canvas");
+			const ctx = canvas.getContext("2d");
+			const stepSlider = document.querySelector("#step-slider");
+			const stepNumber = document.querySelector("#step-number");
+			const resetButton = document.querySelector("#reset-button");
+
+			const pointer = {
+				justPressed: false,
+			};
+
+			const ui = {
+				setHUD(items) {
+					dashboard.innerHTML = items
+						.map(
+							(item) => `
+								<div class="dash-pill">
+									<span class="dash-label">${escapeHTML(item.label)}</span>
+									<span class="dash-value">${escapeHTML(item.value)}</span>
+								</div>
+							`,
+						)
+						.join("");
+				},
+				setStatus(message) {
+					statusEl.textContent = message;
+				},
+			};
+
+			const WH = {
+				getColor(name) {
+					return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+				},
+				transparent(name, alpha) {
+					return toRGBA(WH.getColor(name), alpha);
+				},
+			};
+
+			function escapeHTML(value) {
+				return String(value)
+					.replaceAll("&", "&amp;")
+					.replaceAll("<", "&lt;")
+					.replaceAll(">", "&gt;")
+					.replaceAll('"', "&quot;")
+					.replaceAll("'", "&#39;");
+			}
+
+			function toRGBA(color, alpha) {
+				const value = color.trim();
+
+				if (value.startsWith("#")) {
+					const hex = value.slice(1);
+					const full = hex.length === 3
+						? hex.split("").map((char) => char + char).join("")
+						: hex;
+					const int = Number.parseInt(full, 16);
+					const r = (int >> 16) & 255;
+					const g = (int >> 8) & 255;
+					const b = int & 255;
+
+					return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+				}
+
+				if (value.startsWith("rgb(")) {
+					return value.replace("rgb(", "rgba(").replace(")", `, ${alpha})`);
+				}
+
+				return value;
+			}
+
+			function clampStep(value) {
+				return Math.max(0, Math.min(STEPS.length - 1, Number.parseInt(value, 10) || 0));
+			}
+
+			function syncControls() {
+				stepSlider.value = String(state.step);
+				stepNumber.value = String(state.step);
+			}
+
+			function setStep(value) {
+				state.step = clampStep(value);
+				syncControls();
+			}
+
+			function resetSim() {
+				state.step = 0;
+				state.ions = [];
+				state.dopedPoints = [];
+				state.exposureValue = 0;
+				state.showMask = false;
+				syncControls();
+				ui.setStatus("实验已重置");
+			}
+
+			function drawTag(text, x, y, colorName = "--on-surface-muted") {
+				const color = WH.getColor(colorName);
+				const paddingX = 8;
+				const paddingY = 5;
+
+				ctx.save();
+				ctx.font = "700 12px Inter, system-ui, sans-serif";
+				ctx.textBaseline = "middle";
+				const metrics = ctx.measureText(text);
+				const width = metrics.width + paddingX * 2;
+				const height = 24;
+				const left = Math.max(8, Math.min(canvas.width / devicePixelRatio - width - 8, x - width / 2));
+				const top = Math.max(8, Math.min(canvas.height / devicePixelRatio - height - 8, y - height / 2));
+
+				ctx.fillStyle = WH.transparent("--surface", 0.92);
+				roundRect(ctx, left, top, width, height, 8);
+				ctx.fill();
+				ctx.strokeStyle = WH.transparent("--outline", 0.92);
+				ctx.lineWidth = 1;
+				ctx.stroke();
+				ctx.fillStyle = color;
+				ctx.fillText(text, left + paddingX, top + height / 2);
+				ctx.restore();
+			}
+
+			function roundRect(renderCtx, x, y, width, height, radius) {
+				const r = Math.min(radius, width / 2, height / 2);
+				renderCtx.beginPath();
+				renderCtx.moveTo(x + r, y);
+				renderCtx.arcTo(x + width, y, x + width, y + height, r);
+				renderCtx.arcTo(x + width, y + height, x, y + height, r);
+				renderCtx.arcTo(x, y + height, x, y, r);
+				renderCtx.arcTo(x, y, x + width, y, r);
+				renderCtx.closePath();
+			}
+
+			function drawExposureIcon(cx, y) {
+				ctx.save();
+				ctx.strokeStyle = WH.getColor("--primary");
+				ctx.fillStyle = WH.getColor("--primary");
+				ctx.lineWidth = 2;
+				ctx.beginPath();
+				ctx.arc(cx, y, 9, 0, Math.PI * 2);
+				ctx.fill();
+
+				for (let i = 0; i < 8; i++) {
+					const angle = (Math.PI * 2 * i) / 8;
+					const inner = 16;
+					const outer = 25;
+					ctx.beginPath();
+					ctx.moveTo(cx + Math.cos(angle) * inner, y + Math.sin(angle) * inner);
+					ctx.lineTo(cx + Math.cos(angle) * outer, y + Math.sin(angle) * outer);
+					ctx.stroke();
+				}
+				ctx.restore();
+			}
+
+			function resizeCanvas() {
+				const rect = viz.getBoundingClientRect();
+				const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+				canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+				canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+				canvas.style.width = `${rect.width}px`;
+				canvas.style.height = `${rect.height}px`;
+				ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+			}
+
+			function updateLogic(width, height, dt) {
+				const cx = width / 2;
+				const cy = height / 2;
+				const waferW = width * 0.8;
+				const waferH = Math.max(58, height * 0.2);
+				const waferY = cy + waferH;
+				const prH = waferH * 0.25;
+				const holeW = waferW * 0.2;
+
+				state.showMask = state.step >= 2;
+
+				if (state.step === 2) {
+					state.exposureValue = Math.min(1, state.exposureValue + dt * 0.5);
+				} else if (state.step < 2) {
+					state.exposureValue = 0;
+				}
+
+				if (state.step === 4) {
+					if (Math.random() > 0.1) {
+						state.ions.push({
+							x: cx + (Math.random() - 0.5) * waferW,
+							y: -12,
+							vy: 400 + Math.random() * 200,
+							size: 2 + Math.random() * 3,
+						});
+					}
+
+					for (let i = state.ions.length - 1; i >= 0; i--) {
+						const p = state.ions[i];
+						p.y += p.vy * dt;
+						const isOverHole = Math.abs(p.x - cx) < holeW / 2;
+
+						if (p.y >= waferY) {
+							if (isOverHole) {
+								state.dopedPoints.push({
+									x: p.x,
+									y: waferY + Math.random() * Math.min(36, waferH * 0.42),
+								});
+							}
+							state.ions.splice(i, 1);
+						} else if (!isOverHole && p.y >= waferY - prH) {
+							state.ions.splice(i, 1);
+						}
+					}
+
+					if (state.dopedPoints.length > 220) {
+						state.dopedPoints.splice(0, state.dopedPoints.length - 220);
+					}
+				} else {
+					state.ions = [];
+				}
+			}
+
+			function draw(width, height) {
+				const cx = width / 2;
+				const cy = height / 2;
+				const waferW = width * 0.8;
+				const waferH = Math.max(58, height * 0.2);
+				const waferY = cy + waferH;
+				const prH = waferH * 0.25;
+				const maskY = cy - waferH * 0.5;
+				const holeW = waferW * 0.2;
+
+				ctx.clearRect(0, 0, width, height);
+
+				ctx.fillStyle = WH.transparent("--primary", 0.04);
+				for (let i = 0; i < 7; i++) {
+					ctx.beginPath();
+					ctx.arc(width * (0.12 + i * 0.14), height * 0.18, 2.5, 0, Math.PI * 2);
+					ctx.fill();
+				}
+
+				ctx.fillStyle = WH.getColor("--chart-1");
+				ctx.fillRect(cx - waferW / 2, waferY, waferW, waferH * 2);
+				ctx.strokeStyle = WH.getColor("--outline");
+				ctx.lineWidth = 2;
+				ctx.strokeRect(cx - waferW / 2, waferY, waferW, waferH * 2);
+				drawTag("硅衬底 (Si)", cx - waferW / 2 + 62, waferY + waferH * 0.5);
+
+				if (state.dopedPoints.length > 0) {
+					ctx.fillStyle = WH.getColor("--chart-4");
+					state.dopedPoints.forEach((p) => {
+						ctx.beginPath();
+						ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+						ctx.fill();
+					});
+					drawTag("掺杂区 (N/P Doped)", cx, waferY + 42, "--chart-4");
+				}
+
+				if (state.step >= 1 && state.step < 5) {
+					const prY = waferY - prH;
+					ctx.fillStyle = WH.getColor("--chart-3");
+
+					if (state.step < 3) {
+						ctx.fillRect(cx - waferW / 2, prY, waferW, prH);
+
+						if (state.step === 2) {
+							ctx.fillStyle = WH.transparent("--primary", state.exposureValue * 0.6);
+							ctx.fillRect(cx - holeW / 2, prY, holeW, prH);
+						}
+					} else {
+						const sideW = (waferW - holeW) / 2;
+						ctx.fillRect(cx - waferW / 2, prY, sideW, prH);
+						ctx.fillRect(cx + holeW / 2, prY, sideW, prH);
+					}
+
+					drawTag("光刻胶 (PR)", cx + waferW / 2 - 64, prY - 12, "--chart-3");
+				}
+
+				if (state.showMask) {
+					ctx.fillStyle = WH.transparent("--surface-container-highest", 0.9);
+					const sideW = (waferW - holeW) / 2;
+					ctx.fillRect(cx - waferW / 2, maskY, sideW, 15);
+					ctx.fillRect(cx + holeW / 2, maskY, sideW, 15);
+					drawTag("光掩膜 (Mask)", cx - waferW / 2 + 64, maskY - 22);
+
+					if (state.step === 2) {
+						const gradient = ctx.createLinearGradient(0, maskY, 0, waferY);
+						gradient.addColorStop(0, WH.transparent("--primary", 0.5));
+						gradient.addColorStop(1, WH.transparent("--primary", 0));
+						ctx.fillStyle = gradient;
+						ctx.fillRect(cx - holeW / 2, maskY + 15, holeW, waferY - maskY - 15);
+						drawExposureIcon(cx, maskY - 42);
+					}
+				}
+
+				if (state.step === 4) {
+					ctx.fillStyle = WH.getColor("--chart-5");
+					state.ions.forEach((p) => {
+						ctx.beginPath();
+						ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+						ctx.fill();
+					});
+					drawTag("高能离子束", cx, 40, "--chart-5");
+				}
+
+				ctx.save();
+				ctx.textAlign = "left";
+				ctx.fillStyle = WH.getColor("--on-surface-default");
+				ctx.font = "800 18px Inter, system-ui, sans-serif";
+				ctx.fillText(`步骤 ${state.step + 1}/6`, 30, height - 38);
+				ctx.restore();
+			}
+
+			let lastTime = performance.now();
+			function frame(time) {
+				const width = canvas.clientWidth;
+				const height = canvas.clientHeight;
+				const dt = Math.min(0.05, Math.max(0, (time - lastTime) / 1000));
+				lastTime = time;
+
+				updateLogic(width, height, dt);
+				draw(width, height);
+
+				ui.setHUD([
+					{ label: "当前工序", value: STEPS[state.step].title },
+					{ label: "状态", value: STEPS[state.step].desc },
+				]);
+
+				if (pointer.justPressed) {
+					if (state.step < STEPS.length - 1) {
+						setStep(state.step + 1);
+					} else {
+						resetSim();
+					}
+					pointer.justPressed = false;
+				}
+
+				requestAnimationFrame(frame);
+			}
+
+			stepSlider.addEventListener("input", (event) => setStep(event.target.value));
+			stepNumber.addEventListener("input", (event) => setStep(event.target.value));
+			resetButton.addEventListener("click", resetSim);
+			viz.addEventListener("pointerdown", () => {
+				pointer.justPressed = true;
+			});
+
+			new ResizeObserver(resizeCanvas).observe(viz);
+			resizeCanvas();
+			syncControls();
+			ui.setStatus("点击画布或拖动滑块来切换工艺步骤");
+			requestAnimationFrame(frame);
+		</script>
+	</body>
+</html>
