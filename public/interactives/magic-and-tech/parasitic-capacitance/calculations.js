@@ -1,18 +1,19 @@
 export const CONSTANTS = {
-    EPS0_AF_PER_UM: 8.854,
-    K_SUB_M2: 3.9,
-    K_M1_M2: 3.9,
-    CPERIM_SUB: 16,
-    CPERIM_M1: 22,
-    CCOUP0: 78,
-    SIDEWALL_OFFSET: 0.12,
-    ALPHA0: 0.012,
-    T_M1: 0.2,
-    T_M2: 0.3,
+    SIDEHALO: 8,
+    FRINGE_MULT: 0.02,
+    C_AREA_M2_SUB: 17.5,
+    C_OVERLAP_M2_M1: 133.86,
+    C_PERIM_M2_SUB: 37.76,
+    C_SIDEOVERLAP_M2_TO_M1: 67.05,
+    C_SIDEWALL_M2: 50,
+    SIDEWALL_OFFSET: 0.3,
+    T_M1: 0.22,
+    T_M2: 0.32,
+    VISUAL_D_SUB_M1: 1.25,
+    VISUAL_D_M1_M2: 1.65,
     NEIGHBOR_WIDTH: 1.0
 };
 
-const EDGE_SAMPLES = 9;
 const EPSILON = 0.0001;
 
 function rectFromCenter(cx, cy, width, length) {
@@ -38,17 +39,17 @@ function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
 }
 
-function careaDensity(distance, dielectricK) {
-    return CONSTANTS.EPS0_AF_PER_UM * dielectricK / Math.max(distance, EPSILON);
+function multFromOverlapCap(capValue) {
+    return capValue * CONSTANTS.FRINGE_MULT;
 }
 
-function alphaFromCarea(carea) {
-    return CONSTANTS.ALPHA0 * carea;
-}
-
-function fringeFraction(distance, alpha) {
+function fringeFraction(distance, mult) {
     const x = Math.max(0, distance);
-    return clamp((2 / Math.PI) * Math.atan(alpha * x), 0, 1);
+    return clamp((2 / Math.PI) * Math.atan(mult * x), 0, 1);
+}
+
+function fringeWindowFraction(near, far, mult) {
+    return Math.max(0, fringeFraction(far, mult) - fringeFraction(near, mult));
 }
 
 function outwardIntervalToRect(edge, rect) {
@@ -113,22 +114,7 @@ function nearestRightNeighborDistance(edgeY, neighbors, halo) {
     return nearest;
 }
 
-function sampleEdgeSubFringe(edge, state, neighbors, alphaSub) {
-    let weightedFractionSum = 0;
-    for (let i = 0; i < EDGE_SAMPLES; i += 1) {
-        const t = EDGE_SAMPLES === 1 ? 0.5 : i / (EDGE_SAMPLES - 1);
-        let lateralLimit = state.halo;
-        if (edge.side === 'right') {
-            const y = -state.L_A / 2 + t * state.L_A;
-            const nearest = nearestRightNeighborDistance(y, neighbors, state.halo);
-            if (nearest) lateralLimit = nearest.sep;
-        }
-        weightedFractionSum += fringeFraction(lateralLimit, alphaSub);
-    }
-    return weightedFractionSum / EDGE_SAMPLES;
-}
-
-function computeM1FringeForEdge(edge, m1Rect, state, alphaM1) {
+function computeM2ToM1FringeForEdge(edge, m1Rect, state, multM1, multSub) {
     const outwardInterval = outwardIntervalToRect(edge, m1Rect);
     if (!outwardInterval || outwardInterval.near > state.halo) {
         return null;
@@ -145,8 +131,10 @@ function computeM1FringeForEdge(edge, m1Rect, state, alphaM1) {
         return null;
     }
 
-    const captureFraction = Math.max(0, fringeFraction(far, alphaM1) - fringeFraction(near, alphaM1));
-    const capacitance = CONSTANTS.CPERIM_M1 * interval.length * captureFraction;
+    const couplingFraction = fringeWindowFraction(near, far, multM1);
+    const substrateFraction = fringeWindowFraction(near, far, multSub);
+    const capacitance = CONSTANTS.C_SIDEOVERLAP_M2_TO_M1 * interval.length * couplingFraction;
+    const substrateRemoval = CONSTANTS.C_PERIM_M2_SUB * interval.length * substrateFraction;
 
     return {
         edge: edge.side,
@@ -156,8 +144,10 @@ function computeM1FringeForEdge(edge, m1Rect, state, alphaM1) {
         start: interval.start,
         end: interval.end,
         length: interval.length,
-        fraction: captureFraction,
-        capacitance
+        fraction: couplingFraction,
+        substrateFraction,
+        capacitance,
+        substrateRemoval
     };
 }
 
@@ -181,7 +171,7 @@ function buildSidewallSegments(state, neighbors) {
         const nearest = nearestRightNeighborDistance(segY, neighbors, state.halo);
         if (!nearest) continue;
 
-        const cSw = (CONSTANTS.CCOUP0 / (nearest.sep + CONSTANTS.SIDEWALL_OFFSET)) * segLength;
+        const cSw = (CONSTANTS.C_SIDEWALL_M2 / (nearest.sep + CONSTANTS.SIDEWALL_OFFSET)) * segLength;
         segments.push({
             index: segments.length + 1,
             neighborId: nearest.id,
@@ -199,15 +189,12 @@ function buildSidewallSegments(state, neighbors) {
 export function calculateCapacitance(state) {
     const targetRect = rectFromCenter(0, 0, state.W_A, state.L_A);
     const m1Rect = rectFromCenter(state.x_M1, state.y_M1, state.W_M1, state.L_M1);
-    const dSubM2 = state.d_sub_m1 + state.d_m1_m2;
     const areaTarget = state.L_A * state.W_A;
+    const perimeterTarget = 2 * (state.L_A + state.W_A);
     const areaOverlapM1 = state.show_M1 ? overlapArea(targetRect, m1Rect) : 0;
     const areaUnshielded = Math.max(areaTarget - areaOverlapM1, 0);
-
-    const careaSub = careaDensity(dSubM2, CONSTANTS.K_SUB_M2);
-    const careaM1 = careaDensity(state.d_m1_m2, CONSTANTS.K_M1_M2);
-    const alphaSub = alphaFromCarea(careaSub);
-    const alphaM1 = alphaFromCarea(careaM1);
+    const multM2Sub = multFromOverlapCap(CONSTANTS.C_AREA_M2_SUB);
+    const multM2M1 = multFromOverlapCap(CONSTANTS.C_OVERLAP_M2_M1);
 
     const neighbors = [
         { id: 'B1', show: state.show_B1, sep: state.sep_B1, y: state.y_B1, length: state.L_B1 },
@@ -215,8 +202,10 @@ export function calculateCapacitance(state) {
     ];
 
     const results = {
-        C_area_sub: careaSub * areaUnshielded,
-        C_area_m1: careaM1 * areaOverlapM1,
+        C_area_sub: CONSTANTS.C_AREA_M2_SUB * areaUnshielded,
+        C_area_m1: CONSTANTS.C_OVERLAP_M2_M1 * areaOverlapM1,
+        C_fringe_sub_base: CONSTANTS.C_PERIM_M2_SUB * perimeterTarget,
+        C_fringe_sub_removed: 0,
         C_fringe_sub: 0,
         C_fringe_m1: 0,
         C_sidewall_total: 0,
@@ -224,46 +213,38 @@ export function calculateCapacitance(state) {
         A_overlap_M1: areaOverlapM1,
         A_unshielded: areaUnshielded,
         A_target: areaTarget,
-        Carea_sub_density: careaSub,
-        Carea_m1_density: careaM1,
-        alpha_sub: alphaSub,
-        alpha_m1: alphaM1,
-        d_sub_m2: dSubM2,
+        P_target: perimeterTarget,
+        Carea_sub_density: CONSTANTS.C_AREA_M2_SUB,
+        Carea_m1_density: CONSTANTS.C_OVERLAP_M2_M1,
+        mult_sub: multM2Sub,
+        mult_m1: multM2M1,
+        halo: state.halo,
         m1_fringe_edges: [],
         sub_fringe_edges: [],
         sidewall_segments: []
     };
 
     const targetEdges = makeTargetEdges(targetRect);
-    let m1CaptureLength = 0;
 
     for (const edge of targetEdges) {
-        const subFraction = sampleEdgeSubFringe(edge, state, neighbors, alphaSub);
-        const subCap = CONSTANTS.CPERIM_SUB * edge.length * subFraction;
-
         results.sub_fringe_edges.push({
             edge: edge.side,
             length: edge.length,
-            fraction: subFraction,
-            capacitance: subCap
+            fraction: 1,
+            capacitance: CONSTANTS.C_PERIM_M2_SUB * edge.length
         });
-        results.C_fringe_sub += subCap;
 
         if (state.show_M1) {
-            const m1Fringe = computeM1FringeForEdge(edge, m1Rect, state, alphaM1);
+            const m1Fringe = computeM2ToM1FringeForEdge(edge, m1Rect, state, multM2M1, multM2Sub);
             if (m1Fringe) {
                 results.m1_fringe_edges.push(m1Fringe);
                 results.C_fringe_m1 += m1Fringe.capacitance;
-                m1CaptureLength += m1Fringe.length * m1Fringe.fraction;
+                results.C_fringe_sub_removed += m1Fringe.substrateRemoval;
             }
         }
     }
 
-    // A nearby metal1 tile captures part of the edge fringe that would otherwise
-    // continue toward substrate. This is a teaching approximation, not a field solve.
-    const substrateCaptureReduction = CONSTANTS.CPERIM_SUB * m1CaptureLength * 0.55;
-    results.C_fringe_sub = Math.max(0, results.C_fringe_sub - substrateCaptureReduction);
-
+    results.C_fringe_sub = Math.max(0, results.C_fringe_sub_base - results.C_fringe_sub_removed);
     results.sidewall_segments = buildSidewallSegments(state, neighbors);
     results.C_sidewall_total = results.sidewall_segments.reduce((sum, seg) => sum + seg.c_sw, 0);
     results.C_total =

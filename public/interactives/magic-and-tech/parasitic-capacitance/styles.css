@@ -169,6 +169,11 @@ button:hover {
     font-family: monospace;
 }
 
+.result-row.muted {
+    color: #777;
+    font-size: 12px;
+}
+
 .result-row.total {
     margin-top: 8px;
     padding-top: 8px;

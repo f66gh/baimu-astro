@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magic Parasitic Capacitance Extraction</title>
+    <title>Magic 寄生电容抽取演示</title>
     <link rel="stylesheet" href="./parasitic-capacitance/styles.css">
     
     <!-- Import maps polyfill -->
@@ -23,34 +23,36 @@
         <!-- 3D Viewport -->
         <div id="viewport-container">
             <div id="view-controls">
-                <button id="btn-top-view">Top View</button>
-                <button id="btn-cross-view">Cross-section</button>
-                <button id="btn-3d-view">3D View</button>
-                <button id="btn-reset-view">Reset Camera</button>
+                <button id="btn-top-view">俯视</button>
+                <button id="btn-cross-view">剖面</button>
+                <button id="btn-3d-view">3D</button>
+                <button id="btn-reset-view">重置视角</button>
             </div>
             <div id="labels-container"></div>
         </div>
 
         <!-- Controls & Results Panel -->
         <div id="ui-container">
-            <h2 class="panel-title">Capacitance Extraction</h2>
+            <h2 class="panel-title">Magic 电容抽取演示</h2>
             
             <div id="results-panel">
-                <h3>Real-time Calculation</h3>
+                <h3>实时计算</h3>
                 <div class="result-row"><span>C<sub>area_sub</sub></span> <span id="val-c-area-sub">0.00</span></div>
                 <div class="result-row"><span>C<sub>area_m1</sub></span> <span id="val-c-area-m1">0.00</span></div>
+                <div class="result-row muted"><span>C<sub>fringe_sub_base</sub></span> <span id="val-c-fringe-sub-base">0.00</span></div>
+                <div class="result-row muted"><span>removed by M1</span> <span id="val-c-fringe-sub-removed">0.00</span></div>
                 <div class="result-row"><span>C<sub>fringe_sub</sub></span> <span id="val-c-fringe-sub">0.00</span></div>
                 <div class="result-row"><span>C<sub>fringe_m1</sub></span> <span id="val-c-fringe-m1">0.00</span></div>
                 <div class="result-row"><span>C<sub>sidewall_total</sub></span> <span id="val-c-sidewall-total">0.00</span></div>
                 <div class="result-row total"><span>C<sub>total</sub></span> <span id="val-c-total">0.00</span></div>
                 
                 <div class="sidewall-segments-container">
-                    <h4>Sidewall Segments (Right Edge)</h4>
+                    <h4>同层侧壁分段（右侧边）</h4>
                     <table id="sidewall-table">
                         <thead>
                             <tr>
                                 <th>Seg</th>
-                                <th>Neighbor</th>
+                                <th>邻居</th>
                                 <th>L<sub>overlap</sub></th>
                                 <th>Sep</th>
                                 <th>C<sub>sw</sub></th>
@@ -65,7 +67,21 @@
 
             <div id="controls-panel">
                 <details open>
-                    <summary>Geometry</summary>
+                    <summary>固定 tech 参数</summary>
+                    <div class="formula-panel compact">
+                        <p><strong>sky130A.tech nominal</strong></p>
+                        <p>sidehalo = <span id="formula-halo"></span> µm, FRINGE_MULT = <span id="formula-fringe-mult"></span></p>
+                        <p>C<sub>area_m2_sub</sub> = <span id="formula-carea-sub"></span> aF/µm²</p>
+                        <p>C<sub>overlap_m2_m1</sub> = <span id="formula-coverlap-m1"></span> aF/µm²</p>
+                        <p>C<sub>perim_m2_sub</sub> = <span id="formula-cperim-sub"></span> aF/µm</p>
+                        <p>C<sub>sideoverlap_m2_m1</sub> = <span id="formula-csideoverlap-m1"></span> aF/µm</p>
+                        <p>C<sub>sidewall_m2</sub> = <span id="formula-csidewall"></span>, offset = <span id="formula-offset"></span> µm</p>
+                        <p>visual d<sub>sub_m1</sub> = <span id="formula-visual-d-sub-m1"></span> µm, visual d<sub>m1_m2</sub> = <span id="formula-visual-d-m1-m2"></span> µm</p>
+                    </div>
+                </details>
+
+                <details open>
+                    <summary>几何</summary>
                     <div class="control-group">
                         <label>Target L<sub>A</sub> (<span id="disp-L_A"></span> µm)</label>
                         <input type="range" id="inp-L_A" min="1" max="10" step="0.1" value="4">
@@ -93,35 +109,15 @@
                 </details>
 
                 <details open>
-                    <summary>Layer Distances</summary>
-                    <div class="control-group">
-                        <label>d<sub>sub_m1</sub> (<span id="disp-d_sub_m1"></span> µm)</label>
-                        <input type="range" id="inp-d_sub_m1" min="0.2" max="2" step="0.1" value="0.5">
-                    </div>
-                    <div class="control-group">
-                        <label>d<sub>m1_m2</sub> (<span id="disp-d_m1_m2"></span> µm)</label>
-                        <input type="range" id="inp-d_m1_m2" min="0.2" max="2" step="0.1" value="0.5">
-                    </div>
-                </details>
-
-                <details open>
-                    <summary>Halo</summary>
-                    <div class="control-group">
-                        <label>halo (<span id="disp-halo"></span> µm)</label>
-                        <input type="range" id="inp-halo" min="0.5" max="5" step="0.1" value="2.0">
-                    </div>
-                </details>
-
-                <details open>
-                    <summary>Neighbor Tiles (Right Side)</summary>
+                    <summary>同层邻居（右侧）</summary>
                     <div class="control-section">
-                        <div class="checkbox-row"><input type="checkbox" id="show-B1" checked> <strong>Neighbor B1</strong></div>
+                        <div class="checkbox-row"><input type="checkbox" id="show-B1" checked> <strong>邻居 B1</strong></div>
                         <div class="control-group">
                             <label>sep<sub>B1</sub> (<span id="disp-sep_B1"></span> µm)</label>
                             <input type="range" id="inp-sep_B1" min="0.1" max="4" step="0.1" value="0.5">
                         </div>
                         <div class="control-group">
-                            <label>Y Center (<span id="disp-y_B1"></span> µm)</label>
+                            <label>Y center (<span id="disp-y_B1"></span> µm)</label>
                             <input type="range" id="inp-y_B1" min="-5" max="5" step="0.1" value="2.0">
                         </div>
                         <div class="control-group">
@@ -130,13 +126,13 @@
                         </div>
                     </div>
                     <div class="control-section">
-                        <div class="checkbox-row"><input type="checkbox" id="show-B2" checked> <strong>Neighbor B2</strong></div>
+                        <div class="checkbox-row"><input type="checkbox" id="show-B2" checked> <strong>邻居 B2</strong></div>
                         <div class="control-group">
                             <label>sep<sub>B2</sub> (<span id="disp-sep_B2"></span> µm)</label>
                             <input type="range" id="inp-sep_B2" min="0.1" max="4" step="0.1" value="0.8">
                         </div>
                         <div class="control-group">
-                            <label>Y Center (<span id="disp-y_B2"></span> µm)</label>
+                            <label>Y center (<span id="disp-y_B2"></span> µm)</label>
                             <input type="range" id="inp-y_B2" min="-5" max="5" step="0.1" value="-0.5">
                         </div>
                         <div class="control-group">
@@ -147,45 +143,33 @@
                 </details>
 
                 <details>
-                    <summary>Visibility</summary>
-                    <div class="checkbox-row"><input type="checkbox" id="show-M1" checked> Show Metal 1 Tile</div>
-                    <div class="checkbox-row"><input type="checkbox" id="show-area-lines" checked> Area Capacitance Lines</div>
-                    <div class="checkbox-row"><input type="checkbox" id="show-fringe-lines" checked> Fringe Capacitance Lines</div>
-                    <div class="checkbox-row"><input type="checkbox" id="show-sidewall-lines" checked> Sidewall Coupling Lines</div>
-                    <div class="checkbox-row"><input type="checkbox" id="show-halo" checked> Halo</div>
+                    <summary>显示</summary>
+                    <div class="checkbox-row"><input type="checkbox" id="show-M1" checked> 显示 M1 tile</div>
+                    <div class="checkbox-row"><input type="checkbox" id="show-area-lines" checked> 面积电容线</div>
+                    <div class="checkbox-row"><input type="checkbox" id="show-fringe-lines" checked> 绕射电容线</div>
+                    <div class="checkbox-row"><input type="checkbox" id="show-sidewall-lines" checked> 侧壁耦合线</div>
+                    <div class="checkbox-row"><input type="checkbox" id="show-halo" checked> halo 范围</div>
                 </details>
 
                 <details open>
-                    <summary>Formulas</summary>
+                    <summary>公式</summary>
                     <div class="formula-panel">
-                        <p><strong>Fixed demo constants</strong></p>
-                        <p>ε<sub>0</sub> = <span id="formula-eps0"></span> aF/µm, K<sub>sub</sub> = <span id="formula-k-sub"></span>, K<sub>m1</sub> = <span id="formula-k-m1"></span></p>
-                        <p>C<sub>perim_sub</sub> = <span id="formula-cperim-sub"></span> aF/µm, C<sub>perim_m1</sub> = <span id="formula-cperim-m1"></span> aF/µm</p>
-                        <p>C<sub>coup0</sub> = <span id="formula-ccoup0"></span> aF, offset = <span id="formula-offset"></span> µm</p>
-                        <p>α<sub>0</sub> = <span id="formula-alpha0"></span>, t<sub>m2</sub> = <span id="formula-t-m2"></span> µm</p>
-                        <p><strong>Distance model</strong></p>
-                        <p>C<sub>area</sub>(d) = ε<sub>0</sub>K / d</p>
-                        <p>α(d) = α<sub>0</sub> · C<sub>area</sub>(d)</p>
-                        <p>frac(x, d) = (2 / π) atan(α(d) · x)</p>
-                        <p><strong>Current values</strong></p>
-                        <p>d<sub>sub_m2</sub> = <span id="formula-d-sub-m2"></span> µm</p>
-                        <p>C<sub>area_sub</sub>(d) = <span id="formula-carea-sub"></span> aF/µm², α<sub>sub</sub> = <span id="formula-alpha-sub"></span></p>
-                        <p>C<sub>area_m1</sub>(d) = <span id="formula-carea-m1"></span> aF/µm², α<sub>m1</sub> = <span id="formula-alpha-m1"></span></p>
+                        <p><strong>当前几何量</strong></p>
                         <p>A<sub>overlap_M1</sub> = <span id="formula-overlap"></span> µm², A<sub>unshielded</sub> = <span id="formula-unshielded"></span> µm²</p>
-                        <p>C<sub>area_m1</sub> = C<sub>area</sub>(d<sub>m1_m2</sub>) · A<sub>overlap_M1</sub></p>
-                        <p>C<sub>area_sub</sub> = C<sub>area</sub>(d<sub>sub_m2</sub>) · A<sub>unshielded</sub></p>
-                        <p>C<sub>fringe_m1</sub> = Σ C<sub>perim_m1</sub> · L<sub>edge</sub> · [frac(x<sub>far</sub>) - frac(x<sub>near</sub>)]</p>
-                        <p>C<sub>fringe_sub</sub> = Σ C<sub>perim_sub</sub> · L<sub>edge</sub> · frac(x<sub>limit</sub>) - M1 capture reduction</p>
-                        <p>C<sub>sidewall_i</sub> = [C<sub>coup0</sub> / (sep<sub>i</sub> + offset)] · L<sub>overlap_i</sub></p>
+                        <p>P<sub>M2_A</sub> = <span id="formula-perimeter"></span> µm, mult<sub>sub</sub> = <span id="formula-mult-sub"></span>, mult<sub>m1</sub> = <span id="formula-mult-m1"></span></p>
+                        <p><strong>Magic-like 计算</strong></p>
+                        <p>C<sub>area_m1</sub> = C<sub>overlap_m2_m1</sub> · A<sub>overlap_M1</sub></p>
+                        <p>C<sub>area_sub</sub> = C<sub>area_m2_sub</sub> · A<sub>unshielded</sub></p>
+                        <p>frac = (2 / π) · [atan(mult · d<sub>far</sub>) - atan(mult · d<sub>near</sub>)]</p>
+                        <p>C<sub>fringe_m1</sub> = Σ C<sub>sideoverlap_m2_m1</sub> · L · frac<sub>m1</sub></p>
+                        <p>C<sub>fringe_sub</sub> = C<sub>perim_m2_sub</sub> · P<sub>M2_A</sub> - removed<sub>M1</sub></p>
+                        <p>C<sub>sidewall_i</sub> = [C<sub>sidewall_m2</sub> / (sep<sub>i</sub> + offset)] · L<sub>overlap_i</sub></p>
                         <p>C<sub>total</sub> = C<sub>area_sub</sub> + C<sub>area_m1</sub> + C<sub>fringe_sub</sub> + C<sub>fringe_m1</sub> + C<sub>sidewall_total</sub></p>
                     </div>
                 </details>
                 
                 <div class="explanation">
-                    <p><strong>Explanation:</strong></p>
-                    <p>• <strong>Area:</strong> Carea comes from εK/d, so changing layer distance changes the area capacitance density.</p>
-                    <p>• <strong>Fringe:</strong> Magic's atan model uses α proportional to Carea, so smaller d makes fringe field concentrate faster.</p>
-                    <p>• <strong>Sidewall:</strong> Target right edge is split into segments. Each segment couples to the nearest opposing edge within the shared halo.</p>
+                    <p>M1 同时演示 M2->M1 面积电容、M2 edge->M1 绕射电容，以及 M1 对 M2->substrate 电容的屏蔽。B1/B2 只演示同层侧壁耦合。</p>
                 </div>
             </div>
         </div>

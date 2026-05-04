@@ -48,12 +48,10 @@ function updateStateFromUI() {
         x_M1: parseFloat(document.getElementById('inp-x_M1').value),
         y_M1: parseFloat(document.getElementById('inp-y_M1').value),
         
-        // Distances
-        d_sub_m1: parseFloat(document.getElementById('inp-d_sub_m1').value),
-        d_m1_m2: parseFloat(document.getElementById('inp-d_m1_m2').value),
-
-        // Shared halo
-        halo: parseFloat(document.getElementById('inp-halo').value),
+        // Fixed tech/display constants
+        d_sub_m1: CONSTANTS.VISUAL_D_SUB_M1,
+        d_m1_m2: CONSTANTS.VISUAL_D_M1_M2,
+        halo: CONSTANTS.SIDEHALO,
         
         // Neighbors
         show_B1: document.getElementById('show-B1').checked,
@@ -80,6 +78,8 @@ function updateStateFromUI() {
     // Update Results UI
     document.getElementById('val-c-area-sub').textContent = results.C_area_sub.toFixed(2);
     document.getElementById('val-c-area-m1').textContent = results.C_area_m1.toFixed(2);
+    document.getElementById('val-c-fringe-sub-base').textContent = results.C_fringe_sub_base.toFixed(2);
+    document.getElementById('val-c-fringe-sub-removed').textContent = results.C_fringe_sub_removed.toFixed(2);
     document.getElementById('val-c-fringe-sub').textContent = results.C_fringe_sub.toFixed(2);
     document.getElementById('val-c-fringe-m1').textContent = results.C_fringe_m1.toFixed(2);
     document.getElementById('val-c-sidewall-total').textContent = results.C_sidewall_total.toFixed(2);
@@ -98,22 +98,21 @@ function updateFormulaPanel(results) {
         if (el) el.textContent = Number(value).toFixed(digits);
     };
 
-    set('formula-eps0', CONSTANTS.EPS0_AF_PER_UM, 3);
-    set('formula-k-sub', CONSTANTS.K_SUB_M2, 2);
-    set('formula-k-m1', CONSTANTS.K_M1_M2, 2);
-    set('formula-cperim-sub', CONSTANTS.CPERIM_SUB, 2);
-    set('formula-cperim-m1', CONSTANTS.CPERIM_M1, 2);
-    set('formula-ccoup0', CONSTANTS.CCOUP0, 2);
+    set('formula-halo', CONSTANTS.SIDEHALO, 2);
+    set('formula-fringe-mult', CONSTANTS.FRINGE_MULT, 3);
+    set('formula-cperim-sub', CONSTANTS.C_PERIM_M2_SUB, 2);
+    set('formula-coverlap-m1', CONSTANTS.C_OVERLAP_M2_M1, 2);
+    set('formula-csideoverlap-m1', CONSTANTS.C_SIDEOVERLAP_M2_TO_M1, 2);
+    set('formula-csidewall', CONSTANTS.C_SIDEWALL_M2, 2);
     set('formula-offset', CONSTANTS.SIDEWALL_OFFSET, 2);
-    set('formula-alpha0', CONSTANTS.ALPHA0, 3);
-    set('formula-t-m2', CONSTANTS.T_M2, 2);
-    set('formula-d-sub-m2', results.d_sub_m2, 2);
+    set('formula-visual-d-sub-m1', CONSTANTS.VISUAL_D_SUB_M1, 2);
+    set('formula-visual-d-m1-m2', CONSTANTS.VISUAL_D_M1_M2, 2);
     set('formula-carea-sub', results.Carea_sub_density, 2);
-    set('formula-alpha-sub', results.alpha_sub, 3);
-    set('formula-carea-m1', results.Carea_m1_density, 2);
-    set('formula-alpha-m1', results.alpha_m1, 3);
     set('formula-overlap', results.A_overlap_M1, 2);
     set('formula-unshielded', results.A_unshielded, 2);
+    set('formula-perimeter', results.P_target, 2);
+    set('formula-mult-sub', results.mult_sub, 3);
+    set('formula-mult-m1', results.mult_m1, 3);
 }
 
 function updateSidewallTable(segments) {
@@ -121,7 +120,7 @@ function updateSidewallTable(segments) {
     tbody.innerHTML = '';
     
     if (segments.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No valid opposing edges in halo</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">halo 内没有有效同层邻边</td></tr>';
         return;
     }
     

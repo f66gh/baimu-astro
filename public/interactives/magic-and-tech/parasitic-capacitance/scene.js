@@ -95,7 +95,7 @@ export class CapacitanceScene {
         if (viewName === 'top') {
             this.camera.position.set(0, 20, 0);
         } else if (viewName === 'cross') {
-            this.camera.position.set(0, 2, 15);
+            this.camera.position.set(0, 4, 17);
         } else if (viewName === '3d') {
             this.camera.position.set(10, 10, 15);
         }
@@ -163,7 +163,7 @@ export class CapacitanceScene {
         }
 
         // Substrate label
-        this.addLabel("Substrate", new THREE.Vector3(-8, 0.2, 8));
+        this.addLabel("substrate", new THREE.Vector3(-8, 0.2, 8));
 
         // Update Neighbors
         const updateNeighbor = (mesh, show, W_A, sep, y, L, name) => {
@@ -175,7 +175,7 @@ export class CapacitanceScene {
                 
                 let isIgnored = sep > state.halo;
                 let labelText = name;
-                if (isIgnored) labelText += " (Ignored)";
+                if (isIgnored) labelText += " (超出 halo)";
                 this.addLabel(labelText, new THREE.Vector3(xPos, z_m2 + tM2 + 0.2, -y), isIgnored);
             }
         };
@@ -188,7 +188,7 @@ export class CapacitanceScene {
         if (state.show_halo) {
             this.halo.scale.set(state.W_A + 2*state.halo, state.L_A + 2*state.halo, 1);
             this.halo.position.set(0, z_m2 - 0.05, 0);
-            this.addLabel("shared halo", new THREE.Vector3(state.W_A/2 + state.halo, z_m2 + 0.1, -state.L_A/2));
+            this.addLabel("sidehalo = 8um", new THREE.Vector3(state.W_A/2 + state.halo, z_m2 + 0.1, -state.L_A/2));
         }
 
         // Field Lines
@@ -268,26 +268,10 @@ export class CapacitanceScene {
                 drawFringeToSub(x, state.L_A/2, 0, 1, Math.min(state.halo, 1.8));
             }
             
-            // Right edge (affected by shielding)
+            // Right edge. B1/B2 are same-plane sidewall examples only here;
+            // they do not block fringe in this teaching view.
             for(let z = -state.L_A/2 + 0.2; z <= state.L_A/2; z += 0.5) {
-                // Check if this z is heavily shielded
-                let shielded = false;
-                calcResults.sidewall_segments.forEach(seg => {
-                    // Note: 3D Z maps to -Y in 2D layout. So seg.yStart is -seg.yEnd in 3D.
-                    // Actually, let's keep 3D Z = 2D -Y or just use Z = Y.
-                    // Wait, earlier I did position.set(x, y, -y_2d).
-                    // So 3D z = -2D y.
-                    let y_2d = -z;
-                    if (y_2d >= seg.yStart && y_2d <= seg.yEnd) {
-                        if (seg.sep < state.halo * 0.8) {
-                            shielded = true;
-                        }
-                    }
-                });
-                
-                if (!shielded) {
-                    drawFringeToSub(state.W_A/2, z, 1, 0, Math.min(state.halo, 1.8));
-                }
+                drawFringeToSub(state.W_A/2, z, 1, 0, Math.min(state.halo, 1.8));
             }
 
             calcResults.m1_fringe_edges.forEach(edge => {
@@ -305,7 +289,7 @@ export class CapacitanceScene {
                     createCurve(p1, p2, p3, this.lineMatFringe);
                 }
                 this.addLabel(
-                    `M1 fringe ${edge.edge}`,
+                    `M1 绕射 ${edge.edge}`,
                     pointOnM1ForEdge(edge.edge, edge.distance, 0).add(new THREE.Vector3(0, 0.25, 0))
                 );
             });
@@ -325,7 +309,7 @@ export class CapacitanceScene {
                 }
                 
                 // Add label for segment
-                this.addLabel(`Seg ${seg.index} (${seg.neighborId})`, new THREE.Vector3((xStart+xEnd)/2, z_m2 + tM2/2 + 0.3, zCenter));
+                this.addLabel(`段 ${seg.index} (${seg.neighborId})`, new THREE.Vector3((xStart+xEnd)/2, z_m2 + tM2/2 + 0.3, zCenter));
             });
         }
     }
