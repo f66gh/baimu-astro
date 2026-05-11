@@ -1,7 +1,7 @@
 ---
 title: "linux"
 summary: "通过实验室服务器学习linux"
-date: 2026-05-07
+date: 2026-05-11
 tags: ["Linux", "服务器"]
 cover: "/images/notes/linux/cover.jpg"
 ---
@@ -150,6 +150,12 @@ Host eda-1
 ssh eda-1
 ```
 
+### 传文件
+
+```bash
+scp -P 端口号 本地文件目录 用户名@服务器IP:远程文件目录
+```
+
 ## 挂载硬盘
 
 Linux 里没有 Windows 那种 C盘、D盘 为主的概念，而是把磁盘分区挂载到某个目录。
@@ -198,3 +204,29 @@ lsusb # 看usb设备
 sudo lshw -short # 以简短表格形式查看整机硬件，包括 CPU、内存、磁盘、网卡、显卡等。
 ```
 
+## 计算机网络
+
+`127.0.0.1` 叫 localhost，本机回环地址。
+
+内网常用形式：
+```
+192.168.x.x
+10.x.x.x
+172.16.x.x - 172.31.x.x
+```
+
+常用端口号：
+```bash
+22    # SSH 登录
+80    # HTTP 网站
+443   # HTTPS 网站
+```
+
+以ComfyUI为例，在远程访问：
+其中 `--listen`是只允许服务器本机访问 ComfyUI，`--port`是指定的进程端口号（ComfyUI默认端口号也是8188）
+`-L`是local port forwarding，本地端口转发，第一个8188是本地端口，冒号后面的是转发到服务器的什么IP地址和端口。在本地网页输入localhost:8188即可访问。
+
+```bash
+python main.py --listen 127.0.0.1 --port 8818
+ssh -L 8188:127.0.0.1:8188 用户名@服务器IP
+```

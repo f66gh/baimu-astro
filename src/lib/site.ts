@@ -40,36 +40,38 @@ export const aboutTags = [
 export const mainQuestItems: Record<Lang, { title: string; description: string; date: string }[]> = {
 	zh: [
 		{
-			title: 'OpenRCX',
-			description: '不想干活',
-			date: '2026.04',
+			title: 'OpenRCX-Calibration-OpenPDKs-Capiche',
+			description: '不想干活，随着越挖越深，面对如此庞大的项目，ai已经说的不完全对了，难道只能靠自己了吗',
+			date: '2026.05',
 		},
 		{
-			title: '集创赛（华大九天）',
-			description: '不想打比赛',
-			date: '2026.04',
+			title: '要系统学一下深度学习了',
+			description: '老师说寄生参数提取往这方面想创新，但是我有关深度学习的基础很薄弱',
+			date: '2026.05',
 		},
 		{
 			title: '异环',
-			description: '第一次玩二游，异环 启动！',
-			date: '2026.04',
+			description: '二游怎么这么肝啊，难道只能氪金吗',
+			date: '2026.05',
 		},
 	],
 	en: [
 		{
-			title: 'OpenRCX',
-			description: 'Technically on the agenda. Emotionally not ready to work.',
-			date: '2026.04',
+			title: 'OpenRCX-Calibration-OpenPDKs-Capiche',
+			description:
+				'I do not want to work. As I keep digging deeper into this enormous project, AI is no longer fully right. Does this mean I can only rely on myself now?',
+			date: '2026.05',
 		},
 		{
-			title: 'IC Innovation Contest',
-			description: 'Huada Empyrean track. Supposedly a competition, currently a test of my willpower.',
-			date: '2026.04',
+			title: 'Time to Study Deep Learning Systematically',
+			description:
+				'My advisor suggested looking for innovation around parasitic extraction in this direction, but my foundation in deep learning is still pretty thin.',
+			date: '2026.05',
 		},
 		{
 			title: 'Neverness to Everness',
-			description: 'My first anime-style gacha game. NTE, launch!',
-			date: '2026.04',
+			description: 'Why are anime-style gacha games this grindy? Is spending money the only way out?',
+			date: '2026.05',
 		},
 	],
 };
