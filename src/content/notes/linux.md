@@ -1,7 +1,7 @@
 ---
 title: "linux"
 summary: "通过实验室服务器学习linux"
-date: 2026-05-11
+date: 2026-05-12
 tags: ["Linux", "服务器"]
 cover: "/images/notes/linux/cover.jpg"
 ---
@@ -202,6 +202,25 @@ nmcli connection show # 看网卡硬件
 lsusb # 看usb设备
 
 sudo lshw -short # 以简短表格形式查看整机硬件，包括 CPU、内存、磁盘、网卡、显卡等。
+
+```
+
+## 查找命令
+
+find自带递归搜索，文件名带*是递归搜索
+
+```bash
+find 目录 -name "文件名"
+find 目录 -name "*文件名"
+find 目录 -iname "忽略大小写的文件名"
+find 目录 -type d -name "只想查找目录的目录名"
+find 目录 -type f -name "只想查找普通文件的文件名"
+find 目录 -type f -size + 1G # 查找大于 1GB 的普通文件
+find 目录 -type f -size - 10M # 查找小于 10MB 的普通文件
+find 目录 -type f -size 100M # 查找约等于 100MB 的普通文件
+find 目录 -type f -mtime -7 # 查找最近 7 天内修改过的普通文件
+find 目录 -type f -mtime +7 # 查找 7 天前修改过的文件
+find 目录 -type f -mtime 7 # 查找 7 天左右修改过的文件
 ```
 
 ## 计算机网络
