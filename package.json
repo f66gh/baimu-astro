@@ -15,6 +15,9 @@
     "@iconify-json/mdi": "^1.2.3",
     "@iconify-json/simple-icons": "^1.2.79",
     "astro": "^6.1.7",
-    "astro-icon": "^1.1.5"
+    "astro-icon": "^1.1.5",
+    "katex": "^0.16.45",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
   }
 }
