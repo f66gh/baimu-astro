@@ -17,7 +17,7 @@ export async function getStaticPaths() {
 
 const { item } = Astro.props as { item: LocalizedItem<'notes'> };
 const { entry } = item;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 ---
 
 <Layout title={t(lang, 'titleWithSection', { title: entry.data.title, section: t(lang, 'notes') })}>
@@ -30,6 +30,7 @@ const { Content } = await render(entry);
 		externalLabel={entry.data.externalLabel}
 		collection="notes"
 		lang={lang}
+		headings={headings}
 	>
 		<Content />
 	</ArticlePage>

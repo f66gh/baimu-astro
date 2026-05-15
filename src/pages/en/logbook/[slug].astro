@@ -17,7 +17,7 @@ export async function getStaticPaths() {
 
 const { item } = Astro.props as { item: LocalizedItem<'logbook'> };
 const { entry, isFallback } = item;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 ---
 
 <Layout title={t(lang, 'titleWithSection', { title: entry.data.title, section: t(lang, 'logbook') })}>
@@ -28,6 +28,7 @@ const { Content } = await render(entry);
 		collection="logbook"
 		lang={lang}
 		isFallback={isFallback}
+		headings={headings}
 	>
 		<Content />
 	</ArticlePage>

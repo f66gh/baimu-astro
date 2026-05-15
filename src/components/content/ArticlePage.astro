@@ -10,6 +10,11 @@ interface Props {
 	collection: 'academic' | 'notes' | 'logbook';
 	lang: Lang;
 	tags?: string[];
+	headings?: Array<{
+		depth: number;
+		slug: string;
+		text: string;
+	}>;
 	isFallback?: boolean;
 	eyebrow?: string;
 	externalUrl?: string;
@@ -23,6 +28,7 @@ const {
 	collection,
 	lang,
 	tags = [],
+	headings = [],
 	isFallback = false,
 	eyebrow = collection === 'academic' ? t(lang, 'academicEyebrow') : collection === 'logbook' ? t(lang, 'logbookEyebrow') : t(lang, 'notesEyebrow'),
 	externalUrl,
@@ -31,9 +37,14 @@ const {
 
 const formattedDate = date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN');
 const externalButtonLabel = externalLabel?.trim() || t(lang, 'openExternal');
+const tocItems = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3);
+const hasTocItems = tocItems.length > 0;
+const tocLabel = lang === 'en' ? 'Contents' : '目录';
+const tocEmptyLabel = lang === 'en' ? 'No sections yet' : '暂无目录';
 ---
 
-<article class="article-shell">
+<article class="article-shell has-toc" data-article>
+	<div class="article-layout">
 	<header class="article-head">
 		<p class="eyebrow">{eyebrow}</p>
 		<h1>{title}</h1>
@@ -51,18 +62,170 @@ const externalButtonLabel = externalLabel?.trim() || t(lang, 'openExternal');
 			)
 		}
 	</header>
+	<aside class="article-toc" data-article-toc aria-label={tocLabel}>
+		<details class="article-toc-panel" data-article-toc-details>
+			<summary>
+				<span>{tocLabel}</span>
+				<span class="toc-count">{tocItems.length}</span>
+			</summary>
+			<nav class="toc-nav" aria-label={tocLabel}>
+				{
+					hasTocItems ? (
+						tocItems.map((heading) => (
+							<a
+								class:list={['toc-link', `toc-depth-${heading.depth}`]}
+								href={`#${heading.slug}`}
+								data-toc-link
+							>
+								{heading.text}
+							</a>
+						))
+					) : (
+						<p class="toc-empty">{tocEmptyLabel}</p>
+					)
+				}
+			</nav>
+		</details>
+	</aside>
 	<div class="article-prose">
 		<slot />
 	</div>
+	</div>
 </article>
+
+<script is:inline>
+	(() => {
+		const articles = document.querySelectorAll('[data-article]');
+
+		for (const article of articles) {
+			const details = article.querySelector('[data-article-toc-details]');
+
+			if (!(details instanceof HTMLDetailsElement)) {
+				continue;
+			}
+
+			const wideLayout = window.matchMedia('(min-width: 1640px)');
+
+			const syncDetailsState = () => {
+				details.open = wideLayout.matches;
+			};
+
+			syncDetailsState();
+			wideLayout.addEventListener('change', syncDetailsState);
+
+			const links = Array.from(article.querySelectorAll('[data-toc-link]'));
+			const headings = Array.from(article.querySelectorAll('.article-prose :is(h2, h3)[id]'));
+
+			if (links.length === 0 || headings.length === 0) {
+				continue;
+			}
+
+			const getLinkId = (link) => {
+				const rawId = link.getAttribute('href')?.slice(1) ?? '';
+
+				try {
+					return decodeURIComponent(rawId);
+				} catch {
+					return rawId;
+				}
+			};
+
+			const activate = (id) => {
+				for (const link of links) {
+					const isActive = getLinkId(link) === id;
+					link.classList.toggle('is-active', isActive);
+
+					if (isActive) {
+						link.setAttribute('aria-current', 'location');
+					} else {
+						link.removeAttribute('aria-current');
+					}
+				}
+			};
+
+			let lockedActiveId = '';
+			let activeLockUntil = 0;
+
+			const updateActiveLink = () => {
+				if (lockedActiveId && Date.now() < activeLockUntil) {
+					activate(lockedActiveId);
+					return;
+				}
+
+				const activationOffset = 128;
+				let currentId = headings[0].id;
+
+				for (const heading of headings) {
+					const rect = heading.getBoundingClientRect();
+
+					if (rect.top <= activationOffset) {
+						currentId = heading.id;
+					} else {
+						break;
+					}
+				}
+
+				activate(currentId);
+			};
+
+			const observer = new IntersectionObserver(updateActiveLink, {
+				rootMargin: '-128px 0px -72% 0px',
+				threshold: 0,
+			});
+
+			updateActiveLink();
+			window.setTimeout(updateActiveLink, 120);
+
+			for (const heading of headings) {
+				observer.observe(heading);
+			}
+
+			window.addEventListener('resize', updateActiveLink);
+			window.addEventListener('hashchange', updateActiveLink);
+
+			for (const link of links) {
+				link.addEventListener('click', () => {
+					const targetId = getLinkId(link);
+					lockedActiveId = targetId;
+					activeLockUntil = Date.now() + 420;
+					activate(targetId);
+					window.setTimeout(() => {
+						lockedActiveId = '';
+						updateActiveLink();
+					}, 460);
+
+					if (!wideLayout.matches) {
+						details.open = false;
+					}
+				});
+			}
+		}
+	})();
+</script>
 
 <style>
 	.article-shell {
+		--article-content-width: 920px;
+		--article-toc-width: 220px;
+		--article-toc-gap: 28px;
 		width: min(100%, 920px);
 		margin: 0 auto;
 	}
 
+	.article-layout {
+		display: block;
+	}
+
+	.article-shell.has-toc .article-layout {
+		display: grid;
+		grid-template-areas:
+			"head"
+			"toc"
+			"prose";
+	}
+
 	.article-head {
+		grid-area: head;
 		padding: 10px 0 22px;
 		border-bottom: 1px solid var(--line);
 	}
@@ -134,7 +297,114 @@ const externalButtonLabel = externalLabel?.trim() || t(lang, 'openExternal');
 		font-weight: 800;
 	}
 
+	.article-toc {
+		grid-area: toc;
+		min-width: 0;
+		margin-top: 18px;
+		overflow-x: hidden;
+	}
+
+	.article-toc-panel {
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		background: var(--panel);
+	}
+
+	.article-toc-panel:not([open]) {
+		overflow: hidden;
+	}
+
+	.article-toc-panel:not([open]) > :not(summary) {
+		display: none;
+	}
+
+	.article-toc-panel summary {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		min-height: 42px;
+		padding: 0 12px;
+		color: var(--ink);
+		font-size: 0.92rem;
+		font-weight: 800;
+		cursor: pointer;
+		list-style: none;
+	}
+
+	.article-toc-panel summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.article-toc-panel summary::after {
+		content: "";
+		width: 8px;
+		height: 8px;
+		border-right: 2px solid currentColor;
+		border-bottom: 2px solid currentColor;
+		transform: rotate(45deg) translateY(-2px);
+		transition: transform 160ms ease;
+	}
+
+	.article-toc-panel[open] summary::after {
+		transform: rotate(225deg) translateY(-2px);
+	}
+
+	.toc-count {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 24px;
+		height: 22px;
+		margin-left: auto;
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		background: var(--wash);
+		color: var(--muted);
+		font-size: 0.78rem;
+		font-weight: 800;
+	}
+
+	.toc-nav {
+		display: grid;
+		gap: 2px;
+		padding: 6px;
+		border-top: 1px solid var(--line);
+	}
+
+	.toc-link {
+		display: block;
+		min-width: 0;
+		padding: 7px 0;
+		color: var(--muted);
+		font-size: 0.88rem;
+		font-weight: 700;
+		line-height: 1.42;
+		text-decoration: none;
+	}
+
+	.toc-depth-3 {
+		padding-left: 16px;
+		font-size: 0.84rem;
+		font-weight: 650;
+	}
+
+	.toc-link:hover,
+	.toc-link.is-active {
+		color: var(--teal);
+	}
+
+	.toc-empty {
+		margin: 0;
+		padding: 7px 0;
+		color: var(--muted);
+		font-size: 0.88rem;
+		font-weight: 700;
+		line-height: 1.42;
+	}
+
 	.article-prose {
+		grid-area: prose;
 		padding: 24px 0 42px;
 	}
 
@@ -169,6 +439,11 @@ const externalButtonLabel = externalLabel?.trim() || t(lang, 'openExternal');
 	.article-prose :global(h3) {
 		margin: 28px 0 12px;
 		font-size: 1.18rem;
+	}
+
+	.article-prose :global(h2[id]),
+	.article-prose :global(h3[id]) {
+		scroll-margin-top: 88px;
 	}
 
 	.article-prose :global(ul),
@@ -246,6 +521,10 @@ const externalButtonLabel = externalLabel?.trim() || t(lang, 'openExternal');
 			padding-top: 20px;
 		}
 
+		.article-toc {
+			margin-top: 14px;
+		}
+
 		.article-prose :global(.note-interactive) {
 			height: 720px;
 			min-height: 720px;
@@ -254,13 +533,63 @@ const externalButtonLabel = externalLabel?.trim() || t(lang, 'openExternal');
 
 	@media (min-width: 1280px) {
 		.article-shell {
-			width: min(100%, 72vw, 1120px);
+			--article-content-width: 1120px;
+			width: min(100%, var(--article-content-width));
+		}
+	}
+
+	@media (min-width: 1640px) {
+		.article-shell.has-toc {
+			width: min(100%, calc(var(--article-toc-width) + var(--article-toc-gap) + var(--article-content-width)));
+		}
+
+		.article-shell.has-toc .article-layout {
+			grid-template-columns: var(--article-toc-width) minmax(0, var(--article-content-width));
+			grid-template-areas:
+				"toc head"
+				"toc prose";
+			align-items: start;
+			column-gap: var(--article-toc-gap);
+		}
+
+		.article-toc {
+			position: sticky;
+			top: 74px;
+			max-height: calc(100vh - 92px);
+			margin-top: 0;
+			padding-top: 8px;
+			overflow-y: auto;
+		}
+
+		.article-toc-panel {
+			border-color: transparent;
+			background: transparent;
+		}
+
+		.article-toc-panel summary {
+			min-height: 36px;
+			padding: 0 0 10px;
+			border-bottom: 1px solid var(--line);
+		}
+
+		.toc-count {
+			background: var(--panel);
+		}
+
+		.toc-nav {
+			padding: 10px 0 0;
+			border-top: 0;
 		}
 	}
 
 	@media (min-width: 1800px) {
 		.article-shell {
-			width: min(100%, 66vw, 1280px);
+			--article-content-width: 1280px;
+			width: min(100%, var(--article-content-width));
+		}
+
+		.article-shell.has-toc {
+			width: min(100%, calc(var(--article-toc-width) + var(--article-toc-gap) + var(--article-content-width)));
 		}
 	}
 </style>
