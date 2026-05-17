@@ -8,6 +8,7 @@ const baseFields = {
 	date: z.coerce.date(),
 	tags: z.array(z.string()).default([]),
 	cover: z.string().optional(),
+	imageRoot: z.string().optional(),
 	pinned: z.boolean().default(false),
 	externalUrl: z.string().url().optional(),
 	externalLabel: z.string().optional(),

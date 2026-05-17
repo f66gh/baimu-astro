@@ -1,7 +1,7 @@
 ---
 import type { Lang } from '../../lib/i18n';
 import { localizePath, t } from '../../lib/i18n';
-import type { LocalizedItem } from '../../lib/content';
+import { resolveImagePath, type LocalizedItem } from '../../lib/content';
 import TagBadge from './TagBadge.astro';
 
 interface Props {
@@ -14,7 +14,7 @@ const { item, collection, lang } = Astro.props;
 const { entry, baseId, isFallback } = item;
 const href = localizePath(`/${collection}/${baseId}/`, lang);
 const date = entry.data.date.toLocaleDateString(lang === 'en' ? 'en-US' : 'zh-CN');
-const cover = 'cover' in entry.data ? entry.data.cover : undefined;
+const cover = 'cover' in entry.data ? resolveImagePath(entry.data.cover, entry.data.imageRoot) : undefined;
 const cardTags = 'tags' in entry.data ? entry.data.tags.slice(0, 2) : [];
 ---
 

@@ -22,6 +22,28 @@ export function baseEntryId(id: string): string {
 	return id.endsWith('.en') ? id.slice(0, -3) : id;
 }
 
+export function resolveImagePath(imagePath?: string, imageRoot?: string): string | undefined {
+	if (!imagePath) return undefined;
+
+	const trimmedPath = imagePath.trim();
+	if (
+		trimmedPath.startsWith('/') ||
+		trimmedPath.startsWith('./') ||
+		trimmedPath.startsWith('../') ||
+		trimmedPath.startsWith('#') ||
+		trimmedPath.startsWith('//') ||
+		/^[a-z][a-z\d+.-]*:/i.test(trimmedPath)
+	) {
+		return trimmedPath;
+	}
+
+	if (!imageRoot?.trim()) {
+		return trimmedPath;
+	}
+
+	return `${imageRoot.trim().replace(/\/+$/, '')}/${trimmedPath.replace(/^\/+/, '')}`;
+}
+
 export function isEnglishEntry(id: string): boolean {
 	return id.endsWith('.en');
 }
