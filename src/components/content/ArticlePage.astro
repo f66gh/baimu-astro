@@ -104,14 +104,14 @@ const tocEmptyLabel = lang === 'en' ? 'No sections yet' : '暂无目录';
 				continue;
 			}
 
-			const wideLayout = window.matchMedia('(min-width: 1640px)');
+			const sideTocLayout = window.matchMedia('(min-width: 1280px)');
 
 			const syncDetailsState = () => {
-				details.open = wideLayout.matches;
+				details.open = sideTocLayout.matches;
 			};
 
 			syncDetailsState();
-			wideLayout.addEventListener('change', syncDetailsState);
+			sideTocLayout.addEventListener('change', syncDetailsState);
 
 			const links = Array.from(article.querySelectorAll('[data-toc-link]'));
 			const headings = Array.from(article.querySelectorAll('.article-prose :is(h2, h3)[id]'));
@@ -194,7 +194,7 @@ const tocEmptyLabel = lang === 'en' ? 'No sections yet' : '暂无目录';
 						updateActiveLink();
 					}, 460);
 
-					if (!wideLayout.matches) {
+					if (!sideTocLayout.matches) {
 						details.open = false;
 					}
 				});
@@ -599,15 +599,13 @@ const tocEmptyLabel = lang === 'en' ? 'No sections yet' : '暂无目录';
 			--article-content-width: 1120px;
 			width: min(100%, var(--article-content-width));
 		}
-	}
 
-	@media (min-width: 1640px) {
 		.article-shell.has-toc {
 			width: min(100%, calc(var(--article-toc-width) + var(--article-toc-gap) + var(--article-content-width)));
 		}
 
 		.article-shell.has-toc .article-layout {
-			grid-template-columns: var(--article-toc-width) minmax(0, var(--article-content-width));
+			grid-template-columns: var(--article-toc-width) minmax(0, 1fr);
 			grid-template-areas:
 				"toc head"
 				"toc prose";

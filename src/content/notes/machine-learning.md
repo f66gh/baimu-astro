@@ -352,7 +352,7 @@ $$
 
 ### MPNN
 
-基本上有关于图的算法都围绕着这三个流程与公式：
+Message Passing Neural Network，消息传递神经网络，基本上有关于图的算法都围绕着这三个流程与公式：
 
 1. 邻居给节点发消息
 
@@ -615,7 +615,7 @@ $$
 
 在 EDA 中，不同 GNN 层数可以对应不同范围的电路结构信息。例如第1层可能更偏向局部 wire/pin/cell 邻接关系，第2层可能覆盖更远的 netlist 连接或 RC tree 邻域，更深层可能涉及 timing path 上更大范围的传播关系。因此，把不同层的图表示拼接起来，可能有助于同时利用局部寄生信息和更全局的时序结构信息。
 
-## 图Transformer
+## Graph Transformer
 
 ### Graphormer
 
@@ -638,7 +638,7 @@ $$
 距离编码：文中维护一个距离矩阵（Spatial），这个矩阵作为参数更新。矩阵中的每一项都是两个节点的最短距离$\text{DFS} (v_i, v_j)$，每个距离都是标量，而且不同节点间的相同距离的参数值是一致的。
 
 $$
-b_{ij} = \phi_{(v_i, v_j)}  = \text{DFS} (v_i, v_j) 
+b_{ij} = \phi_{(v_i, v_j)}  = \text{SPD} (v_i, v_j) 
 $$
 
 边编码：每个边有一个特征向量$e$，在不同节点和节点的最短路径中，边的序号相同则参数向量$w^E$相同，边分数$c_{ij}$的计算方式是：
@@ -653,12 +653,47 @@ $$
 A_{ij} = a_{ij} + b_{ij} + c_{ij}
 $$
 
-论文中还调整了前馈神经网络和多头注意力机制的顺序：
+论文中还调整了前馈神经网络和多头注意力机制的顺序，MHA是多头注意力，FFN是前馈神经网络，LN是层归一化：
 
 $$
 \begin{aligned}
-h^(l)' &= \text{MHA} (\text{LH}(h^{(l - 1)})) + h^{(l-1)} \\
-h^(l)' &= \text{FFA}(\text{LH}(h^(l)')) + h^(l)'
+h'^{(l)} &= \mathrm{MHA}\left(\mathrm{LN}\left(h^{(l-1)}\right)\right) + h^{(l-1)} \\
+h^{(l)} &= \mathrm{FFN}\left(\mathrm{LN}\left(h'^{(l)}\right)\right) + h'^{(l)}
+\end{aligned}
+$$
+
+### GraphGPS
+
+问题：这篇文章说传统GCN通过多层网络可以感知到很远的节点，但是可能导致节点嵌入过平滑和信息丢失的问题。Transformer由于时间复杂度的限制，以及自身没有结构性编码，很难在图中准确地感知其余节点。本文提出了两个编码：位置性编码（PE，position Encoding）和结构性编码（SE，structure Encoding），并在节点的局部用了MPNN，用线性transformer做全局感知，有效解决了上述问题。
+
+![](GraphGPS.jpg)
+
+设X为节点嵌入，E为边嵌入，A为邻接矩阵，则有如下公式：
+
+$$
+X^{l+1}, E^{l+1} = \text{GPS}^l(X^l, E^l, A)
+$$
+
+其中，文中 MLP 是 2 层，隐藏维度为 2×D，激活函数 ReLU：
+
+$$
+\begin{aligned}
+\hat{X^{l+1}}_T &= \text{GLOBALATTN}^l(X^l)\\
+\hat{X^{l+1}}_M, E^{l+1} &= \text{MPNN}(X^l, E^l, A)\\
+X^{l+1}_T &= \text{BatchNorm}(\text{Dropout}(\hat{X^{l+1}}_T) + X^l)\\
+X^{l+1}_M &= \text{BatchNorm}(\text{Dropout}(\hat{X^{l+1}}_M) + X^l)\\
+X^{l+1} &= \text{MLP}(X^{l+1}_T + X^{l+1}_M)
+\end{aligned}
+$$
+
+在初始化中，论文根据相对编码（描述两个节点间的关系）和非相对编码（描述节点自己）给初始的节点和边嵌入赋予不同的值。相对编码中，会根据$PE(G)$和$SE(G)$生成$P_{edge}$和$S_{edge}$，在非相对编码则生成的是$P_{node}$和$S_{node}$
+
+其中的$N$是节点数，$E$是边数，$D$是隐藏维度，$⨁$在文中为拼接和线性投影，统一的公式如下：
+
+$$
+\begin{aligned}
+X^0 \leftarrow ⨁_{node} (\text{NodeEncoder}(X), P_{node}, S_{node}) \in \mathbb{R}^{N \times D}\\
+E^0 \leftarrow ⨁_{edge} (\text{EdgeEncoder}(E_{feat}), P_{edge}, S_{edge}) \in \mathbb{R}^{E \times D}
 \end{aligned}
 $$
 
