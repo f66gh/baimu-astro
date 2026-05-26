@@ -25,3 +25,7 @@ pnpm-debug.log*
 
 # temporary list
 list/
+
+# private content
+src/content/logbook/*
+!src/content/logbook/.gitkeep

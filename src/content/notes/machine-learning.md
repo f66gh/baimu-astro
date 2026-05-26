@@ -668,7 +668,7 @@ $$
 
 ![](GraphGPS.jpg)
 
-设X为节点嵌入，E为边嵌入，A为邻接矩阵，则有如下公式：
+设X为节点嵌入，E为边嵌入，A为邻接矩阵，MPNN只看与自己直接相邻的节点，Transformer则看全局的节点，则有如下公式：
 
 $$
 X^{l+1}, E^{l+1} = \text{GPS}^l(X^l, E^l, A)
@@ -852,7 +852,7 @@ $$
 
 ### 图神经网络
 
-参考文献：ParaGraph:Layout Parasitics and Device Parameter Prediction using Graph Neural Networks(Nvidia DAC 2020)
+#### 参考文献：ParaGraph:Layout Parasitics and Device Parameter Prediction using Graph Neural Networks(Nvidia DAC 2020)
 
 问题：在模拟电路中，在pre layout时，估计电路模块寄生参数总是凭经验。本文提出了基于各种图神经网络并提出了新的适配模块级的寄生电容和其他相关参数图神经网络
 
@@ -863,7 +863,9 @@ ML输出：晶体管LDE参数 源极漏极面积和参数 寄生电容（没有�
 方法：
 在图神经网络的基础上，结合了RGCN(不同边区别对待)，GAT(自注意力抓重点)，GraphSage(用自己的旧特征和新特征拼接)。论文把电路图转化为异构图，pin和导线都设置为节点，节点间用有向边连。由于不同器件的电容差距过大，所以论文根据电容范围把器件分为四个类别，训练了四组模型。
 
-邻接边的种类有四个：导线→源极漏极，导线→栅极，源极漏极→导线，源极漏极→导线。
+![](ParaGraph_Fig3.jpg)
+
+邻接边的种类有四个：导线→源极漏极，导线→栅极，源极漏极→导线，源极漏极→导线。边不同，则对应的参数权重矩阵不同。
 
 ![](ParaGraph.jpg)
 
@@ -891,7 +893,7 @@ $$
 \alpha_{ij}^{l} = \text{softmax}_{i}(\text{LeakyReLU}(e_{ij}^{l}))
 $$
 
-算出
+算出，这里的$N(i)$和$W$是各种不同边集合/权重矩阵的简写，有不同的W对应不同的N，最后都要加和。
 
 $$
 h_{i}^{(l+1)} = \sigma(\sum_{j \in N(i)} \alpha_{i,j} W^{(l)} h_{j}^{(l)})
@@ -902,4 +904,53 @@ $$
 
 $$
 h_i^{(l+1)} \leftarrow \sigma \left( W^{(l)} \cdot \text{concat}(h_i^{(l)}, h_i + b^{(l)}) \right)
+$$
+
+#### 参考文献：Parasitic-Aware Analog Circuit Sizing with Graph Neural Networks and Bayesian Optimization(Nvidia DATE 2021)
+
+上一篇论文的续作。上一篇论文主要讲的是集总电容（对地、基底等电容），这篇论文在图神经网络上做了改进，用一对边节点的嵌入计算耦合电容（导线之间电容），用相邻边节点和引脚节点的嵌入计算电阻。加上了导线间的耦合电容后，准确度有明显的改进。
+
+![](Parastic-Aware_Fig2.jpg)
+
+在论文中，把一段导线近似为一个net 模型，里边可能有很多分支，两端可能连很多单元，甚至还有可能跨层，对于大型芯片来说这种预测不够准。
+
+同时，论文没有明确提出用于计算的耦合电容的两个边节点是怎么来的，只是说所有边两两算耦合电容没必要。
+
+
+#### 参考文献：GNN-Cap: Chip-Scale Interconnect Capacitance Extraction Using Graph Neural Network(复旦 TCAD 2024)
+
+方法：论文中把一段net分为一个个cuboid（和tile类似，以下称为tile）。论文把tile当成一个节点，三个特征为长宽高。论文的边有七个特征，分别为两个tile中心的距离，两个tile的X/Y/Z方向坐标差。
+
+![](GNN-Cap_Fig4.jpg)
+
+论文在水平方向定义了阈值$d_e$(和halo类似，以下称为halo)，在halo范围内，则认为两个节点有边。论文在垂直方向，给每个tile上下加上比层间绝缘层高一点的的halo，目的是让两个tile之间能被识别为边。
+
+![](GNN-Cap_Fig2.jpg)
+
+论文中把芯片建模成这样：
+
+![](GNN-Cap_Fig1.jpg)
+
+本文中主要计算三种电容：自带电容、耦合电容、隐藏边导致的电容。其中，自带电容用节点自己的嵌入算，耦合电容用两个节点和之间的边算。论文中提到，在同层中当两个tile相距过远的时候，中间没有tile隔着的时候，本文的建模方法是不会给这两个tile连上边的，即使这两个tile存在耦合电容；同理，当上下层的两个tile中间隔一层，但是这一层没有tile遮挡的时候，这两个tile也是有耦合电容的，但是本文的建模方法则认为这两个tile之间没有边。因此，本文加了一些这样的虚拟边，但是也不参与GCN的计算。
+
+![](GNN-Cap_Fig5.jpg)
+
+公式中，$h$是节点嵌入，两个$W$是两个权重矩阵，一个作用与聚合的边，一个作用于节点的旧嵌入，$c$是每两个节点之间的消息缩放比例。
+
+$$
+h_{v_i}^{l} = \phi \left( W^{l-1} \sum_{v_j \in N(v_i)} \frac{1}{c(v_i, v_j)} h_{v_j}^{l-1} + W_0^{l-1} h_{v_i}^{l-1} \right)
+$$
+
+这是边嵌入的计算公式：
+
+$$
+h_{e_{ij}}^{l} = \text{MLP} \left( \text{CONCAT} \left( h_{v_i}^{l}, h_{v_j}^{l}, \text{MLP}_{trans}(h_{e_{ij}}^{l-1}) \right) \right)
+$$
+
+由于算的都是按照一个个tile或者tile之间的电容，寄生参数提取下一步的STA要每个网络（一段由一个或几个tile拼接的抽象长导线）的电容，所以把一段net内的tile电容都加和。
+
+论文的标签是场求解器得到的值，论文中只用了一个开源的28nm工艺库和八个不同的芯片设计用例。速度比场求解器快。论文用了平均相对误差MARE，也就是每个电容都算一个相对误差，再平均。论文是这样比较的：自己的算法和场求解器算一个MARE，用starRC自己的快速估值和starRC自己的场求解器算一个MARE，结果更好一些。
+
+$$
+\text{MARE} = \frac{1}{N} \sum_{i=1}^{N} \left|    1 - \frac{f(x_i)}{y_i} \right|
 $$
