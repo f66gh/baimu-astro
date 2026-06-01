@@ -41,37 +41,36 @@ export const mainQuestItems: Record<Lang, { title: string; description: string; 
 	zh: [
 		{
 			title: 'OpenRCX-Calibration-OpenPDKs-Capiche',
-			description: '不想干活，随着越挖越深，面对如此庞大的项目，ai已经说的不完全对了，难道只能靠自己了吗',
-			date: '2026.05',
+			description: '第一阶段任务完成，接下来的任务是...',
+			date: '2026.06',
 		},
 		{
-			title: '要系统学一下深度学习了',
-			description: '老师说寄生参数提取往这方面想创新，但是我有关深度学习的基础很薄弱',
-			date: '2026.05',
+			title: '继续深度学习了，想开始学神经算子',
+			description: '我感觉深度学习已经被开发烂了，在寄生参数提取这里的深度学习感觉没啥创新点，自己想出来的创新点在灵感迸发出的这一刻就像是垃圾',
+			date: '2026.06',
 		},
 		{
-			title: '异环',
-			description: '二游怎么这么肝啊，难道只能氪金吗',
-			date: '2026.05',
+			title: '异环，启动！',
+			description: '我成氪佬了...，氪了大小月卡还有98的10发限定抽',
+			date: '2026.06',
 		},
 	],
 	en: [
 		{
 			title: 'OpenRCX-Calibration-OpenPDKs-Capiche',
-			description:
-				'I do not want to work. As I keep digging deeper into this enormous project, AI is no longer fully right. Does this mean I can only rely on myself now?',
-			date: '2026.05',
+			description: 'The first phase is done. Up next is...',
+			date: '2026.06',
 		},
 		{
-			title: 'Time to Study Deep Learning Systematically',
+			title: 'Back to Deep Learning, Now with Neural Operators',
 			description:
-				'My advisor suggested looking for innovation around parasitic extraction in this direction, but my foundation in deep learning is still pretty thin.',
-			date: '2026.05',
+				'I feel like deep learning has been mined to exhaustion. Around parasitic extraction, it feels hard to find anything truly new, and the ideas that flash into my mind look like trash the moment they appear.',
+			date: '2026.06',
 		},
 		{
-			title: 'Neverness to Everness',
-			description: 'Why are anime-style gacha games this grindy? Is spending money the only way out?',
-			date: '2026.05',
+			title: 'Neverness to Everness, Launch!',
+			description: 'I have become a paying player... monthly passes, battle pass, and a 98-yuan ten-pull for the limited banner.',
+			date: '2026.06',
 		},
 	],
 };
