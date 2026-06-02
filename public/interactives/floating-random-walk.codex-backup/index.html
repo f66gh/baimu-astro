@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Floating Random Walk 场求解器演示</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <h1>Floating Random Walk <span>浮动随机游走场求解器</span></h1>
+      <p>用 transition cube 的随机路径统计来估计寄生电容</p>
+    </header>
+
+    <main class="main-content">
+      <section class="canvas-container" aria-label="FRW 可视化画布">
+        <div class="canvas-header">
+          <span>2D 截面示意：真实 FRW 中 transition cube 是 3D 立方体</span>
+          <div class="canvas-legend">
+            <span class="legend-item"><i class="legend-color legend-master"></i>1V master</span>
+            <span class="legend-item"><i class="legend-color legend-ground"></i>0V conductor</span>
+            <span class="legend-item"><i class="legend-color legend-sub"></i>substrate</span>
+            <span class="legend-item"><i class="legend-color legend-path"></i>current walk</span>
+          </div>
+        </div>
+        <canvas id="frw-canvas" width="600" height="400"></canvas>
+      </section>
+
+      <aside class="sidebar" aria-label="FRW 控制与统计">
+        <section class="panel">
+          <div class="panel-title">Master Conductor</div>
+          <div class="master-selector">
+            <label class="master-option">
+              <input type="radio" name="master-conductor" value="A" checked>
+              <span class="master-label">A = 1V</span>
+            </label>
+            <label class="master-option">
+              <input type="radio" name="master-conductor" value="B">
+              <span class="master-label">B = 1V</span>
+            </label>
+            <label class="master-option">
+              <input type="radio" name="master-conductor" value="C">
+              <span class="master-label">C = 1V</span>
+            </label>
+          </div>
+
+          <div class="control-grid">
+            <button class="btn" id="btn-step" type="button"><span>→</span> 单步 hop</button>
+            <button class="btn" id="btn-auto" type="button"><span>▶</span> 自动游走</button>
+            <button class="btn" id="btn-reset-walk" type="button">重置当前路径</button>
+            <button class="btn" id="btn-clear" type="button">清空统计</button>
+            <button class="btn btn-primary btn-full" id="btn-batch" type="button">批量采样</button>
+          </div>
+
+          <div class="settings-group">
+            <label class="setting-item">
+              <span class="setting-label">样本数 <span class="setting-value" id="val-batch">200</span></span>
+              <input class="range-slider" id="slider-batch" type="range" min="20" max="2000" step="20" value="200">
+            </label>
+            <label class="setting-item">
+              <span class="setting-label">每帧 hop 数 <span class="setting-value" id="val-speed">1</span></span>
+              <input class="range-slider" id="slider-speed" type="range" min="1" max="50" step="1" value="1">
+            </label>
+            <label class="setting-item">
+              <span class="setting-label">stopping threshold <span class="setting-value" id="val-threshold">3px</span></span>
+              <input class="range-slider" id="slider-threshold" type="range" min="1" max="20" step="1" value="3">
+            </label>
+          </div>
+
+          <div class="toggle-group">
+            <label class="toggle-item">
+              <input id="check-cube" type="checkbox" checked>
+              显示 transition cube
+            </label>
+            <label class="toggle-item">
+              <input id="check-recent" type="checkbox" checked>
+              只显示最近路径
+            </label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">Statistics <span>教学估计</span></div>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-val" id="stat-total">0</div>
+              <div class="stat-lbl">samples</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val" id="stat-current-hops">0</div>
+              <div class="stat-lbl">current hops</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val" id="stat-mean-hops">0</div>
+              <div class="stat-lbl">mean hops</div>
+            </div>
+          </div>
+
+          <table class="hit-table" aria-label="命中统计">
+            <thead>
+              <tr>
+                <th>Target</th>
+                <th>Count</th>
+                <th>Ratio</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="hit-color-indicator" style="background:#4361ee"></span>A</td>
+                <td id="hit-count-a">0</td>
+                <td><span id="hit-pct-a">0.0%</span><div class="hit-bar-bg"><div class="hit-bar-fill" id="hit-bar-a"></div></div></td>
+              </tr>
+              <tr>
+                <td><span class="hit-color-indicator" style="background:#6c757d"></span>B</td>
+                <td id="hit-count-b">0</td>
+                <td><span id="hit-pct-b">0.0%</span><div class="hit-bar-bg"><div class="hit-bar-fill" id="hit-bar-b"></div></div></td>
+              </tr>
+              <tr>
+                <td><span class="hit-color-indicator" style="background:#8a929a"></span>C</td>
+                <td id="hit-count-c">0</td>
+                <td><span id="hit-pct-c">0.0%</span><div class="hit-bar-bg"><div class="hit-bar-fill" id="hit-bar-c"></div></div></td>
+              </tr>
+              <tr>
+                <td><span class="hit-color-indicator" style="background:#343a40"></span>Substrate</td>
+                <td id="hit-count-sub">0</td>
+                <td><span id="hit-pct-sub">0.0%</span><div class="hit-bar-bg"><div class="hit-bar-fill" id="hit-bar-sub"></div></div></td>
+              </tr>
+              <tr>
+                <td>unfinished</td>
+                <td id="hit-count-unfinished">0</td>
+                <td><span id="hit-pct-unfinished">0.0%</span><div class="hit-bar-bg"><div class="hit-bar-fill" id="hit-bar-unfinished"></div></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">Capacitance Estimate</div>
+          <table class="hit-table" aria-label="电容教学估计">
+            <tbody>
+              <tr><td id="lbl-cap-b">C_AB (耦合电容 B):</td><td id="cap-master-b">0.000 pF</td></tr>
+              <tr><td id="lbl-cap-c">C_AC (耦合电容 C):</td><td id="cap-master-c">0.000 pF</td></tr>
+              <tr><td id="lbl-cap-sub">C_A_sub (地电容 Sub):</td><td id="cap-master-sub">0.000 pF</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="panel academic-tips">
+          <p>FRW 用大量随机路径做 Monte Carlo sampling，而不是让单条路径等于一个电容。</p>
+          <p>每一步 transition cube 都围绕当前点重新构造，所以它是 floating 的。</p>
+          <p>真实 FRW 的 cube 表面采样由 surface Green's function 决定；这里用均匀采样做教学近似。</p>
+        </section>
+      </aside>
+    </main>
+
+    <section class="flow-container" aria-label="FRW 流程">
+      <div class="flow-steps">
+        <div class="flow-step active"><span class="step-num">1</span><span class="step-text">设 master = 1V</span></div>
+        <div class="flow-step"><span class="step-num">2</span><span class="step-text">从表面采样</span></div>
+        <div class="flow-step"><span class="step-num">3</span><span class="step-text">构造 transition cube</span></div>
+        <div class="flow-step"><span class="step-num">4</span><span class="step-text">随机 hop</span></div>
+        <div class="flow-step"><span class="step-num">5</span><span class="step-text">命中边界并统计</span></div>
+      </div>
+    </section>
+  </div>
+
+  <script src="./main.js"></script>
+</body>
+</html>

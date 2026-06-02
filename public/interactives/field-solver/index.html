@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>场求解器原理交互演示</title>
+	<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+	<div class="app-shell">
+		<header class="topbar">
+			<div>
+				<p class="eyebrow">RCX / Capacitance Extraction</p>
+				<h1>场求解器原理</h1>
+			</div>
+			<nav class="mode-tabs" aria-label="可视化模块">
+				<button class="mode-tab active" type="button" data-mode="general">通用场求解器</button>
+				<button class="mode-tab" type="button" data-mode="fdm">FDM 有限差分</button>
+				<button class="mode-tab" type="button" data-mode="fem">FEM 有限元</button>
+				<button class="mode-tab" type="button" data-mode="bem">BEM 边界元</button>
+			</nav>
+		</header>
+
+		<main class="workspace">
+			<section class="stage" aria-label="可视化画布">
+				<canvas id="field-canvas"></canvas>
+				<div class="canvas-caption" id="canvas-caption"></div>
+			</section>
+
+			<aside class="side-panel" aria-label="讲解与控制">
+				<section class="panel-section">
+					<h2 id="panel-title">通用场求解器</h2>
+					<p id="panel-summary"></p>
+					<div class="definition-list" id="definition-list"></div>
+				</section>
+
+				<section class="panel-section controls" id="controls-panel"></section>
+
+				<section class="panel-section">
+					<h3>方法对比</h3>
+					<div class="compare-table" role="table" aria-label="FDM FEM BEM 对比">
+						<div class="compare-row compare-head" role="row">
+							<span role="columnheader">方法</span>
+							<span role="columnheader">离散什么</span>
+							<span role="columnheader">优点</span>
+							<span role="columnheader">代价</span>
+						</div>
+						<div class="compare-row" role="row" data-compare="fdm">
+							<span role="cell">FDM</span>
+							<span role="cell">规则体网格</span>
+							<span role="cell">简单直观</span>
+							<span role="cell">曲线边界台阶化</span>
+						</div>
+						<div class="compare-row" role="row" data-compare="fem">
+							<span role="cell">FEM</span>
+							<span role="cell">不规则体网格</span>
+							<span role="cell">适合复杂几何</span>
+							<span role="cell">网格和组装复杂</span>
+						</div>
+						<div class="compare-row" role="row" data-compare="bem">
+							<span role="cell">BEM</span>
+							<span role="cell">边界 panel</span>
+							<span role="cell">开放空间自然</span>
+							<span role="cell">矩阵通常稠密</span>
+						</div>
+					</div>
+				</section>
+			</aside>
+		</main>
+	</div>
+
+	<script src="./main.js"></script>
+</body>
+</html>
