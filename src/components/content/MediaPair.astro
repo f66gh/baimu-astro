@@ -1,0 +1,54 @@
+---
+import { resolveImagePath } from '../../lib/content';
+
+type ImageSide = 'left' | 'right';
+type ImageSize = 'xs' | 'sm' | 'md' | 'lg' | 'full';
+type VerticalAlign = 'start' | 'center';
+
+interface Props {
+	src: string;
+	alt?: string;
+	caption?: string;
+	imageSide?: ImageSide;
+	imageSize?: ImageSize;
+	imageWidth?: string;
+	verticalAlign?: VerticalAlign;
+	imageRoot?: string;
+	class?: string;
+}
+
+const {
+	src,
+	alt,
+	caption,
+	imageSide = 'left',
+	imageSize = 'md',
+	imageWidth,
+	verticalAlign = 'center',
+	imageRoot,
+	class: className,
+} = Astro.props;
+
+const resolvedSrc = resolveImagePath(src, imageRoot) ?? src;
+const imageAlt = alt ?? caption ?? '';
+const style = imageWidth ? `--media-pair-image-width: ${imageWidth};` : undefined;
+---
+
+<section
+	class:list={[
+		'media-pair',
+		`media-pair-${imageSide}`,
+		`media-pair-image-${imageSize}`,
+		`media-pair-align-${verticalAlign}`,
+		className,
+	]}
+	style={style}
+>
+	<figure class="media-pair-figure">
+		<img src={resolvedSrc} alt={imageAlt} loading="lazy" decoding="async" />
+		{caption && <figcaption>{caption}</figcaption>}
+	</figure>
+	<div class="media-pair-content">
+		<slot />
+	</div>
+</section>

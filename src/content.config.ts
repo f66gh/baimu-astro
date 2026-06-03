@@ -30,7 +30,7 @@ const anime = defineCollection({
 });
 
 const notes = defineCollection({
-	loader: glob({ pattern: '**/*.md', base: './src/content/notes' }),
+	loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/notes' }),
 	schema: z.object({
 		...baseFields,
 	}),
@@ -59,7 +59,7 @@ const music = defineCollection({
 });
 
 const academic = defineCollection({
-	loader: glob({ pattern: '**/*.md', base: './src/content/academic' }),
+	loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/academic' }),
 	schema: z.object({
 		...baseFields,
 	}),

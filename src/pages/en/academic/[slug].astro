@@ -1,6 +1,8 @@
 ---
 import { render } from 'astro:content';
 import ArticlePage from '../../../components/content/ArticlePage.astro';
+import MediaPair from '../../../components/content/MediaPair.astro';
+import NoteImage from '../../../components/content/NoteImage.astro';
 import Layout from '../../../layouts/Layout.astro';
 import { getLocalizedEntries, type LocalizedItem } from '../../../lib/content';
 import { t } from '../../../lib/i18n';
@@ -18,6 +20,10 @@ export async function getStaticPaths() {
 const { item } = Astro.props as { item: LocalizedItem<'academic'> };
 const { entry, isFallback } = item;
 const { Content, headings } = await render(entry);
+const mdxComponents = {
+	NoteImage,
+	MediaPair,
+};
 ---
 
 <Layout title={t(lang, 'titleWithSection', { title: entry.data.title, section: t(lang, 'academic') })}>
@@ -33,6 +39,6 @@ const { Content, headings } = await render(entry);
 		isFallback={isFallback}
 		headings={headings}
 	>
-		<Content />
+		<Content components={mdxComponents} />
 	</ArticlePage>
 </Layout>

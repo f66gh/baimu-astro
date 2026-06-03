@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.6.0 - 2026-06-03
+
+### Added
+
+- 接入 Astro MDX 集成，让 `notes` 与 `academic` 内容集合可以使用 `.mdx` 文件。
+- 新增 `NoteImage` 与 `MediaPair` 内容组件，用于统一管理笔记和学术文章中的图片尺寸、图注、图文并排与响应式排版。
+- 为 `MediaPair` 增加 `verticalAlign` 参数，默认让文字区相对图片高度垂直居中。
+
+### Changed
+
+- 将 `notes` 与 `academic` 的内容加载规则从仅匹配 `.md` 扩展为同时匹配 `.md` / `.mdx`。
+- 在 `notes` 与 `academic` 的中英文详情页统一注册 MDX 图片组件。
+- 扩展 `imageRoot` remark 插件，使它也能处理 `NoteImage` 与 `MediaPair` 的相对图片路径。
+
 ## 1.5.3 - 2026-05-25
 
 ### changed

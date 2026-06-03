@@ -14,20 +14,20 @@ imageRoot: "/images/notes/ML-4-RCX"
 
 电容是与导体结构相关的一种属性，导体携带电容可以用电荷和电势（电压）求解。我们把电容看成一个矩阵，对角线$C_{ii}$是导体的**总电容（自电容）**，非对角线是$C_{ij}$是导体间的**耦合电容**。将主导体设为1v电势，其余导体设为0v，那么各导体的电荷量就等于电荷矩阵C中与该导体对应的那一列。
 
+
 这就将问题转化为了模拟3D电场以计算电荷。因此可以使用有限差分法（FDM）、有限元法（FEM）和边界元法（BEM）等数值方法。
 
 场求解器主要流程是：
 
-1. 求解电势与电场，这里$\phi$：电势；$\epsilon$：介电常数；$∇\phi$：电势变化率。
+1. 求解电势与电场，这里$\phi$：电势；$\varepsilon$：介电常数；$∇\phi$：电势变化率。
 
 $$
-∇ \cdot (\epsilon ∇ \phi) = 0,\quad where~ E = -∇\phi
+∇ \cdot (\varepsilon ∇ \phi) = 0,\quad where~ \mathbf{E} = -∇\phi
 $$
 
-2. 求电荷，电荷来自电场在导体表面的法向通量，对导体表面积分：
-
+2. 求电荷，电荷来自电场在导体表面的法向通量，由高斯公式可知，对导体表面积分：
 $$
-Q_i = \int_{\partial conductor_i} \epsilon E \cdot n dS
+Q = \oiint_S \mathbf {D} \cdot d\mathbf{S} = \oiint_S \varepsilon \mathbf {E} \cdot d\mathbf{S}  =  \oiint_S \varepsilon \mathbf {E} \cdot \mathbf{n} dS
 $$
 
 3. 根据电势和电荷反推出电容
@@ -36,6 +36,173 @@ $$
 Q = CU
 $$
 
+详细流程如下：
+
+#### 电容矩阵与一次激励
+
+<NoteImage
+	src="场求解器1.jpg"
+	size="md"
+	imageSide="left"
+/>
+
+先假设空间中有三个导体 $A,B,C$ 和一个基底 substrate。我们想计算导体 $A$ 与其它导体、基底之间的耦合电容。场求解器通常会做一次“单位电压激励”：令
+
+$$
+U_A = 1,\quad U_B = 0,\quad U_C = 0,\quad U_{sub} = 0
+$$
+
+已知基本关系：
+
+$$
+Q = CU
+$$
+
+其中 $Q$ 是导体表面电荷，$C$ 是电容，$U$ 是电势差。对于导体 $A$，它的电荷可以写成它与其它导体、基底之间电势差贡献的和：
+
+$$
+Q_A =
+C_{AB}(U_A-U_B)
++ C_{AC}(U_A-U_C)
++ C_{A,sub}(U_A-U_{sub})
+$$
+
+如果考虑所有导体的总电荷，可以写成 Maxwell 电容矩阵（Maxwell capacitance matrix，麦克斯韦电容矩阵）的形式：
+
+$$
+\begin{bmatrix}
+Q_A\\
+Q_B\\
+Q_C
+\end{bmatrix}
+=
+\begin{bmatrix}
+C_{AB}+C_{AC}+C_{A,sub} & -C_{AB} & -C_{AC}\\
+-C_{BA} & C_{BA}+C_{BC}+C_{B,sub} & -C_{BC}\\
+-C_{CA} & -C_{CB} & C_{CA}+C_{CB}+C_{C,sub}
+\end{bmatrix}
+\begin{bmatrix}
+U_A\\
+U_B\\
+U_C
+\end{bmatrix}
+$$
+
+这里对角线项表示某导体的总电荷响应，非对角线项带负号，表示其它导体上被感应出来的耦合电荷贡献。由于本次激励中只有 $U_A=1$，其余导体和基底都是 $0$，所以有：
+
+$$
+Q_A = C_{AB}+C_{AC}+C_{A,sub},\quad
+Q_B = -C_{BA},\quad
+Q_C = -C_{CA}
+$$
+
+所以，只要场求解器能在这次激励下算出各个导体表面的电荷，就能得到电容矩阵中与导体 $A$ 对应的一列。依次把 $A,B,C$ 分别置为 $1V$，其它导体置为 $0V$，就可以抽取完整电容矩阵。
+
+#### 从电场到表面电荷
+
+<MediaPair
+  src="场求解器2.jpg"
+  imageSize="xs"
+>
+麦克斯韦方程中，电位移矢量 $\mathbf{D}$ 与自由电荷密度 $\rho_f$ 满足：
+
+$$
+\nabla \cdot \mathbf{D} = \rho_f
+$$
+
+散度可以理解为“某一点向外发射或向内吸收场线的程度”，这里的物理含义是**这一点吸引或散发多少电场**。
+
+如果 $\mathbf{D}=(D_x,D_y,D_z)$，则：
+
+$$
+\text{div}~\mathbf{D}
+=
+\nabla \cdot \mathbf{D}
+=
+\frac{\partial D_x}{\partial x}
++\frac{\partial D_y}{\partial y}
++\frac{\partial D_z}{\partial z}
+$$
+
+</MediaPair>
+
+
+为了求某个导体表面携带的总电荷 $Q$，可以假设导体被一个闭合曲面 $S$ 包围，这个曲面围起来的体积为 $V$。由高斯公式（高斯散度定理）：
+
+$$
+\iiint_V \nabla \cdot \mathbf{F}\,dV
+=
+\iiint_V \frac{\partial D_x}{\partial x}+\frac{\partial D_y}{\partial y}+\frac{\partial D_z}{\partial z}\,dV
+=
+\oiint_S \mathbf{F}\cdot d\mathbf{S}
+$$
+
+对麦克斯韦方程左右两边积分，可得：
+
+$$
+\iiint_V \nabla \cdot \mathbf{D}\,dV
+=
+\oiint_S \mathbf{D}\cdot d\mathbf{S}
+$$
+
+又因为 $\nabla \cdot \mathbf{D}=\rho_f$，所以：
+
+$$
+Q
+=
+\iiint_V \rho_f\,dV
+=
+\oiint_S \mathbf{D}\cdot d\mathbf{S}
+$$
+
+电位移矢量$\mathbf{D}$和电场强度$\mathbf{E}$满足，这里的电位移矢量指的是从一个点散发或吸收的电场，电场强度是描述整个空间的电场：
+
+$$
+\mathbf{D}=\varepsilon\mathbf{E}
+$$
+
+其中 $\varepsilon$ 是介电常数，$\mathbf{E}$ 是电场强度。电场可以看成电势的空间变化率：
+
+$$
+\mathbf{E}=-\nabla \phi
+$$
+
+因此导体表面电荷也可以写成：
+
+$$
+Q
+=
+\oiint_S \mathbf{D}\cdot d\mathbf{S}
+=
+\oiint_S \varepsilon \mathbf{E}\cdot d\mathbf{S}
+=
+\oiint_S \varepsilon \mathbf{E}\cdot \mathbf{n}\,dS
+$$
+
+其中 $d\mathbf{S}=\mathbf{n}dS$，$\mathbf{n}$ 是垂直于表面的单位法向量。$\mathbf{E}\cdot\mathbf{n}$ 表示电场在法向方向上的分量，因为只有垂直穿过导体表面的电场线会对表面电荷有贡献。
+
+在导体之外的介质区域中没有自由电荷，所以 $\rho_f=0$。由
+
+$$
+\nabla \cdot \mathbf{D}=0
+$$
+
+和
+
+$$
+\mathbf{D}=\varepsilon\mathbf{E}=\varepsilon(-\nabla\phi)
+$$
+
+可得场求解器真正要求解的电势方程：
+
+$$
+\nabla\cdot(\varepsilon\nabla\phi)=0
+$$
+
+也就是说：已知介电常数 $\varepsilon$ 和导体边界电势，先求空间中的电势 $\phi$，再由 $\mathbf{E}=-\nabla\phi$ 得到电场，最后通过表面积分得到导体电荷 $Q$，进而反推出电容 $C$。
+
+在计算机里，连续空间会被离散成很多小块或网格，常见方法就是 FDM 和 FEM。
+
 <iframe
 	class="note-interactive"
 	src="/interactives/field-solver-gemini/index.html"
@@ -43,7 +210,11 @@ $$
 	loading="lazy"
 ></iframe>
 
+场求解器本质是求电荷和导体周围的变化量，下面是场求解器的介绍：
+
 #### FDM与FEM
+
+FDM与FEM本质是求导体周围的电势变化量。
 
 以二维FDM为例，场求解器会先把连续空间切成一个个规则小方格，只在格点上保存未知电势。对于一个不在导体边界上的内部格点 $\phi_{i,j}$，二维 Laplace 方程可以等价地写成，含义是这块的电势是上下左右四个电势的平均值：
 
@@ -72,20 +243,7 @@ $
 -4x_1+x_2+x_3=-1
 $
 
-对 $x_2$ 来说，右边和上边都是 $0V$ 边界，左边是 $x_1$，下边是 $x_4$，所以：
-$
-x_1-4x_2+x_4=0
-$
-
-对 $x_3$ 来说，左边是 $1V$ 边界，下边是 $0V$ 边界，右边是 $x_4$，上边是 $x_1$，所以：
-$
-x_1-4x_3+x_4=-1
-$
-
-对 $x_4$ 来说，右边和下边都是 $0V$ 边界，左边是 $x_3$，上边是 $x_2$，所以：
-$
-x_2+x_3-4x_4=0
-$
+对 $x_2$、$x_3$、$x_4$ 来说，同理。
 
 把四个方程合起来就是一个具体的矩阵方程：
 
@@ -115,35 +273,41 @@ x_4
 \end{bmatrix}
 $$
 
-对于真实芯片局部窗口，未知格点可能有几十万甚至更多，所以 $A$ 会非常大；但它是稀疏矩阵，因为每个格点只直接连接少数邻居。
+对于真实芯片局部窗口，未知格点可能有几十万甚至更多，所以 $A$ 会非常大，而且是算上下前后左右六个格点的影响值；但它是稀疏矩阵，因为每个格点只直接连接少数邻居。
 
 #### BEM
 
-BEM代表是FasterCap。已知边界电势$v$，直接求表面电荷$q$
+BEM本质是直接求导体表面电荷。
+
+BEM代表是FastCap。已知边界电势$v$，直接求表面电荷$q$
 
 $$
 Pq = v
 $$
 
-BEM并不需要求解空间中的电势矩阵。在均匀介质中，一个点电荷$q$在距离$r$的地方的电势为：
+BEM并不需要求解空间中的电势矩阵。由库仑定律，在均匀介质中，一个点电荷放在$\mathbf{r}_0$点，对$\mathbf{r}$点的电势为，其中$q$是点电荷带电量：
 
 $$
-\phi = \frac{1}{4 π \epsilon} \frac{q}{r}
+\phi(\mathbf{r}) = \frac{1}{4 π \varepsilon} \frac{q}{|\mathbf{r} - \mathbf{r}_0|}
 $$
 
-由格林函数可得，对其积分是某个观察点r的电势是把所有的微小电荷贡献加起来，即所有表面电荷决定对一个点的电势：
+由格林函数可得，把平面切分为一个个点，每一个点都带电荷，对其积分是某个观察点r的电势是把所有的微小电荷贡献加起来，即所有表面电荷决定对一个点的电势。其中，$\mathbf{r}$是观察点坐标，$\mathbf{r}'$是在导体表面上的坐标，$\sigma(\mathbf{r}')$是导体表面上在这个位置的电荷密度：
 
 $$
-\phi(r) = \frac{1}{4 π \epsilon} \int_{S} \frac{\sigma(r')}{|r - r'|}dS'
+\phi(\mathbf{r}) = \frac{1}{4 π \varepsilon} \int_{S} \frac{\sigma(\mathbf{r}')}{|\mathbf{r} - \mathbf{r}'|}dS'
 $$
 
-BEM把连续空间表面切成很多panel。把panel $j$上的单位总电荷均匀铺开，计算它对panel $i$中心点产生的电势，这个比例系数就是 $P_{ij}$。其中$A_j$是第$j$个panel的面积，有：
+BEM把连续空间表面切成很多panel。把panel $j$上的单位总电荷均匀铺开，计算它对panel $i$中心点产生的电势，这个比例系数就是 $P_{ij}$。其中$A_j$是第$j$个panel的面积，我们把电荷密度$\sigma$拿到系数外，有：
 
 $$
-P_{ij} = \frac{1}{4 π \epsilon A_j} \int_{S_i} \frac{\sigma(r')}{|r_i - r'|}dS'
+P_{ij} = \frac{1}{4 π \varepsilon A_j} \int_{S_j} \frac{1}{|\mathbf{r}_i - \mathbf{r}'|}dS'
 $$
 
 然后解$Pq = v$矩阵，这里$P$是稠密矩阵。
+
+$$
+\phi_i = P_{i1}q_1 + P_{i2}q_2 + \cdots + P_{iN}q_N
+$$
 
 ### 浮动随机游走
 
@@ -176,14 +340,19 @@ ML输出：等效电容Ceff和等效电阻Reff
 
 方法：训练随机森林，给每个net训练出一个Ceff和Reff。把互联net看成一个星型拓扑结构，整个net有一个电容和多个电阻，连接到各个pin的电阻是Reff除以pin的个数。
 
-![](MLParset.jpg)
-
+<MediaPair
+  src="MLParset.jpg"
+  imageSize="md"
+>
 训练集的电容Ceff是post Layout提取出来的真实寄生电容，电阻没用提取出来的电阻，因为提取出的电阻也是一段一段的，而且一个net的所有电阻不能简单累加成一个Reff。所以论文用一个等效公式，用真实的寄生电容算出真实的寄生电阻。
 
 这里我们定义了有效时间常数 ($\tau_{eff}$) 的概念 。对于一个拥有 $N$ 个极点（poles，$p_1, p_2, ..., p_N$）的系统，其有效时间常数定义如下 ：
 $$
 \tau_{eff}=\sqrt{\frac{1}{{p_{1}}^{2}}+\cdot\cdot\cdot+\frac{1}{{p_{i}}^{2}}+\cdot\cdot\cdot+\frac{1}{{{p_{N}}^{2}}}}
 $$
+
+</MediaPair>
+
 可得有效电阻：
 $$
 R_{eff} = \frac{\tau_{eff}}{C_{eff}}
@@ -200,7 +369,9 @@ $$
 
 这篇论文用卷积神经网络计算寄生电容。我比较喜欢这篇论文的思想，有点花小钱办大事的感觉。论文只是预测了三层的芯片区域，用场求解器计算master和target之间的耦合电容然后计算，没有扩展到更大的区域。论文训练了两个模型，分别用于预测total电容和耦合电容。
 
-![](CNN-Cap_Fig6.png)
+<NoteImage
+	src="CNN-Cap_Fig6.png"
+/>
 
 一开始，论文的2021年版本是只是对2.5D芯片做的寄生电容预测，编码大概是：
 
@@ -208,21 +379,29 @@ $$
 
 特征向量用正交的视角有一个好处：这样顾及到导线的四个面对于同层和不同层之间的绕射电容。如Fig2所示，比如我要计算上面的导线对下面的导线的耦合电容，是$C_{1f1}+C_{1f2}+C_{2f1}+C_{2f2}+C_{1o}$，注意$C_{1o}$和$C_{2o}$是一个东西。
 
-![](CNN-Cap_Fig3.jpg)
+<NoteImage
+	src="CNN-Cap_Fig3.jpg"
+/>
 
 论文对于特征值的编码也很取巧，如图所示，是在一个单元格内按照面积占比编码，master导线额外加1，target导线变为负值。论文的模型是这样输入输出的：我一次只预测一个导线的total电容或者一对导线的电容，然后只会输出一个值，这样有效避免了因为数据集中的导线数量不同导致的输出数据个数不同。
 
-![](CNN-Cap_Fig7.jpg)
+<NoteImage
+	src="CNN-Cap_Fig7.jpg"
+/>
 
 这样有一个最严重的问题：无法考虑到同一层中有两个导线不完全重叠的情况，这种情况下侧面视图无法得到有效信息。为此，论文自己也在23年提出了3D的改进方案：
 
 仍然把一层看成一个Channel，但是每一个channel变成了一个有x-y轴的二维图像，这个图像就是从上向下对于这一层的俯视图，如图所示，编码同2.5D那个。
 
-![](CNN-Cap_Fig9.jpg)
+<NoteImage
+	src="CNN-Cap_Fig9.jpg"
+/>
 
 论文对于一根导线能与其他导线耦合的最大范围边界定为了5um，这个范围叫window。其中windows内有0.5um的padding，以及4um×4um大小的core-region。当master导线完全在core-region内时，忽略window外的导线其的耦合电容，只计算window内的；当master导线很长的时候，考虑到性能问题，没有加大window而是对master导线进行截断，只考虑在core-region内的master导线，只对window内的导线有耦合电容（包含在padding区域内的dummy master）。
 
-![](CNN-Cap_Fig13.jpg)
+<NoteImage
+	src="CNN-Cap_Fig13.jpg"
+/>
 
 ## 图神经网络
 
@@ -230,6 +409,10 @@ $$
 
 参考文献：ParaGraph:Layout Parasitics and Device Parameter Prediction using Graph Neural Networks(Nvidia DAC 2020)
 
+<MediaPair
+	src="ParaGraph_Fig3.jpg"
+	imageSize="md"
+>
 问题：在模拟电路中，在pre layout时，估计电路模块寄生参数总是凭经验。本文提出了基于各种图神经网络并提出了新的适配模块级的寄生电容和其他相关参数图神经网络
 
 ML输入：晶体管的ploy长度、鳍片个数、电阻长度、...
@@ -238,8 +421,7 @@ ML输出：晶体管LDE参数 源极漏极面积和参数 寄生电容（没有�
 
 方法：
 在图神经网络的基础上，结合了RGCN(不同边区别对待)，GAT(自注意力抓重点)，GraphSage(用自己的旧特征和新特征拼接)。论文把电路图转化为异构图，pin和导线都设置为节点，节点间用有向边连。由于不同器件的电容差距过大，所以论文根据电容范围把器件分为四个类别，训练了四组模型。
-
-![](ParaGraph_Fig3.jpg)
+</MediaPair>
 
 邻接边的种类有四个：导线→源极漏极，导线→栅极，源极漏极→导线，源极漏极→导线。边不同，则对应的参数权重矩阵不同。
 
@@ -286,14 +468,16 @@ $$
 
 参考文献：Parasitic-Aware Analog Circuit Sizing with Graph Neural Networks and Bayesian Optimization(Nvidia DATE 2021)
 
+<MediaPair
+	src="Parastic-Aware_Fig2.jpg"
+	imageSize="sm"
+>
 上一篇论文的续作。上一篇论文主要讲的是集总电容（对地、基底等电容），这篇论文在图神经网络上做了改进，用一对边节点的嵌入计算耦合电容（导线之间电容），用相邻边节点和引脚节点的嵌入计算电阻。加上了导线间的耦合电容后，准确度有明显的改进。
-
-![](Parastic-Aware_Fig2.jpg)
 
 在论文中，把一段导线近似为一个net 模型，里边可能有很多分支，两端可能连很多单元，甚至还有可能跨层，对于大型芯片来说这种预测不够准。
 
 同时，论文没有明确提出用于计算的耦合电容的两个边节点是怎么来的，只是说所有边两两算耦合电容没必要。
-
+</MediaPair>
 
 ### GNN-Cap
 
@@ -301,20 +485,29 @@ $$
 
 方法：论文中把一段net分为一个个cuboid（和tile类似，以下称为tile）。论文把tile当成一个节点，三个特征为长宽高。论文的边有七个特征，分别为两个tile中心的距离，两个tile的X/Y/Z方向坐标差。
 
-![](GNN-Cap_Fig4.jpg)
-
 论文在水平方向定义了阈值$d_e$(和halo类似，以下称为halo)，在halo范围内，则认为两个节点有边。论文在垂直方向，给每个tile上下加上比层间绝缘层高一点的的halo，目的是让两个tile之间能被识别为边。
 
-![](GNN-Cap_Fig2.jpg)
+<MediaPair
+	src="GNN-Cap_Fig4.jpg"
+>
+	<NoteImage
+		src="GNN-Cap_Fig2.jpg"
+		size="md"
+	/>
+</MediaPair>
 
 论文中把芯片建模成这样：
 
-![](GNN-Cap_Fig1.jpg)
+<NoteImage
+	src="GNN-Cap_Fig1.jpg"
+	size="sm"
+/>
 
 本文中主要计算三种电容：自带电容、耦合电容、隐藏边导致的电容。其中，自带电容用节点自己的嵌入算，耦合电容用两个节点和之间的边算。论文中提到，在同层中当两个tile相距过远的时候，中间没有tile隔着的时候，本文的建模方法是不会给这两个tile连上边的，即使这两个tile存在耦合电容；同理，当上下层的两个tile中间隔一层，但是这一层没有tile遮挡的时候，这两个tile也是有耦合电容的，但是本文的建模方法则认为这两个tile之间没有边。因此，本文加了一些这样的虚拟边，但是也不参与GCN的计算。
 
-![](GNN-Cap_Fig5.jpg)
-
+<MediaPair
+	src="GNN-Cap_Fig5.jpg"
+>
 公式中，$h$是节点嵌入，两个$W$是两个权重矩阵，一个作用与聚合的边，一个作用于节点的旧嵌入，$c$是每两个节点之间的消息缩放比例。
 
 $$
@@ -326,6 +519,7 @@ $$
 $$
 h_{e_{ij}}^{l} = \text{MLP} \left( \text{CONCAT} \left( h_{v_i}^{l}, h_{v_j}^{l}, \text{MLP}_{trans}(h_{e_{ij}}^{l-1}) \right) \right)
 $$
+</MediaPair>
 
 由于算的都是按照一个个tile或者tile之间的电容，寄生参数提取下一步的STA要每个网络（一段由一个或几个tile拼接的抽象长导线）的电容，所以把一段net内的tile电容都加和。
 
@@ -336,3 +530,38 @@ $$
 $$
 
 
+### DL Pre-Layout
+
+参考文献：Deep-Learning-Based Pre-Layout Parasitic Capacitance  Prediction on SRAM Designs（清华/港中文 GLSVLSI 2024 CCFC）
+
+在布局布线之前，做好寄生电容预测。SRAM内部网络电容分布不均衡，有大量小电容网络，训练时候占据绝大多数样本。但是大电容net就容易预测不好，这些往往是对于寄生参数有很大影响的。
+
+论文把网表转化为了异构图，图中有三类节点：网络节点、器件节点、子电路节点。子电路节点是由若干器件组成的，加上这个节点特征可以反应网表的层次结构。论文构建的图是把这三个节点混在一起，用无向边连接的，没有具体展开是怎么连的。
+
+论文把模型分为两个阶段：第一阶段是GNN 分类，第二个是MLP 回归。第一阶段只判断这个net大概属于哪个电容数量级，第二个阶段才是回归。
+
+论文用了Focal Loss，SRAM数据中小电容net太多，用普通cross entropy模型会被简单样本主导，于是用了Focal Loss，直观作用是少数类样本提高关注度。
+
+### NAS-Cap 
+
+参考文献：Training Better CNN Models for 3-D Capacitance  Extraction with Neural Architecture Search(清华 DATE CCFB 2024)
+
+论文在复旦的那个CNN-Cap上改进的，不人为指定卷积网络结构，而是给出几个结构，让模型自己挑。论文说CNN-Cap预测总电容还不错，但是预测耦合电容误差较大，这篇论文主要改进这个点。
+
+下面公式中，$\hat{o}$是多个操作的候选结果，$\theta$是操作被选中的概率权重，$O$是候选操作集合。
+$$
+\hat{o}^{(i,j)}(x)=\sum_{o\in O}\theta_o^{(i,j)}o(x), \quad \text{s.t.}~\sum_{o\in O}\theta_o^{(i,j)} = 1
+$$
+
+
+## 其余方法
+
+### PCT-Cap
+
+参考文献：PCT-Cap: Point Cloud Transformer for Accurate 3D Capacitance Extraction（iEDA团队/清华/东南/中科院 ISEDA 2024 无评级）
+
+注：ISEDA 是国内发起并主导的新兴 EDA 国际会议，2023年举办首届。由于创办时间较短，它尚未被纳入CCF推荐的A/B/C类会议目录中。
+
+把真实 3D 几何和介质边界采样成点云，让 Transformer 学 3D 空间关系。对我的启发是可以在底层公式中寻找一些特征作为神经网络输入，这样比单纯的黑盒模型更有说服力。
+
+实在懒得细看了。

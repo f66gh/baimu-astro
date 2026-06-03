@@ -1,0 +1,37 @@
+---
+import { resolveImagePath } from '../../lib/content';
+
+type ImageSize = 'xs' | 'sm' | 'md' | 'lg' | 'full';
+
+interface Props {
+	src: string;
+	alt?: string;
+	caption?: string;
+	size?: ImageSize;
+	width?: string;
+	imageRoot?: string;
+	class?: string;
+}
+
+const {
+	src,
+	alt,
+	caption,
+	size = 'md',
+	width,
+	imageRoot,
+	class: className,
+} = Astro.props;
+
+const resolvedSrc = resolveImagePath(src, imageRoot) ?? src;
+const imageAlt = alt ?? caption ?? '';
+const style = width ? `--note-image-width: ${width};` : undefined;
+---
+
+<figure
+	class:list={['note-image', `note-image-${size}`, className]}
+	style={style}
+>
+	<img src={resolvedSrc} alt={imageAlt} loading="lazy" decoding="async" />
+	{caption && <figcaption>{caption}</figcaption>}
+</figure>
