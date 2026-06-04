@@ -1,0 +1,22 @@
+<div class="article-table">
+	<table>
+		<slot />
+	</table>
+</div>
+
+<style>
+	.article-table {
+		display: flex;
+		justify-content: center;
+		max-width: 100%;
+		margin: 22px 0;
+		overflow-x: auto;
+	}
+
+	.article-table table {
+		flex: 0 0 auto;
+		border-collapse: collapse;
+		font-size: 0.96rem;
+		line-height: 1.55;
+	}
+</style>

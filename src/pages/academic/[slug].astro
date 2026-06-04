@@ -1,6 +1,7 @@
 ---
 import { render } from 'astro:content';
 import ArticlePage from '../../components/content/ArticlePage.astro';
+import ArticleTable from '../../components/content/ArticleTable.astro';
 import MediaPair from '../../components/content/MediaPair.astro';
 import NoteImage from '../../components/content/NoteImage.astro';
 import Layout from '../../layouts/Layout.astro';
@@ -23,6 +24,7 @@ const { Content, headings } = await render(entry);
 const mdxComponents = {
 	NoteImage,
 	MediaPair,
+	table: ArticleTable,
 };
 ---
 

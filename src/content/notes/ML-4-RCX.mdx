@@ -326,8 +326,6 @@ $$
 	loading="lazy"
 ></iframe>
 
-
-
 ## 随机森林
 
 参考文献：MLParest: Machine Learning based Parasitic Estimation for Custom Circuit Design(Intel DAC 2020)
@@ -361,7 +359,6 @@ $$
 $$
 R_{branch} = \frac{R_{eff}}{M}
 $$
-
 
 ## 卷积神经网络
 
@@ -403,7 +400,7 @@ $$
 	src="CNN-Cap_Fig13.jpg"
 />
 
-## 图神经网络
+## 注意力机制
 
 ### ParaGraph
 
@@ -463,6 +460,29 @@ $$
 $$
 h_i^{(l+1)} \leftarrow \sigma \left( W^{(l)} \cdot \text{concat}(h_i^{(l)}, h_i + b^{(l)}) \right)
 $$
+
+### CircuitGPS
+
+参考文献：Few-shot Learning on AMS Circuits and Its Application to Parasitic Capacitance Prediction(清华 DAC 2025)
+
+论文是在GraphGPS基础上改进的，针对的是模拟电路的后端流程。文中提到ParaGraph是把一个集总的电网做总电容的预测，而没有考虑到耦合电容的计算。
+论文是先做了一步预测，看看两个节点之间有没有耦合连接，如果有的话，再预测这个连接的电容。
+
+论文是这样建模的：图中有三类节点，分别是网络节点、引脚节点和器件节点。其中，器件节点和自己的引脚有边，网络和引脚有边。
+论文是预测的耦合连接，和图中的拓扑边不是一个东西。
+
+<NoteImage size="sm" src="CircuitGPS_Fig1.jpg"/>
+
+论文对于训练集是这样划分的：图中一对节点在各自的一跳范围内的节点集合有交叉，则把这两个节点的一跳子图的并集当成一个训练和测试用子图。
+论文是拿着post-layout后的结果当做真实值，两个节点有耦合电容标签为1，两个节点没有耦合电容标签为0。
+
+网络结构如下图所示，输入网表后，兵分两路。下面的是一些电路相关的特征，上面是寻找并构建子图。
+在预训练中，输入的X/d/E分别是节点属性、子图内各节点到要预测的节点的距离以及边属性。预训练的输出是二分类，是否有耦合连接。
+在微调中，拿着预训练输出的隐藏嵌入，做了回归任务，预测耦合电容。
+
+<NoteImage size="md" src="CircuitGPS_Fig2.jpg"/>
+
+## 图神经网络
 
 ### Parasitic-Aware
 
@@ -553,6 +573,21 @@ $$
 \hat{o}^{(i,j)}(x)=\sum_{o\in O}\theta_o^{(i,j)}o(x), \quad \text{s.t.}~\sum_{o\in O}\theta_o^{(i,j)} = 1
 $$
 
+### CircuitGCL
+
+参考文献：Transferable Parasitic Estimation via Graph Contrastive Learning and Label Rebalancing in AMS Circuits（南京理工/清华/北邮 ICCAD 2025 CCFB）
+
+AMS(Analog-Mixed Signal)是模拟混合信号，即电路中又有模拟信号，又有数字信号。论文解决的是AMS电路中训练数据少，不同电路差异大，寄生电容标签分布严重不均衡导体GNN很难跨电路泛化问题。
+
+论文主要预测pre-layout时候的寄生电容，论文把节点分成了net/device/pin，边主要是device-pin和net-pin。
+
+论文为了简化，把异构图当成了同构图，把不同节点当成特征属性输入。论文增强了节点特征。
+
+<NoteImage src="CircuitGCL_Fig2.jpg" size="sm"/>
+
+由于标签少，标签分布不均匀，所以论文用了自监督学习，用了两个encoder。
+训练时，target encoder用于教学，online encoder用于学习。测试和验证时候只用online encoder用于学习。
+测试和验证时候只用online encoder。
 
 ## 其余方法
 
@@ -564,4 +599,46 @@ $$
 
 把真实 3D 几何和介质边界采样成点云，让 Transformer 学 3D 空间关系。对我的启发是可以在底层公式中寻找一些特征作为神经网络输入，这样比单纯的黑盒模型更有说服力。
 
+<NoteImage src="PCT-Cap_Fig4.jpg" size="sm"/>
+
+论文数据全部来自一个28nm的1160.04 μm × 1155.6 μm芯片设计，每个窗口是0.5um×0.5um大小，每个窗口高度是三个布线层，每层最多五根平行线。
+还用了数据增强，总电容数据集约40000个窗口，耦合电容数据集约45000个窗口。
+
+每个窗口采样1024个点，论文没具体说是怎么采样的，大概是在导体表面采集的。
+然后每个点有八个特征：分别是三个左边、这个点所在边界面的三个单位法向量，以及环境介电常数和区分导体用的标志。
+
 实在懒得细看了。
+
+## 开源数据集
+
+### CapBench
+
+参考文献：CapBench: A Multi-PDK Dataset for Machine-Learning-Based  Post-Layout Capacitance Extraction （清华 DAC 2026 CCFA）
+
+本文开源了三种自己处理的数据集标签，可以用于CNN\GCN\点云。用的开源的RTL，用OpenROAD跑到布线，再用KLayout切出很多窗口，再用RWCap标注电容和用Raphael验证RWCap标签精度。
+
+文章使用了三种开源数据集，ASAP7/Nangate45/Sky130，这三个工艺做了五个芯片设计Ibex/JPEG/CAV6/TinyRocket/RocketChip-Benchmark。
+
+论文一共切出了61855个窗口，每个PDK都切有三种窗口大小：
+| PDK       |   Small |  Medium |   Large |
+| --------- | ------: | ------: | ------: |
+| ASAP7     | 0.75 μm |  2.5 μm |  5.0 μm |
+| NanGate45 |  2.0 μm |  5.0 μm | 10.0 μm |
+| Sky130HD  |  4.5 μm | 10.0 μm | 20.0 μm |
+
+每个工艺、每个窗口大小切出来的数量如下：
+| PDK           | 窗口大小   |    边长 L | 金属层范围         | window 数量 |
+| ------------- | ------ | ------: | ------------- | --------: |
+| **ASAP7**     | Small  | 0.75 μm | M1–M7         |     2,947 |
+| **ASAP7**     | Medium |  2.5 μm | M1–M9         |     1,846 |
+| **ASAP7**     | Large  |  5.0 μm | M1–M9         |     1,559 |
+| **NanGate45** | Small  |  2.0 μm | metal1–metal4 |     8,109 |
+| **NanGate45** | Medium |  5.0 μm | metal1–metal7 |     8,106 |
+| **NanGate45** | Large  | 10.0 μm | metal1–metal7 |     2,028 |
+| **Sky130HD**  | Small  |  4.5 μm | li1–met4      |    17,668 |
+| **Sky130HD**  | Medium | 10.0 μm | li1–met5      |    18,220 |
+| **Sky130HD**  | Large  | 20.0 μm | li1–met5      |     1,372 |
+
+
+论文标签用的是自己的RWCap，而不是Raphael场求解器。因为RWCap对比Raphael的总电容和耦合电容误差分别是0.64%和2%，已经很小了。
+而且比Raphael快。OpenRCX相比于Raphael的误差在20%很大，所以不适合打标签。
