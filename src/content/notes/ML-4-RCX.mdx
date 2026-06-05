@@ -43,7 +43,6 @@ $$
 <NoteImage
 	src="场求解器1.jpg"
 	size="md"
-	imageSide="left"
 />
 
 先假设空间中有三个导体 $A,B,C$ 和一个基底 substrate。我们想计算导体 $A$ 与其它导体、基底之间的耦合电容。场求解器通常会做一次“单位电压激励”：令
@@ -155,12 +154,6 @@ Q
 \oiint_S \mathbf{D}\cdot d\mathbf{S}
 $$
 
-电位移矢量$\mathbf{D}$和电场强度$\mathbf{E}$满足，这里的电位移矢量指的是从一个点散发或吸收的电场，电场强度是描述整个空间的电场：
-
-$$
-\mathbf{D}=\varepsilon\mathbf{E}
-$$
-
 其中 $\varepsilon$ 是介电常数，$\mathbf{E}$ 是电场强度。电场可以看成电势的空间变化率：
 
 $$
@@ -181,13 +174,21 @@ $$
 
 其中 $d\mathbf{S}=\mathbf{n}dS$，$\mathbf{n}$ 是垂直于表面的单位法向量。$\mathbf{E}\cdot\mathbf{n}$ 表示电场在法向方向上的分量，因为只有垂直穿过导体表面的电场线会对表面电荷有贡献。
 
-在导体之外的介质区域中没有自由电荷，所以 $\rho_f=0$。由
+#### 从导体周围电势梯度计算电场
+
+在导体之外的介质区域中没有自由电荷，所以 $\rho_f=0$。
 
 $$
 \nabla \cdot \mathbf{D}=0
 $$
 
-和
+电位移矢量$\mathbf{D}$和电场强度$\mathbf{E}$满足，这里的电位移矢量指的是从一个点散发或吸收的电场，电场强度是描述整个空间的电场：
+
+$$
+\mathbf{D}=\varepsilon\mathbf{E}
+$$
+
+由上面两个公式可得：
 
 $$
 \mathbf{D}=\varepsilon\mathbf{E}=\varepsilon(-\nabla\phi)
@@ -285,29 +286,82 @@ $$
 Pq = v
 $$
 
-BEM并不需要求解空间中的电势矩阵。由库仑定律，在均匀介质中，一个点电荷放在$\mathbf{r}_0$点，对$\mathbf{r}$点的电势为，其中$q$是点电荷带电量：
+BEM并不需要求解空间中的电势矩阵。由库仑定律，在均匀介质中，设$q$是点电荷带电量，一个点电荷放在$\mathbf{r}_0$点，对$\mathbf{r}$点的电势为：
 
 $$
 \phi(\mathbf{r}) = \frac{1}{4 π \varepsilon} \frac{q}{|\mathbf{r} - \mathbf{r}_0|}
 $$
 
-由格林函数可得，把平面切分为一个个点，每一个点都带电荷，对其积分是某个观察点r的电势是把所有的微小电荷贡献加起来，即所有表面电荷决定对一个点的电势。其中，$\mathbf{r}$是观察点坐标，$\mathbf{r}'$是在导体表面上的坐标，$\sigma(\mathbf{r}')$是导体表面上在这个位置的电荷密度：
+把带有电荷的发射板切分为一个个点，每一个点都带电荷，对其积分。物理含义是**在这个平面上，把所有观察点r的微小电荷贡献加起来，计算这些电荷对一个接收板中心点的电势**。
+其中，$\mathbf{r}$是接收板中心点坐标，$\mathbf{r}'$是发射板观察点，$\sigma(\mathbf{r}')$是发射板积分区域电荷密度：
 
 $$
 \phi(\mathbf{r}) = \frac{1}{4 π \varepsilon} \int_{S} \frac{\sigma(\mathbf{r}')}{|\mathbf{r} - \mathbf{r}'|}dS'
 $$
 
-BEM把连续空间表面切成很多panel。把panel $j$上的单位总电荷均匀铺开，计算它对panel $i$中心点产生的电势，这个比例系数就是 $P_{ij}$。其中$A_j$是第$j$个panel的面积，我们把电荷密度$\sigma$拿到系数外，有：
+BEM中，我们假设电荷是均匀涂抹在积分区域中，所以密度$\sigma$是个常数，可以拿出来。我们关心的是导体表面总电荷，在积分区域内总电荷满足面积成密度：$q=A\sigma$。
+于是，上述公式可以转化为：
+
+$$
+\begin{aligned}
+\phi(\mathbf{r}) 
+&= \frac{\sigma(\mathbf{r}')}{4 π \varepsilon} \int_{S} \frac{1}{|\mathbf{r} - \mathbf{r}'|}dS'\\
+&= \frac{q}{4 π \varepsilon A} \int_{S} \frac{1}{|\mathbf{r} - \mathbf{r}'|}dS'\\
+&= P q
+\end{aligned}
+$$
+
+其中，发射板设为$j$，接收板设为$i$，$r'$是在发射板上面的观察点，我们把$P_{ij}$作为系数提出来：
 
 $$
 P_{ij} = \frac{1}{4 π \varepsilon A_j} \int_{S_j} \frac{1}{|\mathbf{r}_i - \mathbf{r}'|}dS'
 $$
 
-然后解$Pq = v$矩阵，这里$P$是稠密矩阵。
+然后通过$Pq = v$矩阵，转化为$q=P^{-1}v$，求解发射板上每一个单位面积的电荷量。这里$P$叫做电容系数矩阵，是一个稠密矩阵。
 
 $$
 \phi_i = P_{i1}q_1 + P_{i2}q_2 + \cdots + P_{iN}q_N
 $$
+
+<MediaPair src="场求解器3.jpg" imageSize="xs">
+我们以一个二维简化的玩具模型为例，并且只计算导体A底部这一个单位面的感应电荷：
+
+我们假设A是1v，B和substrate都是0v，以草稿纸一个格子长度为单位面，那么从A底部单位面发射的电场线如图所示。
+
+我们定义导体B的上下左右单位面和substrate两个单位面的符号是$b_t,b_r,b_b,b_l,s_1,s_2$，有未知电荷量为：
+
+$$
+q = \begin{bmatrix} q_a & q_{b_t} & q_{b_r} & q_{b_b} & q_{b_l} & q_{s_1} & q_{s_2} \end{bmatrix}^T
+$$
+
+电压向量为：
+
+$$
+v = \begin{bmatrix} 1 & 0 & 0 & 0 & 0 & 0 & 0 \end{bmatrix}^T
+$$
+
+
+</MediaPair>
+
+把$Pq=v$展开为：
+
+$$
+\begin{bmatrix} 
+P_{a,a} & P_{a,b_t} & P_{a,b_r} & P_{a,b_b} & P_{a,b_l} & P_{a,s_1} & P_{a,s_2} \\
+P_{b_t,a} & P_{b_t,b_t} & P_{b_t,b_r} & P_{b_t,b_b} & P_{b_t,b_l} & P_{b_t,s_1} & P_{b_t,s_2} \\
+P_{b_r,a} & P_{b_r,b_t} & P_{b_r,b_r} & P_{b_r,b_b} & P_{b_r,b_l} & P_{b_r,s_1} & P_{b_r,s_2} \\
+P_{b_b,a} & P_{b_b,b_t} & P_{b_b,b_r} & P_{b_b,b_b} & P_{b_b,b_l} & P_{b_b,s_1} & P_{b_b,s_2} \\
+P_{b_l,a} & P_{b_l,b_t} & P_{b_l,b_r} & P_{b_l,b_b} & P_{b_l,b_l} & P_{b_l,s_1} & P_{b_l,s_2} \\
+P_{s_1,a} & P_{s_1,b_t} & P_{s_1,b_r} & P_{s_1,b_b} & P_{s_1,b_l} & P_{s_1,s_1} & P_{s_1,s_2} \\
+P_{s_2,a} & P_{s_2,b_t} & P_{s_2,b_r} & P_{s_2,b_b} & P_{s_2,b_l} & P_{s_2,s_1} & P_{s_2,s_2} 
+\end{bmatrix} \begin{bmatrix} q_a \\ q_{b_t} \\ q_{b_r} \\ q_{b_b} \\ q_{b_l} \\ q_{s_1} \\ q_{s_2} 
+\end{bmatrix} = \begin{bmatrix} 1 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 
+\end{bmatrix}
+$$
+
+转化为$q=P^{-1}v$，求解导体的表面附着总电荷，然后带回$Q=CU$，继续求麦克斯韦电容矩阵。
+
+在真实情况中，空间是三维的，而且也要计算B和sub对于A的感应电荷，这个电荷系数矩阵同样非常庞大，而且是稠密的。
 
 ### 浮动随机游走
 
@@ -480,7 +534,7 @@ $$
 在预训练中，输入的X/d/E分别是节点属性、子图内各节点到要预测的节点的距离以及边属性。预训练的输出是二分类，是否有耦合连接。
 在微调中，拿着预训练输出的隐藏嵌入，做了回归任务，预测耦合电容。
 
-<NoteImage size="md" src="CircuitGPS_Fig2.jpg"/>
+<NoteImage size="lg" src="CircuitGPS_Fig2.jpg"/>
 
 ## 图神经网络
 
@@ -583,7 +637,7 @@ AMS(Analog-Mixed Signal)是模拟混合信号，即电路中又有模拟信号�
 
 论文为了简化，把异构图当成了同构图，把不同节点当成特征属性输入。论文增强了节点特征。
 
-<NoteImage src="CircuitGCL_Fig2.jpg" size="sm"/>
+<NoteImage src="CircuitGCL_Fig2.jpg" size="lg"/>
 
 由于标签少，标签分布不均匀，所以论文用了自监督学习，用了两个encoder。
 训练时，target encoder用于教学，online encoder用于学习。测试和验证时候只用online encoder用于学习。
@@ -599,7 +653,7 @@ AMS(Analog-Mixed Signal)是模拟混合信号，即电路中又有模拟信号�
 
 把真实 3D 几何和介质边界采样成点云，让 Transformer 学 3D 空间关系。对我的启发是可以在底层公式中寻找一些特征作为神经网络输入，这样比单纯的黑盒模型更有说服力。
 
-<NoteImage src="PCT-Cap_Fig4.jpg" size="sm"/>
+<NoteImage src="PCT-Cap_Fig4.jpg" size="md"/>
 
 论文数据全部来自一个28nm的1160.04 μm × 1155.6 μm芯片设计，每个窗口是0.5um×0.5um大小，每个窗口高度是三个布线层，每层最多五根平行线。
 还用了数据增强，总电容数据集约40000个窗口，耦合电容数据集约45000个窗口。
