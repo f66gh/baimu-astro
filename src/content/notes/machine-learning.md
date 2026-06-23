@@ -199,7 +199,7 @@ $$
 dropout：训练的时候让输入的特征值随机变为0，让模型避免过度依赖一些特征。测试时候关闭。
 
 
-## Transformer基础文献
+## Transformer
 
 ### attention is all you need
 
@@ -284,6 +284,8 @@ $$
 
 假设词表大小为37000，最后的残差和归一化层输出的shape是[4, 512]，linear线性层变换到词表后，shape是[4, 37000]，再由激活函数算出归一化概率。
 
+
+
 ### BERT
 
 基于transformer的编码器，做了双向表示预训练，在特定NLP任务表现良好。
@@ -346,6 +348,67 @@ $$
 
 $$
 P(y | x^1, ..., x^m) = softmax(h^m_l W_y)
+$$
+
+### GPT-2
+
+参考文献：Language Models are Unsupervised Multitask Learners
+
+论文核心仍然是给定前面的 token，预测下一个 token。论文没有设计复杂的多任务框架，也没有给每个任务加专门 head，而是把任务、输入、输出都看成一串文本。论文用大规模数据训练一个自回归语言模型，把各种任务统一为序列建模问题。
+
+这些任务本身也变成语言序列的一部分，而没有经过任务微调。
+
+GPT-2也做了zero-shot和few-shot。
+
+### T5
+
+参考文献：Exploring the Limits of Transfer Learning with a Unified  Text-to-Text Transformer
+
+论文为了做text 2 text的任务，回归到了原始的Transformer模型，同样的也是通用任务模型。encoder 输入: 任务前缀 + 原始输入；decoder 再输出文本。
+
+论文预训练是这么做的：无监督训练，输入残缺文本，输出被删掉的部分。残缺部分占数据集的15%
+
+微调：把任务提示词和输入文本捏成一个 encoder 输入。
+
+### RoBERTa
+
+参考文献：RoBERTa: A Robustly Optimized BERT Pretraining Approach
+
+这篇论文很有意思，在BERT之后，新方法如雨后春笋般冒了出来，都声称自己比BERT强。论文作者只拿着BERT的原始结构，做一些消融和参数调整，看看到底是BERT本身不行还是有很多的改进空间。
+
+最后发现：
+BERT 原版训练得不够充分。把训练配方改好后，BERT-style MLM 可以追上甚至超过很多后来的方法。它告诉我们，论文创新不一定总是来自“换一个模型结构”，有时候来自：数据更多、训练更充分、batch 更大、训练目标删掉无用部分、输入格式更合理、tokenizer 更鲁棒、做足**消融实验**。
+
+### Transformer-XL
+
+参考文献：Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context
+
+相比于传统Transformer，主要改进了两点：
+1. Transformer是不看这个seg以外的信息。但是XL是把前面的seg也作为本次数据的输入，而且前一段的嵌入不会参与反向梯度传播。
+
+上一段 hidden states 缓存下来
+当前段 tokens + 上一段 hidden states -> Transformer -> 当前段 hidden states
+
+论文是这样做的：设每个segment输入进网络后，在网络经过n-1层后的嵌入作为下一个segment在网络n层的上文输入嵌入，有点像流水线。然后把上文嵌入和目前的嵌入当成第n层的key和value。
+
+![](Transformer-XL.jpg)
+
+segment随着在神经网络中逐层传递，其语义变得越来越抽象，所以其实每一层的输出嵌入都有自己的作用和价值，这种价值不是随着逐层传递而递增的，而是不同种类的价值。这就是不拿每个segment最终网络输出作为下文嵌入的一个原因。此外，每一层的网络都需要上一层网络得到的上文嵌入信息，所以这个不是一锤子买卖，一个segment只能产出一个上文嵌入，而是每一级的嵌入都有用。
+
+对于上文的嵌入，loss不对其做反向梯度传递计算，即只会更新这个segment的上文嵌入和本文嵌入的参数矩阵，而不是顺着流水线往前找在计算上文嵌入自己的参数矩阵。
+
+2. 相对位置编码。是接着第一点说的，第一点的上文嵌入和现在的输入嵌入的位置编码会撞车，所以XL用绝对编码做的。
+
+论文的注意力公式是这样的，其中$q_i^T$是i查询向量，$k_j$是j的键向量，$W_{k,R}$是相对位置参数矩阵，$R_{i-j}$是相对位置的按照相对值的一种编码。$u^T$是一种全局可学习的向量，和j的键乘代表着这个token本身是不是值得被关注；$v^T$是一种全局可学习的向量，这个乘积代表着这个相对距离本身重不重要。$u$和$v$都是层内的偏置。
+
+$$
+\begin{aligned}
+A_{i,j}^{rel}
+&= q_i^T k_j\\
+&+ q_i^T W_{k,R} R_{i-j}\\
+&+ u^T k_j\\
+&+ v^T W_{k,R} R_{i-j}
+\end{aligned}
 $$
 
 ## 图基础文献
