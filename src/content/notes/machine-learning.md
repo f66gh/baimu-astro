@@ -203,6 +203,8 @@ dropout：训练的时候让输入的特征值随机变为0，让模型避免过
 
 ### attention is all you need
 
+参考文献：Attention Is All You Need（Google Brain、Google Research、多伦多大学  2017年发表）
+
 ![](attentionisallyouneed.jpg)
 
 问题：传统的RNN对于序列类工作只能串行输出，而且无法有效利用GPU。Transformer在训练阶段摒弃了RNN，在神经网络中考虑了每个词和其他词的编码位置，实现可以同时读入整个序列，用GPU并行计算预测下个token是什么，并串行输出处理结果。注意，训练时候的解码器也是并行计算，推理时候的解码器仍然是自回归一个token一个token生成
@@ -288,6 +290,8 @@ $$
 
 ### BERT
 
+参考文献：BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding（Google AI Language  2018年发表）
+
 基于transformer的编码器，做了双向表示预训练，在特定NLP任务表现良好。
 
 预训练：用大量的语料库学习通用语言知识。预训练做了两个自监督任务：Masked Language Model 掩盖语言模型和Next Sentence Prediction 下一句预测。
@@ -313,6 +317,8 @@ $$
 把训练拆成预训练和微调的好处是：预训练阶段可以利用海量无标注文本学习通用语言表示，微调阶段只需要较少的有标注任务数据。防止只训练特定任务（如情感分类）过拟合，而且减少为每个任务从零设计复杂模型的需求。
 
 ### GPT
+
+参考文献：Improving Language Understanding by Generative Pre-Training（OpenAI  2018年发表）
 
 基于Transformer的解码器，仍然采用预训练+微调的方法。
 
@@ -352,7 +358,7 @@ $$
 
 ### GPT-2
 
-参考文献：Language Models are Unsupervised Multitask Learners
+参考文献：Language Models are Unsupervised Multitask Learners（OpenAI  2019年发表）
 
 论文核心仍然是给定前面的 token，预测下一个 token。论文没有设计复杂的多任务框架，也没有给每个任务加专门 head，而是把任务、输入、输出都看成一串文本。论文用大规模数据训练一个自回归语言模型，把各种任务统一为序列建模问题。
 
@@ -362,7 +368,7 @@ GPT-2也做了zero-shot和few-shot。
 
 ### T5
 
-参考文献：Exploring the Limits of Transfer Learning with a Unified  Text-to-Text Transformer
+参考文献：Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer（Google Research  2019年发表）
 
 论文为了做text 2 text的任务，回归到了原始的Transformer模型，同样的也是通用任务模型。encoder 输入: 任务前缀 + 原始输入；decoder 再输出文本。
 
@@ -372,7 +378,7 @@ GPT-2也做了zero-shot和few-shot。
 
 ### RoBERTa
 
-参考文献：RoBERTa: A Robustly Optimized BERT Pretraining Approach
+参考文献：RoBERTa: A Robustly Optimized BERT Pretraining Approach（Facebook AI、华盛顿大学  2019年发表）
 
 这篇论文很有意思，在BERT之后，新方法如雨后春笋般冒了出来，都声称自己比BERT强。论文作者只拿着BERT的原始结构，做一些消融和参数调整，看看到底是BERT本身不行还是有很多的改进空间。
 
@@ -381,7 +387,7 @@ BERT 原版训练得不够充分。把训练配方改好后，BERT-style MLM 可
 
 ### Transformer-XL
 
-参考文献：Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context
+参考文献：Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context（卡内基梅隆大学、Google Brain  2019年发表）
 
 相比于传统Transformer，主要改进了两点：
 1. Transformer是不看这个seg以外的信息。但是XL是把前面的seg也作为本次数据的输入，而且前一段的嵌入不会参与反向梯度传播。
@@ -401,6 +407,7 @@ segment随着在神经网络中逐层传递，其语义变得越来越抽象，�
 
 论文的注意力公式是这样的，其中$q_i^T$是i查询向量，$k_j$是j的键向量，$W_{k,R}$是相对位置参数矩阵，$R_{i-j}$是相对位置的按照相对值的一种编码。$u^T$是一种全局可学习的向量，和j的键乘代表着这个token本身是不是值得被关注；$v^T$是一种全局可学习的向量，这个乘积代表着这个相对距离本身重不重要。$u$和$v$都是层内的偏置。
 
+
 $$
 \begin{aligned}
 A_{i,j}^{rel}
@@ -411,9 +418,109 @@ A_{i,j}^{rel}
 \end{aligned}
 $$
 
+### long-Transformer
+
+参考文献：Longformer: The Long-Document Transformer（艾伦人工智能研究所、华盛顿大学  2020年发表）
+
+论文核心是用局部窗口注意力保留大部分上下文建模能力，用少量全局注意力token负责全篇信息汇总。相比于全连接自注意力，能显著节省长序列下的计算量和显存。
+
+![](Longformer.jpg)
+
+横轴和纵轴都是同一个输入序列中的 token 位置。第 i 行第 j 列表示第 i 个 token 是否允许 注意到 第 j 个 token。a 是传统 Transformer，b 是围绕着当前token的局部注意力窗口，c 是围绕着当前token的膨胀注意力窗口，d 是带有少量全局注意力的局部注意力窗口。前两行全绿表示前两个 global tokens 可以注意到全文；前两列全绿表示全文所有 token 都可以注意到这两个 global tokens。
+
+global token 不是模型自动随便选的，而是任务指定的，比如分类任务用 [CLS]，QA 任务用 question tokens。
+
+局部窗口负责建模局部上下文，全局 token 负责跨全文的信息汇总和中转。
+
+dilated sliding window 不是更大的连续窗口，而是“跳着看”，用差不多的连接数扩大感受野。
+
+### Big Bird
+
+参考文献：Big Bird: Transformers for Longer Sequences（Google Research  2020年发表）
+
+BigBird和longFormer很像，但是只是加了一个随机注意力机制：在局部窗口和 global token 之外，再加入随机远程边，把 attention 图做成具有小世界性质的稀疏图，从而既线性复杂度，又尽量保留 full attention 的表达能力。
+
+### DeBERTa
+
+参考文献：DeBERTa: Decoding-enhanced BERT with Disentangled Attention（Microsoft Dynamics 365 AI / Microsoft Research，ICLR 2021）
+
+这篇文章也很有参考价值，这篇文章在BERT基础上，主要改了两个点：
+
+1. 这篇文章相比于传统的点积注意力公式，提出了相对位置query和key
+
+传统注意力公式如下，这里的$H$是输入序列的嵌入，shape是[N, d]。$W$是权重矩阵，shape是[d, d]。其中，$N$是输入的token数，$d$是隐藏维度。
+
+$$
+\begin{gathered}
+Q = HW_q,~K = HW_k,~V = HW_v \\
+A = \frac{QK^{\top}}{\sqrt{d}} \\
+H_o = \text{softmax}(A)V
+\end{gathered}
+$$
+
+即，第i个token对于第j个token的注意力分数是：
+
+$$
+A_{i, j} = Q_i K_j^{\top}
+$$
+
+论文提出，BERT过早地把位置信息捏进了内容里，导致encoder分不清，所以本文把内容和位置信息拆开来建模。设第i个token对第j个token的内容和位置关系如下：
+
+$$
+\{H_i, P_{i | j}\}
+$$
+
+对两两做笛卡尔积，可得token i和j的四组注意力：内容×内容、内容×相对位置、相对位置×内容、相对位置×相对位置。论文指出相对位置×相对位置没啥用，所以只保留了前三个注意力子项。
+
+$$
+\begin{aligned}
+A_{i, j} 
+&= \{H_i, P_{i | j}\}×\{H_j, P_{j | i}\}
+&= Q_{H_i} K_{H_j}^{\top} +  Q_{H_i} K_{P_{j | i}}^{\top} + Q_{P_{i | j}} K_{H_j}^{\top}
+\end{aligned}
+$$
+
+但是现在有个问题，存两个token之间的相对位置也需要N×N大小的矩阵，每个位置的隐藏关系d维，那么有关于位置的参数矩阵大小则是$O(N^2d)$。所以论文也是用三段式截断映射，这样可以把任意相对距离压缩到0到2k-1这2k个桶里，当token相隔距离过长时，则设为定值，只有在一定范围内的token才有单独的相对位置。论文设置的k=512。
+
+$$
+\delta(i,j) = \begin{cases} 0, 
+& i - j \le -k \\ 2k - 1, 
+& i - j \ge k \\ i - j + k, 
+& \text{otherwise} \end{cases}
+$$
+
+投影公式组如下，其中$P$是相对位置嵌入表，shape是[2k, d]。
+$$
+\begin{aligned}
+Q^c &= HW_{q,c} \\
+K^c &= HW_{k,c} \\
+V^c &= HW_{v,c} \\
+Q^r &= PW_{q,r} \\
+K^r &= PW_{k,r}
+\end{aligned}
+$$
+
+在此之上，注意力公式可以进一步精确化。其中，$Q_i^c {K_{\delta(i,j)}^r}^{\top}$是第i个token的内容是否偏好j这个位置，而$K_j^c {Q_{\delta(j,i)}^r}^{\top}$是从位置i出发，是否偏好j上的token。
+
+$$
+\tilde{A}_{i,j} = \underbrace{Q_i^c {K_j^c}^T}_{\text{content-to-content}} + \underbrace{Q_i^c {K_{\delta(i,j)}^r}^T}_{\text{content-to-position}} + \underbrace{K_j^c {Q_{\delta(j,i)}^r}^T}_{\text{position-to-content}}
+$$
+
+最终输出是：
+
+$$
+H_o = \text{softmax} \left( \frac{\tilde{A}}{\sqrt{3d}} \right) V^c
+$$
+
+2. 论文提出了Enhanced Mask Decoder，EMD。论文提到了光有相对位置不行，也得有绝对位置。为此，论文并没有在Transformer主体层中引入token绝对位置，而是在只有两层的小decoder中引入了绝对位置。
+
+
+
 ## 图基础文献
 
 ### MPNN
+
+参考文献：Neural Message Passing for Quantum Chemistry（Google Brain、Google、Google DeepMind  2017年发表）
 
 Message Passing Neural Network，消息传递神经网络，基本上有关于图的算法都围绕着这三个流程与公式：
 
@@ -436,6 +543,8 @@ $$
 $$
 
 ### GCN
+
+参考文献：Semi-Supervised Classification with Graph Convolutional Networks（阿姆斯特丹大学、CIFAR  2017年发表）
 
 **问题**：传统的图节点预测网络，认为相邻节点的属性必然是接近的，并以此为目标设计Loss函数。在函数中，$\mathcal{L}_0$ 是有标签节点的Loss，$\mathcal{L}_{reg}$是图平滑正则项，用来约束相邻节点的模型输出尽量平滑。
 
@@ -531,6 +640,8 @@ $$
 
 ### GraphSAGE
 
+参考文献：Inductive Representation Learning on Large Graphs（斯坦福大学  2017年发表）
+
 问题：传统transductive直推式学习直接为训练图中每个节点学一个嵌入，但是新加入的节点没有现成的嵌入，而Inductive归纳式学习是学习了一个嵌入函数，新加入的节点可以通过邻居和自己的原有特征更新自己的嵌入。同时，通过采样训练，也解决了GCN更新一个节点需要整张图信息导致面对大图时候效率低下的问题。
 
 ![](GraphSAGE.jpg)
@@ -587,6 +698,8 @@ $$
 
 ### GAT
 
+参考文献：Graph Attention Networks（剑桥大学、MILA/蒙特利尔大学、马德里自治大学  2018年发表）
+
 问题：GCN只能通过图的结构（邻接矩阵）学习节点对节点的重要性，缺少灵活性；GraphSAGE只能抽取节点的部分邻接节点。本文提出了一种注意力机制的图模型，能聚合节点的所有邻接节点，而且能学习节点间的多种重要性。
 
 ![](GAT.jpg)
@@ -629,6 +742,8 @@ $$
 
 
 ### GIN
+
+参考文献：How Powerful are Graph Neural Networks?（MIT、斯坦福大学  2019年发表）
 
 Graph Isomorphism Network（图同构网络），本文同样讨论了图神经网络的通用步骤，同时指明了图神经网络的精度上限，并指出聚合函数的种类对于精度有决定性影响。
 
@@ -682,6 +797,8 @@ $$
 
 ### Graphormer
 
+参考文献：Do Transformers Really Perform Bad for Graph Representation?（微软亚洲研究院、北京大学、中国科学技术大学  2021年发表）
+
 问题：transformer在图中准确率不高，是因为本身适配的任务天然带有顺序，而图是无序的。此外，Transformer原公式中很难注意到到图这样有明显的路径编码。论文用Transformer的机制，给隐藏层加上额外的中心性、边和最短距离编码，论证了Transformer在图中也很实用。
 
 ![](Graphormer.jpg)
@@ -727,6 +844,8 @@ $$
 
 ### GraphGPS
 
+参考文献：Recipe for a General, Powerful, Scalable Graph Transformer（Mila/蒙特利尔大学、麦吉尔大学、南洋理工大学、Valence Discovery  2022年发表）
+
 问题：这篇文章说传统GCN通过多层网络可以感知到很远的节点，但是可能导致节点嵌入过平滑和信息丢失的问题。Transformer由于时间复杂度的限制，以及自身没有结构性编码，很难在图中准确地感知其余节点。本文提出了两个编码：位置性编码（PE，position Encoding）和结构性编码（SE，structure Encoding），并在节点的局部用了MPNN，用线性transformer做全局感知，有效解决了上述问题。
 
 ![](GraphGPS.jpg)
@@ -759,4 +878,3 @@ X^0 \leftarrow ⨁_{node} (\text{NodeEncoder}(X), P_{node}, S_{node}) \in \mathb
 E^0 \leftarrow ⨁_{edge} (\text{EdgeEncoder}(E_{feat}), P_{edge}, S_{edge}) \in \mathbb{R}^{E \times D}
 \end{aligned}
 $$
-
