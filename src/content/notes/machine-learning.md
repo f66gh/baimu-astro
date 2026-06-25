@@ -514,7 +514,36 @@ $$
 
 2. 论文提出了Enhanced Mask Decoder，EMD。论文提到了光有相对位置不行，也得有绝对位置。为此，论文并没有在Transformer主体层中引入token绝对位置，而是在只有两层的小decoder中引入了绝对位置。
 
+### UT
 
+参考文献：UNIVERSAL TRANSFORMERS（谷歌、DeepMind ICLR 2019）
+
+本文提出了一种类Transformer的架构，传统Transformer是每一层的参数矩阵不同，而UT的每一层参数矩阵相同，而且支持不同token算不同步数的操作，对于算法类任务非常友好。
+
+但是有几个问题：第一个是UT只是减少参数量但是没有减少计算量，导致不如Transformer原版架构灵活而且也不节省时间；第二个是GPU喜欢固定大小的矩阵、batch size等等，不同步数太吃设计了。后来的大家选择了更加简单粗暴的大模型、长上下文、稀疏注意力、微调等，UT就这样退出了主流模型之列。
+
+### ViT
+
+参考文献：AN IMAGE IS WORTH 16X16 WORDS: TRANSFORMERS FOR IMAGE RECOGNITION AT SCALE（谷歌 ICLR 2021）
+
+这篇文章是把Transformer从NLP迁移到图像这里。做法很简单，首先是将图片以P×P像素为单位分为N块，那么每个带通道数量C的图片切片x可以表示为一个$P^2C$的特征矩阵。我们把这个特征矩阵用一个shape是[$P^2C$, h]权重矩阵E，转换为一个嵌入向量。然后再补上shape为[$N+1$, h]的位置特征$E_{pos}$和任务$x_class$。输入公式如下：
+
+$$
+z_0 = [x_{class};x_p^1E;x_p^1E;...;x_p^NE] + E_{pos}
+$$
+
+![](ViT.jpg)
+
+论文只用了Encoder，L是Transformer层数，MSA是多头自注意力，LN是layerNorm，MLP是两层全连接网络，每一层结构如下。
+
+$$
+\begin{aligned}
+z_\ell' &= \text{MSA}(\text{LN}(z_{\ell-1})) + z_{\ell-1} \\
+z_\ell &= \text{MLP}(\text{LN}(z_\ell')) + z_\ell'
+\end{aligned}
+$$
+
+论文最后一层是给$z_L$接了个LN，然后接个分类头。用的交叉熵。当数据集很多的时候，用Transformer可以大力出奇迹；当数据集少的时候，CNN更强。
 
 ## 图基础文献
 
