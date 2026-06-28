@@ -29,3 +29,4 @@ list/
 # private content
 src/content/logbook/*
 !src/content/logbook/.gitkeep
+docs/

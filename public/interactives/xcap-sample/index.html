@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XCap Sample Viewer</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="app">
+        <section id="viewport" aria-label="XCap layout visualization">
+            <canvas id="scene-canvas"></canvas>
+
+            <div id="drop-zone" class="drop-zone">
+                <p class="drop-title">Drop an XCap sample JSON file here</p>
+                <p class="drop-subtitle">Files are parsed locally in this browser.</p>
+                <button id="choose-file-empty" class="primary-button" type="button">Choose file</button>
+            </div>
+
+            <div id="view-controls" class="view-controls hidden">
+                <button id="reset-view" type="button">Reset view</button>
+            </div>
+
+            <div id="hover-inspector" class="hover-inspector hidden" aria-live="polite">
+                <div class="inspector-eyebrow">Hover Inspector</div>
+                <div id="hover-content" class="hover-content">Move over the layout window.</div>
+            </div>
+
+            <div id="labels-layer" class="labels-layer" aria-hidden="true"></div>
+        </section>
+
+        <aside id="sidebar" aria-label="XCap controls">
+            <header class="sidebar-header">
+                <div>
+                    <p class="eyebrow">XCap Sample</p>
+                    <h1>Layout Viewer</h1>
+                </div>
+                <button id="choose-file-sidebar" type="button">Choose file</button>
+                <input id="file-input" type="file" accept=".json,application/json" hidden>
+            </header>
+
+            <div id="error-panel" class="error-panel hidden"></div>
+
+            <details class="panel" open>
+                <summary>Sample</summary>
+                <div id="sample-info" class="panel-body muted">No sample imported.</div>
+            </details>
+
+            <details class="panel" open>
+                <summary>Visualization</summary>
+                <div class="panel-body controls-grid">
+                    <label><input id="toggle-dielectric-colors" type="checkbox"> Dielectric colors</label>
+                    <label><input id="toggle-dielectric-labels" type="checkbox"> Dielectric labels</label>
+                    <label><input id="toggle-interlayer-boundaries" type="checkbox" checked> Interlayer boundaries</label>
+                    <label><input id="toggle-field-lines" type="checkbox" checked> Illustrative field lines</label>
+                    <label><input id="toggle-axis" type="checkbox" checked> Axis triad</label>
+                    <label><input id="toggle-ground" type="checkbox" checked> Ground plane</label>
+                    <label><input id="toggle-conductor-labels" type="checkbox" checked> Conductor labels</label>
+                    <label><input id="toggle-layer-labels" type="checkbox" checked> Layer labels</label>
+                    <label><input id="toggle-transparent-conductors" type="checkbox"> Transparent conductors</label>
+                    <label><input id="toggle-hover" type="checkbox"> Hover inspection</label>
+                </div>
+            </details>
+
+            <details class="panel" open>
+                <summary>Activation</summary>
+                <div class="panel-body">
+                    <label class="field-label" for="activated-conductor">Activated conductor</label>
+                    <select id="activated-conductor" disabled>
+                        <option>No sample imported</option>
+                    </select>
+                    <div id="activation-info" class="info-stack muted">Import a sample to select a conductor.</div>
+                    <p class="note">The selected conductor is visualized as 1 V. Field lines are illustrative and matrix-weighted, not solver field traces.</p>
+                </div>
+            </details>
+
+            <details class="panel" open>
+                <summary>Capacitance Matrix</summary>
+                <div class="panel-body">
+                    <div id="quality-info" class="info-stack muted"></div>
+                    <h2>Maxwell Matrix</h2>
+                    <div id="matrix-table" class="table-scroll muted">Import a sample to show capacitance data.</div>
+                    <h2>Reference Capacitance</h2>
+                    <div id="reference-table" class="table-scroll muted">Import a sample to show reference capacitance.</div>
+                </div>
+            </details>
+
+            <details class="panel">
+                <summary>Process Properties</summary>
+                <div class="panel-body">
+                    <h2>Metal Layer Ranges</h2>
+                    <div id="beol-table" class="table-scroll muted">Import a sample to show metal layer ranges.</div>
+                    <h2>Plate Media</h2>
+                    <div id="media-table" class="table-scroll muted">Import a sample to show Plate Media.</div>
+                </div>
+            </details>
+        </aside>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+</body>
+</html>
