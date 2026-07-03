@@ -545,6 +545,14 @@ $$
 
 论文最后一层是给$z_L$接了个LN，然后接个分类头。用的交叉熵。当数据集很多的时候，用Transformer可以大力出奇迹；当数据集少的时候，CNN更强。
 
+### Perceiver IO
+
+参考文献：PERCEIVER IO: A GENERAL ARCHITECTURE FOR STRUCTURED INPUTS & OUTPUTS（Google DeepMind ICLR 2022）
+
+![](PerceiverIO.jpg)
+
+这篇论文核心思想如图所示，非常简单。作者认为传统Transformer是全注意力公式，当输入变大时时空复杂度会平方级增长。例如输入的是图片、音频等就不适用了。为此，本文设计了一个通用的可以减小时空复杂度的Transformer架构，大体分为三段：输入encoder、中间主要的process和输出decoder。给输入和输出各一个latent矩阵，这样在中间主要的process中和decoder的复杂度受限。
+
 ## 图基础文献
 
 ### MPNN
