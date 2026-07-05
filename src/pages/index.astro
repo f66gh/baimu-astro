@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import { getLocalizedEntries } from '../lib/content';
+import { getLatestGitCommitDate } from '../lib/git';
 import { localizePath, t } from '../lib/i18n';
 import { getMusicTagHue } from '../lib/music';
 import { aboutParagraphs, aboutTags, mainQuestItems, siteDescriptions, siteEyebrow, siteHomeTitles, siteIdentityLines } from '../lib/site';
@@ -91,6 +92,9 @@ const stats = [
 		pinned: getPinnedPreview(music),
 	},
 ];
+
+const latestGitCommitDate = getLatestGitCommitDate();
+const latestGitCommitDateLabel = latestGitCommitDate?.toLocaleDateString('zh-CN');
 ---
 
 <Layout title={siteHomeTitles[lang]} description={siteDescriptions[lang]}>
@@ -158,7 +162,10 @@ const stats = [
 		</article>
 
 		<article class="panel timeline-panel">
-			<h2>{t(lang, 'latest')}</h2>
+			<div class="panel-title-row">
+				<h2>{t(lang, 'latest')}</h2>
+				{latestGitCommitDateLabel && <span class="git-updated">{t(lang, 'gitUpdated')}：{latestGitCommitDateLabel}</span>}
+			</div>
 			<ul>
 				{
 					latest.map((item) => (
@@ -338,6 +345,21 @@ const stats = [
 		padding: 18px;
 	}
 
+	.panel-title-row {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.git-updated {
+		flex: 0 0 auto;
+		color: var(--muted);
+		font-size: 0.78rem;
+		font-weight: 800;
+		white-space: nowrap;
+	}
+
 	.quest-panel ul,
 	.timeline-panel ul {
 		margin: 0;
@@ -434,6 +456,12 @@ const stats = [
 		.panel,
 		.about-panel {
 			padding: 16px;
+		}
+
+		.panel-title-row {
+			align-items: flex-start;
+			flex-direction: column;
+			gap: 4px;
 		}
 
 		.stat-grid {

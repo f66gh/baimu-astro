@@ -13,4 +13,3 @@ moods: ["和本科室友一起看的"]
 ---
 
 回忆again
-![](/images/anime/tengoku-daimakyou/1.jpg)

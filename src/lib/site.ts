@@ -34,15 +34,14 @@ export const aboutTags = [
 	{ zh: '音乐', en: 'Music' },
 	{ zh: '二次元', en: 'ACG' },
 	{ zh: '日漫', en: 'Anime' },
-	{ zh: '抽象', en: 'Absurd' },
 ] as const;
 
 export const mainQuestItems: Record<Lang, { title: string; description: string; date: string }[]> = {
 	zh: [
 		{
-			title: 'OpenRCX-Calibration-OpenPDKs-Capiche',
-			description: '第一阶段任务完成，接下来的任务是...',
-			date: '2026.06',
+			title: 'X-Cap论文',
+			description: '从六月肝到了七月，争取七月写完',
+			date: '2026.07',
 		},
 		{
 			title: '继续深度学习了，想开始学神经算子',
@@ -50,27 +49,27 @@ export const mainQuestItems: Record<Lang, { title: string; description: string; 
 			date: '2026.06',
 		},
 		{
-			title: '异环，启动！',
-			description: '我成氪佬了...，氪了大小月卡还有98的10发限定抽',
-			date: '2026.06',
+			title: '异环，想退坑了',
+			description: 'byd，天天玩异环要累死我了，跟tm上班似的',
+			date: '2026.07',
 		},
 	],
 	en: [
 		{
-			title: 'OpenRCX-Calibration-OpenPDKs-Capiche',
-			description: 'The first phase is done. Up next is...',
-			date: '2026.06',
+			title: 'X-Cap Paper',
+			description: 'I have been grinding on it from June into July. Hopefully I can finish writing it this month.',
+			date: '2026.07',
 		},
 		{
-			title: 'Back to Deep Learning, Now with Neural Operators',
+			title: 'Back to Deep Learning, Thinking About Neural Operators',
 			description:
-				'I feel like deep learning has been mined to exhaustion. Around parasitic extraction, it feels hard to find anything truly new, and the ideas that flash into my mind look like trash the moment they appear.',
+				'I feel like deep learning has already been overdeveloped. In parasitic parameter extraction, it feels like there is not much room left for real novelty, and the ideas I come up with look like trash the very moment inspiration hits.',
 			date: '2026.06',
 		},
 		{
-			title: 'Neverness to Everness, Launch!',
-			description: 'I have become a paying player... monthly passes, battle pass, and a 98-yuan ten-pull for the limited banner.',
-			date: '2026.06',
+			title: 'Neverness to Everness, Thinking About Quitting',
+			description: 'Damn it, playing Neverness to Everness every day is exhausting. It feels like going to work.',
+			date: '2026.07',
 		},
 	],
 };
