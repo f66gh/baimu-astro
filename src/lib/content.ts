@@ -15,7 +15,7 @@ export interface LocalizedItem<C extends ContentCollectionKey = ContentCollectio
 type DatedEntry = { data: { date: Date; pinned?: boolean } };
 type DatedItem = DatedEntry | { entry: DatedEntry };
 
-export const cardPageSize = 6;
+export const cardPageSize = 12;
 export const listPageSize = 12;
 
 export function baseEntryId(id: string): string {

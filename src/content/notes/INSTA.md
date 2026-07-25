@@ -3,7 +3,8 @@ title: "INSTA 英伟达实验室"
 summary: "DAC 2025 最佳论文奖"
 date: 2026-03-21
 tags: ["paper-reading"]
-cover: "/images/academic/INSTA/cover.png"
+cover: "cover.png"
+imageRoot: "/images/academic/INSTA"
 externalUrl: "https://www.jianguoyun.com/p/DSG5nu4Q2fCkCxjdk6gGIAA"
 externalLabel: "下载PPT（坚果云）"
 ---

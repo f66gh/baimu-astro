@@ -29,7 +29,7 @@ export function hashTone(value: string): Tone {
 }
 
 export function getTagMeta(tag: string, collection: 'academic' | 'notes' | 'logbook' | 'anime', lang: Lang) {
-	if (collection === 'academic') {
+	if (collection === 'academic' || collection === 'notes') {
 		const meta = academicTags[tag];
 
 		if (meta) {

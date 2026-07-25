@@ -3,7 +3,8 @@ title: "OpenRCX和calibration"
 summary: "学习一下寄生参数提取"
 date: 2026-04-20
 tags: ["group-task"]
-cover: "/images/academic/OpenRCX/cover.png"
+cover: "cover.png"
+imageRoot: "/images/academic/OpenRCX"
 externalUrl: "https://www.jianguoyun.com/p/De5v3eUQ2fCkCxiJlKgGIAA"
 externalLabel: "下载PPT（坚果云）"
 ---
@@ -12,4 +13,3 @@ OpenROAD中的OpenRCX不是一上来就能读tlef和def文件然后做寄生参�
 
 下面是三个开源项目的调用管理图
 ![](/images/academic/OpenRCX/1.jpg)
-

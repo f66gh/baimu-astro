@@ -3,7 +3,8 @@ title: "GCS-Timer：基于STA的GPU加速电流源模型"
 summary: "DAC2024，港中文+华为香港设计自动化实验室"
 date: 2026-04-02
 tags: ["paper-reading"]
-cover: "/images/academic/GCS-Timer/cover.png"
+cover: "cover.png"
+imageRoot: "/images/academic/GCS-Timer"
 externalUrl: "https://www.jianguoyun.com/p/Df1soPEQ2fCkCxiSlKgGIAA"
 externalLabel: "下载PPT（坚果云）"
 ---

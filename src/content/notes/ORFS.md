@@ -3,7 +3,8 @@ title: "OpenROAD Flow Script(ORFS) 流程学习"
 summary: "研一上学期三天摸鱼两天划水看了两个月的开源项目"
 date: 2025-12-31
 tags: ["group-task"]
-cover: "/images/academic/ORFS/cover.png"
+cover: "cover.png"
+imageRoot: "/images/academic/ORFS"
 externalUrl: "https://www.jianguoyun.com/p/DUpUhM4Q2fCkCxiJk6gGIAA"
 externalLabel: "下载PPT（坚果云）"
 pinned: true
