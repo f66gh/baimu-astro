@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>X-Cap field-solver diagrams</title>
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		html,
+		body {
+			min-width: 100%;
+			min-height: 100%;
+			margin: 0;
+		}
+
+		body {
+			display: grid;
+			place-items: center;
+			padding: 18px;
+			background: #f5f6f3;
+		}
+
+		main {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 18px;
+			width: min(100%, 1500px);
+		}
+
+		a {
+			display: block;
+			overflow: hidden;
+			border: 1px solid #c9d1cf;
+			border-radius: 12px;
+			background: #fbfaf5;
+			box-shadow: 0 8px 24px rgba(68, 83, 90, 0.08);
+		}
+
+		img {
+			display: block;
+			width: 100%;
+			aspect-ratio: 4 / 3;
+		}
+
+		@media (max-width: 760px) {
+			body {
+				display: block;
+				padding: 12px;
+			}
+
+			main {
+				grid-template-columns: 1fr;
+				gap: 12px;
+			}
+		}
+	</style>
+</head>
+<body>
+	<main>
+		<a href="./fdm-fem.svg" download="xcap-fdm-fem.svg" aria-label="下载 FEM FDM 示意图">
+			<img src="./fdm-fem.svg" alt=""/>
+		</a>
+		<a href="./bem.svg" download="xcap-bem.svg" aria-label="下载 BEM 示意图">
+			<img src="./bem.svg" alt=""/>
+		</a>
+		<a href="./frw.svg" download="xcap-frw.svg" aria-label="下载 FRW 示意图">
+			<img src="./frw.svg" alt=""/>
+		</a>
+	</main>
+</body>
+</html>

@@ -17,3 +17,12 @@ imageRoot: "/images/academic/X-Cap"
 	title="XCap sample layout visualization"
 	loading="lazy"
 ></iframe>
+
+## 三种场求解器示意图
+
+<iframe
+	class="note-interactive"
+	src="/interactives/xcap-field-solvers/index.html"
+	title="FDM FEM、BEM 与 FRW 场求解器示意图"
+	loading="lazy"
+></iframe>

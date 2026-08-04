@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-label="Floating random walk between two conductors">
+	<rect width="1200" height="900" fill="#F5F6F3"/>
+	<rect x="36" y="36" width="1128" height="828" rx="28" fill="#FBFAF5" stroke="#C9D1CF" stroke-width="3"/>
+
+	<rect x="95" y="505" width="490" height="220" rx="24" fill="none"
+		stroke="#556368" stroke-width="3" stroke-dasharray="16 13"/>
+
+	<rect x="475" y="455" width="90" height="90" rx="7" fill="#DCBB92" fill-opacity="0.14"
+		stroke="#D1AB70" stroke-width="2.5"/>
+	<rect x="445" y="360" width="190" height="190" rx="9" fill="#BFDCD2" fill-opacity="0.11"
+		stroke="#78B8B5" stroke-width="2.5"/>
+	<rect x="510" y="275" width="250" height="250" rx="10" fill="#7BC0CD" fill-opacity="0.08"
+		stroke="#4198AC" stroke-width="2.5"/>
+
+	<path d="M520 500 L540 455 L635 400 L760 315" fill="none" stroke="#4198AC" stroke-width="4"
+		stroke-linecap="round" stroke-linejoin="round"/>
+
+	<g fill="#4198AC" stroke="#FBFAF5" stroke-width="2.4">
+		<circle cx="520" cy="500" r="7"/>
+		<circle cx="540" cy="455" r="7"/>
+		<circle cx="635" cy="400" r="7"/>
+		<circle cx="760" cy="315" r="7"/>
+	</g>
+
+	<rect x="142" y="554" width="398" height="132" rx="14" fill="#ED8D5A" stroke="#C97047" stroke-width="4"/>
+	<rect x="760" y="220" width="300" height="132" rx="14" fill="#9CA3A6" stroke="#747E82" stroke-width="4"/>
+
+	<circle cx="520" cy="500" r="7" fill="#4198AC" stroke="#FBFAF5" stroke-width="2.4"/>
+	<circle cx="760" cy="315" r="7" fill="#4198AC" stroke="#FBFAF5" stroke-width="2.4"/>
+</svg>
