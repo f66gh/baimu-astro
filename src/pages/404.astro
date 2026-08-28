@@ -15,6 +15,7 @@ const lang = getLangFromPath(Astro.url.pathname);
 			<a href={localizePath('/', lang)}>{t(lang, 'backToHome')}</a>
 			<a href={localizePath('/academic/', lang)}>{t(lang, 'backToAcademic')}</a>
 			<a href={localizePath('/notes/', lang)}>{t(lang, 'backToNotes')}</a>
+			<a href={localizePath('/logbook/', lang)}>{t(lang, 'backToLogbook')}</a>
 		</div>
 	</section>
 </Layout>

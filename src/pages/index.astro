@@ -8,26 +8,29 @@ import { getMusicTagHue } from '../lib/music';
 import { aboutParagraphs, aboutTags, mainQuestItems, siteDescriptions, siteEyebrow, siteHomeTitles, siteIdentityLines } from '../lib/site';
 
 const lang = 'zh';
-const [anime, notes, music, academic] = await Promise.all([
+const [anime, notes, logbook, music, academic] = await Promise.all([
 	getLocalizedEntries('anime', lang),
 	getLocalizedEntries('notes', lang),
+	getLocalizedEntries('logbook', lang),
 	getLocalizedEntries('music', lang),
 	getLocalizedEntries('academic', lang),
 ]);
 
-type HomeCollection = 'academic' | 'notes' | 'anime' | 'music';
+type HomeCollection = 'academic' | 'notes' | 'logbook' | 'anime' | 'music';
 
 function getCollectionTone(collection: HomeCollection) {
 	return collection === 'academic'
 		? 'coral'
 		: collection === 'notes'
 			? 'teal'
-			: collection === 'anime'
-				? 'violet'
-				: 'gold';
+			: collection === 'logbook'
+				? 'leaf'
+				: collection === 'anime'
+					? 'violet'
+					: 'gold';
 }
 
-const latest = [...academic, ...notes, ...anime, ...music]
+const latest = [...academic, ...notes, ...logbook, ...anime, ...music]
 	.sort((a, b) => b.entry.data.date.valueOf() - a.entry.data.date.valueOf())
 	.slice(0, 3)
 	.map((item) => {
@@ -74,6 +77,14 @@ const stats = [
 		tone: 'teal',
 		description: t(lang, 'homeNotesDescription'),
 		pinned: getPinnedPreview(notes),
+	},
+	{
+		label: t(lang, 'logbook'),
+		value: logbook.length,
+		href: '/logbook/',
+		tone: 'leaf',
+		description: t(lang, 'homeLogbookDescription'),
+		pinned: getPinnedPreview(logbook),
 	},
 	{
 		label: t(lang, 'anime'),
@@ -198,7 +209,7 @@ const latestGitCommitDateLabel = latestGitCommitDate?.toLocaleDateString('zh-CN'
 
 	.stat-grid {
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
+		grid-template-columns: repeat(5, minmax(0, 1fr));
 		gap: 16px;
 		margin: 16px 0;
 	}
@@ -269,6 +280,10 @@ const latestGitCommitDateLabel = latestGitCommitDate?.toLocaleDateString('zh-CN'
 
 	.tone-gold::before {
 		background: var(--gold);
+	}
+
+	.tone-leaf::before {
+		background: var(--leaf);
 	}
 
 	.about-panel {
@@ -430,6 +445,10 @@ const latestGitCommitDateLabel = latestGitCommitDate?.toLocaleDateString('zh-CN'
 
 	.timeline-badge.tone-gold {
 		color: var(--gold);
+	}
+
+	.timeline-badge.tone-leaf {
+		color: var(--leaf);
 	}
 
 	@media (max-width: 1120px) {
