@@ -19,6 +19,7 @@
     "astro": "^6.1.7",
     "astro-icon": "^1.1.5",
     "katex": "^0.16.45",
+    "mermaid": "^11.17.2",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0"
   }

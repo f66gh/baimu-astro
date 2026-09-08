@@ -1,0 +1,218 @@
+---
+import { getLangFromPath } from '../../lib/i18n';
+
+interface Props {
+	code: string;
+	caption?: string;
+}
+
+const { code, caption } = Astro.props;
+const isEnglish = getLangFromPath(Astro.url.pathname) === 'en';
+const labels = isEnglish
+	? {
+		loading: 'Loading diagram…',
+		loadError: 'Unable to load the diagram renderer. Refresh the page to try again.',
+		renderError: 'Unable to render this diagram. Check the source below.',
+		source: 'View diagram source',
+		diagram: 'Mermaid diagram',
+	}
+	: {
+		loading: '正在加载图表…',
+		loadError: '图表组件加载失败，请刷新页面重试。',
+		renderError: '图表解析或绘制失败，请检查下方源码。',
+		source: '查看图表源码',
+		diagram: 'Mermaid 图表',
+	};
+---
+
+<figure class="note-mermaid">
+	<mermaid-diagram
+		data-loading-label={labels.loading}
+		data-load-error-label={labels.loadError}
+		data-render-error-label={labels.renderError}
+	>
+		<p class="mermaid-status" data-mermaid-status role="status">{labels.loading}</p>
+		<div
+			class="mermaid-viewport"
+			data-mermaid-output
+			role="region"
+			aria-label={caption ?? labels.diagram}
+			tabindex="0"
+			hidden
+		></div>
+		<details class="mermaid-source" data-mermaid-source>
+			<summary>{labels.source}</summary>
+			<pre><code>{code.trim()}</code></pre>
+		</details>
+	</mermaid-diagram>
+	{caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script>
+	let mermaidPromise: Promise<typeof import('mermaid')['default']> | undefined;
+	// Mermaid's configuration is shared: serialize configuration and rendering together.
+	let renderQueue = Promise.resolve();
+	let nextDiagramId = 0;
+
+	const loadMermaid = () => {
+		mermaidPromise ??= import('mermaid')
+			.then((module) => module.default)
+			.catch((error) => {
+				mermaidPromise = undefined;
+				throw error;
+			});
+		return mermaidPromise;
+	};
+
+	class MermaidDiagram extends HTMLElement {
+		private themeObserver?: MutationObserver;
+		private revision = 0;
+
+		connectedCallback() {
+			this.themeObserver = new MutationObserver(() => this.scheduleRender());
+			this.themeObserver.observe(document.documentElement, {
+				attributes: true,
+				attributeFilter: ['data-theme'],
+			});
+			this.scheduleRender();
+		}
+
+		disconnectedCallback() {
+			this.themeObserver?.disconnect();
+			this.revision += 1;
+		}
+
+		private scheduleRender() {
+			const revision = ++this.revision;
+			renderQueue = renderQueue.then(() => this.renderDiagram(revision));
+		}
+
+		private async renderDiagram(revision: number) {
+			if (!this.isConnected || revision !== this.revision) return;
+
+			const output = this.querySelector<HTMLElement>('[data-mermaid-output]');
+			const status = this.querySelector<HTMLElement>('[data-mermaid-status]');
+			const source = this.querySelector<HTMLDetailsElement>('[data-mermaid-source]');
+			const code = source?.querySelector('code')?.textContent ?? '';
+			if (!output || !status || !source) return;
+
+			this.setAttribute('aria-busy', 'true');
+			this.dataset.state = 'loading';
+			status.textContent = this.dataset.loadingLabel ?? '';
+			status.hidden = false;
+
+			// Render in an attached, invisible container for accurate SVG text measurements.
+			const staging = document.createElement('div');
+			staging.setAttribute('aria-hidden', 'true');
+			staging.style.cssText = 'position:fixed;left:-100000px;top:0;visibility:hidden;pointer-events:none;';
+			let rendering = false;
+
+			try {
+				const mermaid = await loadMermaid();
+				await document.fonts.ready;
+				if (!this.isConnected || revision !== this.revision) return;
+
+				rendering = true;
+				const theme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'default';
+				mermaid.initialize({
+					startOnLoad: false,
+					securityLevel: 'strict',
+					suppressErrorRendering: true,
+					htmlLabels: false,
+					fontFamily: getComputedStyle(this).fontFamily,
+					theme,
+				});
+				this.append(staging);
+				const { svg, bindFunctions } = await mermaid.render(`mermaid-diagram-${++nextDiagramId}`, code, staging);
+				if (!this.isConnected || revision !== this.revision) return;
+
+				output.innerHTML = svg;
+				const diagram = output.querySelector('svg');
+				if (!diagram) throw new Error('Mermaid did not return an SVG diagram.');
+
+				// Keep the natural size so wide diagrams scroll instead of shrinking their labels.
+				const width = diagram.viewBox.baseVal.width;
+				if (width > 0) diagram.style.width = `${width}px`;
+				diagram.style.maxWidth = 'none';
+				diagram.style.height = 'auto';
+				if (!diagram.hasAttribute('aria-labelledby')) {
+					diagram.setAttribute('aria-label', output.getAttribute('aria-label') ?? '');
+				}
+				bindFunctions?.(output);
+				output.hidden = false;
+				status.hidden = true;
+				source.hidden = true;
+				this.dataset.state = 'ready';
+				this.dataset.theme = theme;
+			} catch (error) {
+				if (!this.isConnected || revision !== this.revision) return;
+				output.replaceChildren();
+				output.hidden = true;
+				status.textContent = (rendering ? this.dataset.renderErrorLabel : this.dataset.loadErrorLabel) ?? '';
+				status.hidden = false;
+				source.hidden = false;
+				source.open = true;
+				this.dataset.state = 'error';
+				console.error('Unable to render Mermaid diagram:', error);
+			} finally {
+				staging.remove();
+				if (revision === this.revision) this.setAttribute('aria-busy', 'false');
+			}
+		}
+	}
+
+	if (!customElements.get('mermaid-diagram')) {
+		customElements.define('mermaid-diagram', MermaidDiagram);
+	}
+</script>
+
+<style>
+	.note-mermaid {
+		min-width: 0;
+		max-width: 100%;
+		margin: 24px 0;
+	}
+
+	mermaid-diagram {
+		display: block;
+		min-width: 0;
+		padding: 16px;
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		background: var(--panel);
+	}
+
+	.mermaid-viewport {
+		max-width: 100%;
+		overflow-x: auto;
+	}
+
+	.mermaid-viewport:focus-visible {
+		outline: 2px solid var(--teal);
+		outline-offset: 4px;
+	}
+
+	.mermaid-viewport :global(svg) {
+		display: block;
+		margin: 0 auto;
+	}
+
+	.note-mermaid .mermaid-status {
+		margin: 0 0 12px;
+		color: var(--muted);
+		font-size: 0.9rem;
+	}
+
+	.mermaid-source summary {
+		color: var(--muted);
+		font-size: 0.85rem;
+		cursor: pointer;
+	}
+
+	.note-mermaid figcaption {
+		margin-top: 10px;
+		color: var(--muted);
+		font-size: 0.9rem;
+		text-align: center;
+	}
+</style>
