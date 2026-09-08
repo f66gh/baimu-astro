@@ -19,7 +19,7 @@ interface Props {
 const { entries, collection, lang, view, basePath, currentPage, totalPages } = Astro.props;
 ---
 
-<section class="collection-page">
+<section class:list={['collection-page', { 'tracks-updates': collection === 'academic' || collection === 'notes' }]}>
 	<div class="collection-toolbar">
 		<ViewModeLinks basePath={basePath} active={view} lang={lang} />
 	</div>
@@ -45,3 +45,11 @@ const { entries, collection, lang, view, basePath, currentPage, totalPages } = A
 		lang={lang}
 	/>
 </section>
+
+<style>
+	@media (max-width: 620px) {
+		.tracks-updates .entry-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

@@ -1,6 +1,7 @@
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import type { Lang } from './i18n';
+import { getLatestGitCommitDate } from './git';
 
 export type ContentCollectionKey = 'academic' | 'notes' | 'logbook' | 'anime' | 'music';
 export type ContentEntry<C extends ContentCollectionKey = ContentCollectionKey> = CollectionEntry<C>;
@@ -10,10 +11,11 @@ export interface LocalizedItem<C extends ContentCollectionKey = ContentCollectio
 	baseId: string;
 	lang: Lang;
 	isFallback: boolean;
+	updatedDate?: Date;
 }
 
 type DatedEntry = { data: { date: Date; pinned?: boolean } };
-type DatedItem = DatedEntry | { entry: DatedEntry };
+type DatedItem = DatedEntry | { entry: DatedEntry; updatedDate?: Date };
 
 export const cardPageSize = 12;
 export const listPageSize = 12;
@@ -49,7 +51,7 @@ export function isEnglishEntry(id: string): boolean {
 }
 
 function getDateValue(item: DatedItem): number {
-	const date = 'entry' in item ? item.entry.data.date : item.data.date;
+	const date = 'entry' in item ? item.updatedDate ?? item.entry.data.date : item.data.date;
 	return date.valueOf();
 }
 
@@ -59,11 +61,15 @@ function getPinnedValue(item: DatedItem): number {
 }
 
 function makeLocalizedItem<C extends ContentCollectionKey>(entry: ContentEntry<C>, lang: Lang, isFallback: boolean): LocalizedItem<C> {
+	const tracksUpdates = entry.collection === 'academic' || entry.collection === 'notes';
 	return {
 		entry,
 		baseId: baseEntryId(entry.id),
 		lang,
 		isFallback,
+		updatedDate: tracksUpdates
+			? (entry.filePath ? getLatestGitCommitDate(entry.filePath) : undefined) ?? entry.data.date
+			: undefined,
 	};
 }
 
@@ -83,7 +89,7 @@ export async function getBaseEntries<C extends ContentCollectionKey>(collection:
 	const entries = await getCollection(collection);
 	const baseEntries = sortPinnedThenDateDesc(entries.filter((entry) => !isEnglishEntry(entry.id)));
 
-	return baseEntries.map((entry) => makeLocalizedItem(entry, 'zh', false));
+	return sortPinnedThenDateDesc(baseEntries.map((entry) => makeLocalizedItem(entry, 'zh', false)));
 }
 
 export async function getLocalizedEntries<C extends ContentCollectionKey>(collection: C, lang: Lang): Promise<LocalizedItem<C>[]> {
@@ -93,10 +99,11 @@ export async function getLocalizedEntries<C extends ContentCollectionKey>(collec
 		entries.filter((entry) => isEnglishEntry(entry.id)).map((entry) => [baseEntryId(entry.id), entry]),
 	);
 
-	return baseEntries.map((entry) => {
+	const items = baseEntries.map((entry) => {
 		const localized = lang === 'en' ? englishEntries.get(baseEntryId(entry.id)) : undefined;
 		return makeLocalizedItem(localized ?? entry, lang, lang === 'en' && !localized);
 	});
+	return collection === 'academic' || collection === 'notes' ? sortPinnedThenDateDesc(items) : items;
 }
 
 export async function getLocalizedEntry<C extends ContentCollectionKey>(

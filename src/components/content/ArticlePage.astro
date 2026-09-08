@@ -2,11 +2,13 @@
 import type { Lang } from '../../lib/i18n';
 import { t } from '../../lib/i18n';
 import TagBadge from './TagBadge.astro';
+import ArticleDates from './ArticleDates.astro';
 
 interface Props {
 	title: string;
 	summary: string;
 	date: Date;
+	updatedDate?: Date;
 	collection: 'academic' | 'notes' | 'logbook';
 	lang: Lang;
 	tags?: string[];
@@ -25,6 +27,7 @@ const {
 	title,
 	summary,
 	date,
+	updatedDate,
 	collection,
 	lang,
 	tags = [],
@@ -50,7 +53,9 @@ const tocEmptyLabel = lang === 'en' ? 'No sections yet' : '暂无目录';
 		<h1>{title}</h1>
 		<p class="summary">{summary}</p>
 		<div class="article-meta">
-			<span>{formattedDate}</span>
+			{updatedDate
+				? <ArticleDates date={date} updatedDate={updatedDate} lang={lang} />
+				: <span>{formattedDate}</span>}
 			{isFallback && <span class="fallback">{t(lang, 'chineseOnly')}</span>}
 			{tags.map((tag) => <TagBadge tag={tag} collection={collection} lang={lang} />)}
 		</div>

@@ -1,8 +1,10 @@
 import { execFileSync } from 'node:child_process';
 
-export function getLatestGitCommitDate(): Date | undefined {
+export function getLatestGitCommitDate(filePath?: string): Date | undefined {
 	try {
-		const value = execFileSync('git', ['log', '-1', '--format=%cI'], {
+		const args = ['log', '-1', '--format=%cI'];
+		if (filePath) args.push('--follow', '--', filePath);
+		const value = execFileSync('git', args, {
 			cwd: process.cwd(),
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'ignore'],

@@ -4,7 +4,7 @@ summary: "研一上学期三天摸鱼两天划水看了两个月的开源项目"
 date: 2025-12-31
 tags: ["group-task"]
 cover: "cover.png"
-imageRoot: "/images/academic/ORFS"
+imageRoot: "/images/notes/ORFS"
 externalUrl: "https://www.jianguoyun.com/p/DUpUhM4Q2fCkCxiJk6gGIAA"
 externalLabel: "下载PPT（坚果云）"
 pinned: true
@@ -19,13 +19,13 @@ OpenROAD是一套开源的EDA流程，我是做STA（Static Timing Analysis 静�
 综上所述，由于芯片后端流程的几乎每一步都与STA密切相关，因此指导老师让我阅读整个开源的OpenROAD项目。
 
 笔记已开源，点击按钮可以获得坚果云的链接。笔记可能有误，发现错误可以用邮件联系我。
-![](/images/academic/ORFS/1.png)
+![](/images/notes/ORFS/1.png)
 
 用简要的例子和模型，介绍计算门延时查表法
-![](/images/academic/ORFS/2.png)
+![](/images/notes/ORFS/2.png)
 
 用简要的例子，介绍在布局阶段结束是如何计算门延时和线延时，预估STA
-![](/images/academic/ORFS/3.png)
+![](/images/notes/ORFS/3.png)
 
 OpenROAD简要流程和用到OpenSTA的地方
-![](/images/academic/ORFS/4.jpg)
+![](/images/notes/ORFS/4.jpg)

@@ -47,3 +47,7 @@ $$
 $$
 M_{ii} = 0 \iff M_{ij} = 0, \forall j
 $$
+
+---
+
+封面：[线性子空间示意图](https://commons.wikimedia.org/wiki/File:Linear_subspaces_with_shading.svg)，作者 Alksentrs（基于 Jakob.scholbach 的作品），采用 [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) 许可。

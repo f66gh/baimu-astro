@@ -1,0 +1,44 @@
+---
+import { t, type Lang } from '../../lib/i18n';
+
+interface Props {
+	date: Date;
+	updatedDate: Date;
+	lang: Lang;
+	compact?: boolean;
+}
+
+const { date, updatedDate, lang, compact = false } = Astro.props;
+const formatDate = (value: Date) => value.toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' });
+const separator = lang === 'en' ? ': ' : '：';
+---
+
+<span class:list={['article-dates', { compact }]} lang={lang}>
+	<span>{t(lang, 'articleUpdated')}{separator}<time datetime={updatedDate.toISOString()}>{formatDate(updatedDate)}</time></span>
+	<span>{t(lang, 'initialPublished')}{separator}<time datetime={date.toISOString()}>{formatDate(date)}</time></span>
+</span>
+
+<style>
+	.article-dates {
+		display: inline-flex;
+		flex-wrap: nowrap;
+		align-items: baseline;
+		gap: 0.7em;
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.compact {
+		font-size: 0.72rem;
+	}
+
+	.compact:lang(en) {
+		font-size: 0.68rem;
+	}
+
+	@media (max-width: 380px) {
+		.article-dates:not(.compact) {
+			font-size: 0.75rem;
+		}
+	}
+</style>
