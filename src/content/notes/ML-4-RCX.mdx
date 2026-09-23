@@ -342,3 +342,29 @@ AMS(Analog-Mixed Signal)是模拟混合信号，即电路中又有模拟信号�
 
 论文标签用的是自己的RWCap，而不是Raphael场求解器。因为RWCap对比Raphael的总电容和耦合电容误差分别是0.64%和2%，已经很小了。
 而且比Raphael快。OpenRCX相比于Raphael的误差在20%很大，所以不适合打标签。
+
+## 商业专利
+
+### 切分导体
+
+题目：Partitioning of Wiring for Capacitance Extraction Without Loss in Accuracy (IBM 2017)
+
+核心是泊松方程的**线性叠加性**。例如有ABC三根导线，由于A太长了，我们不得不切。但是我们还想求出来A整体对于B与C的耦合电容。
+
+当A被切分后，让A的两部分人为分开一点点但是近似无限靠近。
+这样分别求出A的两部分和BC的耦合电容再累加，和整个A对BC求耦合电容在数学上等价。
+
+| 求解情况 | $A_1$ | $A_2$ | B | C |
+|---|---:|---:|---:|---:|
+| 第一次，只激励 $A_1$ | 1 V | 0 V | 0 V | 0 V |
+| 第二次，只激励 $A_2$ | 0 V | 1 V | 0 V | 0 V |
+| 两次结果叠加 | 1 V | 1 V | 0 V | 0 V |
+
+下面的小实验可以切换两次单独激励、结果叠加和同时激励。每次都保留全部导体，未激励的子段设为 0 V。演示固定小间隙下的线性叠加，恢复原来未切分的导体还需要考虑间隙趋于零的极限。
+
+<iframe
+	class="note-interactive"
+	src="/interactives/conductor-superposition/index.html"
+	title="导体切分与电势、电荷线性叠加交互演示"
+	loading="lazy"
+></iframe>

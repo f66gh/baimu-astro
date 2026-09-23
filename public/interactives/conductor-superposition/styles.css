@@ -1,0 +1,92 @@
+:root {
+  color-scheme: light;
+  --background: #f7f8f6;
+  --panel: #ffffff;
+  --text: #223431;
+  --muted: #586b66;
+  --line: #d6dfda;
+  --accent: #14695e;
+  --accent-text: #ffffff;
+  --soft: #e7f1ec;
+  --track: #e0e8e3;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #141e21;
+  --panel: #1c2a2d;
+  --text: #e6eeea;
+  --muted: #a7beb6;
+  --line: #364b48;
+  --accent: #81d5bd;
+  --accent-text: #112923;
+  --soft: #213d36;
+  --track: #354946;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 20px;
+  background: var(--background);
+  color: var(--text);
+  font: 14px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+main { max-width: 1040px; margin: 0 auto; }
+p, h1, h2 { margin: 0; }
+.eyebrow { color: var(--accent); font-size: 12px; letter-spacing: .06em; }
+h1 { margin-top: 3px; font-size: 22px; font-weight: 650; }
+.intro { margin-top: 5px; color: var(--muted); }
+.modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 18px 0; }
+button {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 10px 6px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+button:hover { border-color: var(--accent); }
+button[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+button:disabled { cursor: wait; opacity: .6; }
+button:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.experiment { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(230px, 1fr); gap: 20px; align-items: start; }
+.field-panel { min-width: 0; }
+.figure-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+.scale { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); }
+.scale i { display: block; width: 85px; height: 7px; border-radius: 4px; background: linear-gradient(90deg, #101f37, #297f98, #81c6a8, #fbe397); }
+canvas { display: block; width: 100%; aspect-ratio: 101 / 65; border-radius: 7px; background: #101f37; }
+.geometry-note { margin-top: 6px; color: var(--muted); font-size: 12px; }
+h2 { display: flex; align-items: baseline; gap: 8px; font-size: 15px; font-weight: 600; }
+h2 span { color: var(--muted); font-size: 12px; font-weight: 400; }
+.charge-row { margin-top: 17px; }
+.charge-heading { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+output { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.charge-track { height: 7px; background: var(--track); border-radius: 5px; overflow: hidden; margin: 5px 0 7px; }
+.charge-track > div { height: 100%; width: 0; background: var(--accent); }
+.equation { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.normalization { color: var(--muted); font-size: 12px; margin-top: 14px; }
+.comparison { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 12px; font-size: 12px; color: var(--accent); }
+.explanation { margin-top: 18px; border-left: 3px solid var(--accent); background: var(--soft); padding: 11px 14px; border-radius: 0 6px 6px 0; }
+.explanation strong { font-weight: 600; }
+.explanation p { margin-top: 3px; }
+details { margin-top: 13px; font-size: 12px; color: var(--muted); }
+summary { cursor: pointer; width: fit-content; }
+details p { margin-top: 8px; }
+@media (max-width: 600px) {
+  body { padding: 14px; }
+  h1 { font-size: 19px; }
+  .modes { grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 13px 0; }
+  button { padding: 8px 4px; }
+  .experiment { grid-template-columns: 1fr; gap: 14px; }
+  .results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 18px; }
+  .results h2, .normalization, .comparison { grid-column: 1 / -1; }
+  .charge-row { margin-top: 8px; }
+  .charge-heading { display: block; }
+  .charge-heading > span { display: block; white-space: nowrap; font-size: 12px; }
+  output { display: block; font-size: 21px; }
+  .normalization { margin-top: 10px; }
+  .comparison { padding-top: 8px; margin-top: 8px; }
+  .explanation { margin-top: 13px; }
+}

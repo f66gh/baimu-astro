@@ -40,36 +40,35 @@ export const mainQuestItems: Record<Lang, { title: string; description: string; 
 	zh: [
 		{
 			title: 'X-Cap论文',
-			description: '从六月肝到了七月，争取七月写完',
-			date: '2026.07',
+			description: 'byd说好从六月肝到了七月，九月底还没投出去',
+			date: '2026.10',
 		},
 		{
-			title: '继续深度学习了，想开始学神经算子',
-			description: '我感觉深度学习已经被开发烂了，在寄生参数提取这里的深度学习感觉没啥创新点，自己想出来的创新点在灵感迸发出的这一刻就像是垃圾',
-			date: '2026.06',
+			title: 'XL-Cap论文',
+			description: '争取赶上今年的DAC，想法已经完善了，但是在等标签',
+			date: '2026.10',
 		},
 		{
-			title: '异环，想退坑了',
-			description: 'byd，天天玩异环要累死我了，跟tm上班似的',
-			date: '2026.07',
+			title: '电子ED',
+			description: '天天除了科研和练琴不知道要干啥',
+			date: '2026.10',
 		},
 	],
 	en: [
 		{
 			title: 'X-Cap Paper',
-			description: 'I have been grinding on it from June into July. Hopefully I can finish writing it this month.',
-			date: '2026.07',
+			description: "Damn, I thought I'd be done in July after grinding away since June. It's now late September, and I still haven't submitted it.",
+			date: '2026.10',
 		},
 		{
-			title: 'Back to Deep Learning, Thinking About Neural Operators',
-			description:
-				'I feel like deep learning has already been overdeveloped. In parasitic parameter extraction, it feels like there is not much room left for real novelty, and the ideas I come up with look like trash the very moment inspiration hits.',
-			date: '2026.06',
+			title: 'XL-Cap Paper',
+			description: "Hoping to make this year's DAC deadline. The idea is fully worked out, but I'm still waiting for the labels.",
+			date: '2026.10',
 		},
 		{
-			title: 'Neverness to Everness, Thinking About Quitting',
-			description: 'Damn it, playing Neverness to Everness every day is exhausting. It feels like going to work.',
-			date: '2026.07',
+			title: 'Gaming Burnout',
+			description: 'These days, I have no idea what to do besides research and practicing my instruments.',
+			date: '2026.10',
 		},
 	],
 };

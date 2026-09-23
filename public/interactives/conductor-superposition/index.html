@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>导体切分与线性叠加</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./main.js"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">IBM 2017 · 导体切分小实验</p>
+      <h1>逐段激励，再把结果相加</h1>
+      <p class="intro">每次都保留 A₁、A₂、B、C，只改变施加的电压。</p>
+    </header>
+
+    <div class="modes" role="group" aria-label="选择激励方式">
+      <button type="button" data-mode="first" aria-pressed="true" disabled>① 只激励 A₁</button>
+      <button type="button" data-mode="second" aria-pressed="false" disabled>② 只激励 A₂</button>
+      <button type="button" data-mode="sum" aria-pressed="false" disabled>③ 两次结果叠加</button>
+      <button type="button" data-mode="together" aria-pressed="false" disabled>④ 同时激励两段</button>
+    </div>
+
+    <div class="experiment">
+      <section class="field-panel" aria-label="电势分布">
+        <div class="figure-heading"><span>电势 φ</span><span class="scale">0 V <i></i> 1 V</span></div>
+        <canvas id="field" role="img" aria-label="正在计算电势分布">请启用 JavaScript 查看交互电势图。</canvas>
+        <p class="geometry-note">中间留有固定小间隙 g，外框接地。</p>
+      </section>
+
+      <section class="results" aria-label="外部导体上的感应电荷">
+        <h2>感应电荷 <span>归一化</span></h2>
+        <div class="charge-row">
+          <div class="charge-heading"><span>B 上的电荷</span><output id="charge-b">—</output></div>
+          <div class="charge-track" aria-hidden="true"><div id="bar-b"></div></div>
+          <p class="equation" id="equation-b">正在求解…</p>
+        </div>
+        <div class="charge-row">
+          <div class="charge-heading"><span>C 上的电荷</span><output id="charge-c">—</output></div>
+          <div class="charge-track" aria-hidden="true"><div id="bar-c"></div></div>
+          <p class="equation" id="equation-c">正在求解…</p>
+        </div>
+        <p class="normalization">B、C 各自以“同时激励”时的电荷绝对值为 1。条长表示电荷绝对值。</p>
+        <p class="comparison" id="comparison">正在独立求解三个边界条件…</p>
+      </section>
+    </div>
+
+    <div class="explanation" role="status" aria-live="polite" aria-atomic="true">
+      <strong id="state-title">A₁ = 1 V，A₂ = 0 V</strong>
+      <p id="state-description">A₂ 仍在原位并接地，不能从求解环境中删除。B、C 始终为 0 V。</p>
+    </div>
+
+    <details>
+      <summary>这个小实验说明什么？</summary>
+      <p>固定几何和线性介质时，φ₁ + φ₂ = φ₁₊₂，B、C 上的感应电荷也可相加。这里用有限差分法（把空间划成网格）求解二维均匀介质中的拉普拉斯方程，叠加结果与“同时激励”的独立求解相比较。</p>
+      <p>本例保留有限间隙，没有模拟 g → 0。恢复未切分导体需要考虑间隙趋零的极限。切口两侧的人为内部耦合不计入展示结果，有限窗口及数值离散也会影响实际提取精度。</p>
+      <p>图中数值用于解释线性叠加，不是实际工艺的三维电容。参考专利 US20170177776A1，[0058]–[0070]。</p>
+    </details>
+    <noscript><p>这个演示需要 JavaScript。上方笔记表格仍可用于对照三种边界条件。</p></noscript>
+  </main>
+</body>
+</html>
