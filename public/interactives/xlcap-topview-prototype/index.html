@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XL-Cap 样本俯视图</title>
+  <script>
+    (() => {
+      let stored;
+      try { stored = localStorage.getItem('aiu-theme'); } catch {}
+      const theme = stored === 'light' || stored === 'dark'
+        ? stored : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.dataset.theme = theme;
+      document.documentElement.style.colorScheme = theme;
+    })();
+  </script>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <!-- Local sample viewer with browser-only RCB partitioning and label-based expansion. -->
+  <main class="viewer">
+    <header class="header">
+      <div class="heading"><span class="mark" aria-hidden="true">XY</span><div><h1>版图俯视图</h1><p id="sample-name">XL-Cap · 从 +Z 方向观察</p></div></div>
+      <div class="header-actions">
+        <a class="button" id="open-window" href="./index.html" target="_blank" rel="noopener">在独立窗口中显示 <span aria-hidden="true">↗</span></a>
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="切换深浅色" aria-pressed="false" title="切换深浅色">
+          <svg class="theme-icon-light" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 7a5 5 0 0 1 5 5a5 5 0 0 1-5 5a5 5 0 0 1-5-5a5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0-7l2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10l1.76-3.77a7.13 7.13 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10l-4.14.36c.59-.51 1.12-1.14 1.54-1.86c.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44c.82 0 1.63-.17 2.37-.44z"/></svg>
+          <svg class="theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m17.75 4.09l-2.53 1.94l.91 3.06l-2.63-1.81l-2.63 1.81l.91-3.06l-2.53-1.94L12.44 4l1.06-3l1.06 3zm3.5 6.91l-1.64 1.25l.59 1.98l-1.7-1.17l-1.7 1.17l.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85c-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14c.4-.4.82-.76 1.27-1.08c.75-.53 1.93.36 1.85 1.19c-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82c-2.81 3.14-2.7 7.96.31 10.98c3.02 3.01 7.84 3.12 10.98.31"/></svg>
+          <span id="theme-label">白天</span>
+        </button>
+        <button class="primary" id="choose-file" type="button">选择 JSON 文件</button>
+      </div>
+      <input id="file-input" type="file" accept=".json,application/json" hidden>
+    </header>
+    <p id="error" class="error" role="alert" hidden></p>
+    <div class="partition-toolbar">
+      <fieldset id="view-modes" disabled>
+        <legend class="sr-only">版图显示方式</legend>
+        <label><input type="radio" name="view-mode" value="original" checked><span>原始版图</span></label>
+        <label><input type="radio" name="view-mode" value="partition"><span>RCB 切分</span></label>
+        <label><input type="radio" name="view-mode" value="environment"><span>5% 环境外扩</span></label>
+        <label><input type="radio" name="view-mode" value="compare"><span>左右对比</span></label>
+        <label><input type="radio" name="view-mode" value="steps"><span>切分过程</span></label>
+      </fieldset>
+      <span id="partition-status" class="muted" role="status">导入样本后可切分核心窗口</span>
+    </div>
+    <section id="trace-player" class="trace-player" aria-label="RCB 切分过程播放控制" hidden>
+      <div class="trace-controls">
+        <button id="step-first" type="button" disabled>回到开始</button>
+        <button id="step-prev" type="button" disabled>上一步</button>
+        <button id="step-play" type="button" class="primary" aria-pressed="false" disabled>自动播放</button>
+        <button id="step-next" type="button" disabled>下一步</button>
+        <button id="step-last" type="button" disabled>跳到结束</button>
+        <label class="step-progress"><span id="step-counter">第 0 / 0 步</span><input id="step-range" type="range" min="0" max="0" value="0" step="1" aria-label="切分步骤" disabled></label>
+      </div>
+      <p id="step-description" role="status">正在准备切分过程…</p>
+    </section>
+    <section id="environment-banner" class="environment-banner" aria-label="环境外扩概览" hidden>
+      <div><strong>第二步 · 环境外扩</strong><span id="environment-summary" class="muted" role="status">完成 RCB 切分后计算每个核心的最小外扩范围。</span></div>
+      <p id="environment-current" class="environment-current" role="status"></p>
+      <p class="environment-legend"><span class="legend-core">━ 核心边界</span><span class="legend-environment">┄ 外扩边界</span><span class="muted">淡色导体：未完整纳入</span></p>
+    </section>
+    <div class="workspace">
+      <section id="viewport" class="viewport" aria-label="样本 X–Y 平面俯视图">
+        <canvas id="layout-canvas" tabindex="0" aria-label="版图画布，滚轮缩放，拖动平移，Escape 取消选择"></canvas>
+        <div id="empty-state" class="empty-state">
+          <svg class="empty-icon" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="m9 40 23 13 23-13M9 30l23 13 23-13M9 20 32 7l23 13-23 13L9 20Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          <h2>拖入一个样本 JSON</h2>
+          <p>把导体投影到 X–Y 平面，每个图层一种颜色。</p>
+          <button id="choose-empty" type="button">或点击选择文件</button>
+          <small>支持 sample.json 和 layout.json · 文件仅在浏览器本地读取</small>
+        </div>
+        <div class="drop-overlay" aria-hidden="true">松开鼠标，打开这个样本</div>
+        <div class="view-tools" aria-label="视图操作">
+          <button id="zoom-out" type="button" aria-label="缩小" title="缩小" disabled>−</button>
+          <output id="zoom-label" aria-label="缩放比例">100%</output>
+          <button id="zoom-in" type="button" aria-label="放大" title="放大" disabled>+</button>
+          <span class="divider"></span>
+          <button id="fit-view" type="button" disabled>适应窗口</button>
+        </div>
+      </section>
+      <aside class="sidebar" aria-label="图层和导体信息">
+        <section id="environment-panel" class="panel environment-panel" hidden>
+          <div class="panel-heading"><h2>5% 遗漏范围</h2><span class="source-badge">标签计算</span></div>
+          <p class="muted">每个核心四边等距外扩，寻找耦合遗漏 ≤ 5% 的最小距离。</p>
+          <p id="environment-message" class="environment-message" role="status"></p>
+          <label class="window-picker" for="environment-select">查看核心窗口</label>
+          <select id="environment-select" disabled><option value="">全部范围</option></select>
+          <div class="environment-actions"><button id="environment-prev" type="button" disabled>上一个</button><button id="environment-next" type="button" disabled>下一个</button><button id="environment-focus" type="button" disabled>聚焦</button></div>
+          <label class="option"><input id="show-environments" type="checkbox"> 同时显示其他窗口的外扩边界</label>
+          <dl id="environment-info" class="details"></dl>
+          <p id="environment-proof" class="muted"></p>
+          <details class="environment-notes"><summary>范围如何计算</summary><p class="muted">目标是完整位于原核心内的导体。根据样本的完整电容矩阵统计目标耦合，只在整根导体进入范围后计入，排除自电容和对地项。边界相交但未完整进入的导体不计入。</p><p class="muted">范围来自现有标签，不是 MLP 预测，也不代表裁窗重新求解后的电容误差。隐藏图层只影响显示。灰色虚线是原求解窗口，外扩边界按计算结果完整显示。</p></details>
+        </section>
+        <section id="partition-panel" class="panel partition-panel" hidden>
+          <div class="panel-heading"><h2>RCB 核心窗口</h2><button id="clear-window" class="text-button" type="button" disabled>取消选择</button></div>
+          <p class="muted">所有图层共同切分，隐藏图层仅影响显示。最外侧灰色虚线为原求解窗口。</p>
+          <div id="step-panel" hidden>
+            <p class="trace-legend"><span class="legend-cut">━ 本步切线</span><span class="legend-pending">┄ 待检查</span><span class="legend-done">━ 已停止</span><span class="legend-over">━ 超限停止</span></p>
+            <h2 id="step-title">初始区域</h2>
+            <dl id="step-details" class="details"></dl>
+            <p class="muted trace-note">一步对应一次切分或停止判断。按递归顺序先处理左侧或下侧，再处理另一侧。图中显示本步执行后的状态。</p>
+          </div>
+          <details id="partition-settings">
+            <summary>切分参数</summary>
+            <form id="partition-form">
+              <label>每窗口导体数上限<input id="max-conductors" type="number" min="1" step="1" value="24" required></label>
+              <label>期望导体数下限<input id="min-conductors" type="number" min="1" step="1" value="12" required></label>
+              <label>目标最大长宽比<input id="max-aspect" type="number" min="1" step="any" value="3" required></label>
+              <p class="muted">下限与长宽比是优化目标，递归最多 20 层。若无法继续减少导体数，会保留并标出超限窗口。</p>
+              <button id="run-partition" type="submit" class="primary">重新切分</button>
+            </form>
+          </details>
+          <p id="partition-error" class="partition-error" role="alert" hidden></p>
+          <dl id="partition-metrics" class="details"></dl>
+          <p id="partition-warning" class="partition-error" hidden></p>
+          <label class="window-picker" for="window-select">选择核心窗口</label>
+          <select id="window-select" disabled><option value="">全部窗口</option></select>
+          <dl id="window-info" class="details"></dl>
+          <p id="window-hint" class="muted">单击切分图中的窗口，查看其导体片段。导体片段仍关联原导体编号。</p>
+        </section>
+        <section class="panel">
+          <div class="panel-heading"><h2>图层</h2><button id="show-all" class="text-button" type="button" disabled>全部显示</button></div>
+          <p id="layer-summary" class="muted">导入样本后显示图层</p>
+          <div id="layer-list" class="layer-list"></div>
+          <label class="option"><input id="show-labels" type="checkbox" disabled> 显示导体编号</label>
+        </section>
+        <section class="panel sample-panel">
+          <h2>样本</h2>
+          <dl id="sample-info" class="details"></dl>
+          <p id="sample-placeholder" class="muted">尚未导入</p>
+        </section>
+        <section class="panel inspector-panel">
+          <h2 id="inspector-title">导体信息</h2>
+          <p id="inspector-hint" class="muted">悬停查看，单击选中导体。<br>重叠处可关闭上层后查看下层。</p>
+          <dl id="inspector" class="details"></dl>
+        </section>
+      </aside>
+    </div>
+    <footer class="statusbar"><span id="status" role="status">等待导入样本</span><span id="cursor-info">X → &nbsp; Y ↑</span></footer>
+    <div id="matrix-resize" class="matrix-resize" role="separator" aria-orientation="horizontal" aria-label="调整麦克斯韦电容矩阵高度" aria-controls="matrix-scroll" tabindex="0" title="上下拖动调节高度，双击恢复默认；也可使用 ↑ ↓ 键调节。" hidden>
+      <span class="resize-grip" aria-hidden="true"></span><span aria-hidden="true">拖动调节矩阵高度</span>
+    </div>
+    <section class="matrix-panel" aria-labelledby="matrix-title">
+      <div class="matrix-heading"><h2 id="matrix-title">完整麦克斯韦电容矩阵</h2><span id="matrix-summary" class="muted">尚未导入</span></div>
+      <p id="matrix-hint" class="muted">导入带有电容标签的 sample.json 后显示。</p>
+      <p id="matrix-empty" class="matrix-empty muted" hidden></p>
+      <div id="matrix-scroll" class="matrix-scroll" tabindex="0" role="region" aria-label="完整麦克斯韦电容矩阵，可横向和纵向滚动" hidden>
+        <table id="matrix-table" aria-labelledby="matrix-title" aria-describedby="matrix-summary matrix-hint"></table>
+      </div>
+      <p id="matrix-value" class="matrix-value" hidden>悬停或单击单元格，查看对应导体和完整数值。</p>
+    </section>
+  </main>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
