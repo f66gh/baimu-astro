@@ -561,6 +561,49 @@ $$
 
 这篇论文核心思想如图所示，非常简单。作者认为传统Transformer是全注意力公式，当输入变大时时空复杂度会平方级增长。例如输入的是图片、音频等就不适用了。为此，本文设计了一个通用的可以减小时空复杂度的Transformer架构，大体分为三段：输入encoder、中间主要的process和输出decoder。给输入和输出各一个latent矩阵，这样在中间主要的process中和decoder的复杂度受限。
 
+### Differential Transformer
+
+参考文献：DIFFERENTIAL TRANSFORMER (微软 清华 ICLR 2025)
+
+研究人员发现，传统Transformer结构对于选定的内容注意力可能会被无关上下文干扰。本文提出了差分Transformer，让注意力能更加集中到正确的目标上。
+
+![](diffAttention.png)
+
+**单头注意力**
+
+在单头注意力中，假设普通头的隐藏维度是d，这里则变成了2d。我们设一个变量$\lambda$，单头的权重矩阵维度和注意力公式如下：
+
+$$
+[K1;K2] = XW^K \quad
+[Q1;Q2] = XW^Q \quad
+V = XW^V \\
+
+A_1 = \text{softmax}(\frac{Q_1 K_1^{\top}}{\sqrt{d}}) \quad
+A_2 = \text{softmax}(\frac{Q_2 K_2^{\top}}{\sqrt{d}}) 
+
+$$
+
+把一个头的注意力拆成了两个独立的运算，然后做减法。
+
+$$
+H = (A_1 - \lambda A_2) V
+$$
+
+$\lambda$ 由一个初始标量和可更新的四个向量内积后再计算得到，本身是一个标量。
+
+$$
+\lambda = e^{u_1^{\top} v_1} + e^{u_2^{\top} v_2} + \lambda_{\text{init}}
+$$
+
+**多头注意力**
+
+由于不同头的输出向量不同，可能范围浮动很大，所以是先在同一个头内做归一化，这样有意义一些。然后再拼接。
+
+$$
+\widetilde {H_i} = (1 - \lambda_{\text{init}}) \text{RMSNorm} (H_i) \\
+Y = \text{Concat}(\widetilde {H_i}, ..., \widetilde {H_h})W^O
+$$
+
 ## 图基础文献
 
 ### MPNN
