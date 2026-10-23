@@ -604,6 +604,24 @@ $$
 Y = \text{Concat}(\widetilde {H_i}, ..., \widetilde {H_h})W^O
 $$
 
+### Axial Attention
+
+参考文献：Axial Attention in Multidimensional Transformers (Google Brain, 2019, ICLR)
+
+这篇论文思路很简单，起源于对图片的做全像素注意力时间成本太高。如何能让每个像素既能感知全图，又能降低时间复杂度？
+
+于是作者提出，先只做横轴，再做纵轴的注意力。比如一张$H×W$的图像，全图做注意力需要$H^2W^2$的注意力，当横纵轴分别做注意力的时候，只需要$H×W^2 + H^2 × W$的注意力。
+
+### Triangle attention
+
+参考文献： AlphaFold2: Highly accurate protein structure prediction with AlphaFold(Nature 2021, DeepMind)
+
+先只介绍这篇论文中的三角注意力，在传统注意力中，只有两个元素互相交互。但是，第三个元素会对这两个元素产生影响，可以采用三角注意力的方法。设ABC三个节点有三条边，注意力核心公式为：
+
+$$
+o_{ABC} = \frac{q_{AB}k_{AC}^{\top}}{\sqrt{d_h}} + b(P_{BC})
+$$
+
 ## 图基础文献
 
 ### MPNN
