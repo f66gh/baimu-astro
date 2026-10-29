@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CNN 与 FNO：空间范围与上下采样</title><link rel="stylesheet" href="./common.css"><link rel="stylesheet" href="./cnn-fno.css"></head>
+<body><main>
+<header><h1>CNN 与 FNO：一个输出点能看到哪里？</h1><p class="intro">同一个正方形区域。点击网格选择输出位置，观察可能影响它的输入位置。</p></header>
+<section class="card settings" aria-label="对比参数">
+<div><label for="size">每边采样点数</label><select id="size"><option>16</option><option>32</option><option selected>64</option><option>128</option></select></div>
+<div><label for="channels">通道数</label><select id="channels"><option selected>8</option><option>16</option><option>32</option></select></div>
+<div><label for="levels">CNN 下采样次数</label><select id="levels"><option>0</option><option>1</option><option selected>2</option><option>3</option></select></div>
+<div><label for="modes">FNO 每轴最大频率 <b id="modes-label">3</b></label><input id="modes" type="range" min="0" max="7" value="3"></div>
+<div class="location"><label for="target-x">输出列 <b id="x-label"></b></label><input id="target-x" type="range" min="0" max="63" value="32"></div>
+<div class="location"><label for="target-y">输出行 <b id="y-label"></b></label><input id="target-y" type="range" min="0" max="63" value="32"></div>
+</section>
+<div class="comparison">
+<section class="card"><h2>CNN · 局部卷积与上下采样</h2><p class="hint">3×3 卷积、2×2 平均池化、最近邻上采样，卷积使用零填充；各层通道数保持一致。</p>
+<div id="cnn-path" class="path"></div>
+<canvas id="cnn-grid" role="img" aria-label="CNN 输出位置的输入依赖区域"></canvas>
+<div class="legend"><span><i style="background:var(--c1)"></i>可能影响输出的输入位置</span><span><i style="background:var(--c2)"></i>选择的输出位置</span></div>
+<div class="result" id="cnn-coverage"></div>
+<p class="hint">下采样减少空间点数，使后续卷积覆盖更大的原始区域；上采样恢复网格大小，不会自动找回丢掉的细节。</p></section>
+<section class="card"><h2>FNO · 频域全局混合</h2><p class="hint">一个 FNO 层，空间网格保持不变。截断频率不等于减少空间采样点。</p>
+<div id="fno-path" class="path"></div>
+<canvas id="fno-grid" role="img" aria-label="FNO 频域分支的全局输入依赖区域"></canvas>
+<div class="legend"><span><i style="background:var(--c3)"></i>频域分支可能访问全域</span><span><i style="background:var(--c2)"></i>选择的输出位置</span></div>
+<div class="result" id="fno-coverage"></div>
+<p class="hint">即使只保留零频，平均值也由全部输入共同决定。全局访问不等于保留全部细节，逐点分支与激活也参与形成输出。</p></section>
+</div>
+<section class="card spectrum-section"><div><h2>FNO 保留哪些频率？</h2><p class="hint">此图使用完整双边频谱，零频移到中心。蓝色方块是保留的位置，灰色位置在频域分支中补零。</p><p id="mode-count" class="result"></p><p class="hint">保留范围越小，只让变化较慢的空间模式通过频域分支。这里采用对称的整数频率集合，不采用 rfft2 的半谱存储计数。</p></div><canvas id="mode-grid" role="img" aria-label="中心低频方块与被截断的高频位置"></canvas></section>
+<section class="card cost-section"><h2>运算量怎样随设置变化？</h2><p class="hint">下列数字只是复杂度表达式的量级项，不是 FLOPs、实测耗时或速度比。左侧是完整示例 CNN，右侧是一个 FNO 层。</p>
+<div class="costs"><div><h3>CNN</h3><dl id="cnn-cost"></dl></div><div><h3>FNO</h3><dl id="fno-cost"></dl></div></div></section>
+<p class="footnote">高亮的是结构上可能存在的依赖，不是注意力权重或训练后的预测。这是无跳跃连接的简化 CNN；U-Net 等结构还会融合高分辨率特征。</p>
+</main><script type="module" src="./cnn-fno.js"></script></body></html>

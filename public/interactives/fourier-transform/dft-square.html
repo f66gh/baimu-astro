@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>x² 的采样、频谱与逆变换</title>
+<link rel="stylesheet" href="./common.css"><link rel="stylesheet" href="./dft-square.css">
+</head>
+<body>
+<main>
+<div class="panels">
+<section class="card panel" aria-labelledby="sampling-heading">
+<div class="section-heading"><span class="step">01</span><h2 id="sampling-heading">采样与逐项相乘</h2></div>
+<div class="toolbar">
+<div><label for="count">采样点数 N</label><select id="count"><option>8</option><option>9</option><option>16</option><option>32</option><option>64</option></select></div>
+<div><label for="frequency">检查频率 <b id="frequency-value"></b></label><input type="range" id="frequency" min="-3" max="4" value="1" step="1"></div>
+<div class="btns"><button id="zero">零频</button><button id="pair">共轭配对</button><button id="reset">重置</button></div>
+</div>
+<label class="toggle"><input type="checkbox" id="show-basis" checked>显示基函数的检测曲线（取共轭）</label>
+<canvas id="samples" role="img" aria-label="x 平方曲线、采样点与可隐藏的共轭基函数检测曲线"></canvas>
+<div class="legend"><span><i style="background:var(--c1)"></i>x² 与采样点</span><span><i style="background:var(--c4)"></i>当前采样点</span><span class="basis-legend"><i style="background:var(--c2)"></i>检测实部（余弦）</span><span class="basis-legend"><i style="background:var(--c3)"></i>检测虚部（负正弦）</span></div>
+<div class="control point-control"><label for="sample-index">检查采样点 n <b id="sample-value"></b></label><input id="sample-index" type="range" min="0" max="7" step="1" value="2"></div>
+<p class="hint">空心端点不参与采样。隐藏曲线不影响下表计算。</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="逐项乘法表，可滚动"><table><caption>逐项乘法表</caption><thead><tr><th scope="col">序号</th><th scope="col">位置</th><th scope="col">采样值</th><th scope="col">检测实部</th><th scope="col">检测虚部</th><th scope="col">实部乘积</th><th scope="col">虚部乘积</th></tr></thead><tbody id="products"></tbody><tfoot><tr><th scope="row" colspan="5">乘积求和</th><td id="sum-real"></td><td id="sum-imag"></td></tr><tr><th scope="row" colspan="5">求和后除以采样点数</th><td id="mean-real"></td><td id="mean-imag"></td></tr></tfoot></table></div>
+<div class="result"><span>归一化复数系数</span><strong id="coefficient" aria-live="polite"></strong></div>
+</section>
+<section class="card panel" aria-labelledby="spectrum-heading">
+<div class="section-heading"><span class="step">02</span><h2 id="spectrum-heading">频域</h2></div>
+<p class="hint">柱高表示归一化系数的模长，点击选择频率。</p>
+<div class="frequency-regions"><span>← 高频</span><span>低频 · 零频附近</span><span>高频 →</span></div>
+<canvas id="spectrum" role="img" aria-label="以零频为中心、向两侧频率升高的双边幅度谱，可用上方滑块选择频率"></canvas>
+<div class="legend"><span><i style="background:var(--c2)"></i>当前频率</span><span><i style="background:var(--c4)"></i>共轭配对</span><span><i style="background:var(--c1)"></i>其余频率</span></div>
+<p class="band-note">越靠近零频，基函数变化越慢，描述整体起伏；越远离零频，变化越快，可参与表示细节和突变。正负只区分旋转方向，柱子高低不代表频率高低。</p>
+<dl id="coefficient-stats"></dl>
+<p class="hint" id="frequency-note"></p>
+</section>
+<section class="card panel" aria-labelledby="inverse-heading">
+<div class="section-heading"><span class="step">03</span><h2 id="inverse-heading">逆变换</h2></div>
+<div class="reconstruction-controls"><div><label for="mode">重构方式</label><select id="mode"><option value="lowpass">保留零频和若干低频配对</option><option value="pair">只看当前频率及其共轭配对</option></select></div><div id="cutoff-control"><label for="cutoff">保留的最高频率（绝对值） <b id="cutoff-value">1</b></label><input id="cutoff" type="range" min="0" max="4" value="1" step="1"></div><div class="btns"><button id="dc-only">只留平均值</button><button id="all">保留全部频率</button></div></div>
+<canvas id="reconstruction" role="img" aria-label="原始 x 平方曲线、采样点与重构曲线对比"></canvas>
+<div class="legend"><span><i style="background:var(--muted)"></i>原函数 x²</span><span><i style="background:var(--c1)"></i>原采样点</span><span><i style="background:var(--c2)"></i>重构曲线与点</span></div>
+<div class="result"><span id="retained"></span><strong id="error"></strong></div>
+<p class="hint">全部频率能还原采样点，点间曲线不一定等于原函数。重构曲线按周期延拓。</p>
+</section>
+</div>
+</main>
+<script type="module" src="./dft-square.js"></script>
+</body></html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FFT：蝶形图与 N log N</title>
+  <link rel="stylesheet" href="./common.css">
+</head>
+<body>
+<main>
+  <p class="eyebrow">图 4 · FAST FOURIER TRANSFORM (RADIX-2 COOLEY–TUKEY)</p>
+  <h1>FFT：把 N 点 DFT 拆成两个 N/2 点 DFT，递归 log₂N 层</h1>
+  <p class="intro">FFT 不是另一种变换，它算出的结果与 DFT 完全一样，只是利用了旋转因子 <span class="mono">W = e^(−i2π/N)</span> 的周期性与对称性，把重复计算合并掉。一步步点击，看每一层“蝶形”如何合并。</p>
+
+  <div class="layout">
+    <div class="stack">
+      <div class="card">
+        <h3>蝶形图<small id="lbl-stage"></small></h3>
+        <canvas id="fly"></canvas>
+        <div class="legend" style="margin-top:6px">
+          <span><i style="background:var(--c1)"></i>直通（乘 1）</span>
+          <span><i style="background:var(--c2)"></i>乘旋转因子 Wᵏ，下支取负</span>
+          <span><i style="background:var(--c4)"></i>点击右侧输出 X[k]：它依赖的全部路径</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3>复数乘法次数：DFT 的 N² 与 FFT 的 (N/2)·log₂N<small>对数纵轴</small></h3>
+        <canvas id="cost"></canvas>
+      </div>
+    </div>
+
+    <aside class="controls">
+      <div class="card controls">
+        <div class="control">
+          <label>点数 N</label>
+          <select id="N"><option value="8">N = 8（显示数值）</option><option value="16">N = 16</option></select>
+        </div>
+        <div class="control">
+          <label>输入 x[n]</label>
+          <select id="input">
+            <option value="rect">矩形脉冲 1,1,1,1,0,0,0,0…</option>
+            <option value="cos">cos(2π·2n/N)</option>
+            <option value="ramp">斜坡 0,1,2,3,…</option>
+            <option value="rand">随机整数</option>
+          </select>
+        </div>
+        <div class="btns">
+          <button id="prev">← 上一层</button>
+          <button id="next" class="primary">下一层 →</button>
+        </div>
+        <button id="all">直接算完</button>
+      </div>
+      <div class="card" id="explain-card">
+        <p class="note" id="explain" style="background:transparent;padding:0"></p>
+      </div>
+      <div class="card">
+        <h3>验证<small>与暴力 DFT 对比</small></h3>
+        <div class="stat"><span>最大误差 |FFT − DFT|</span><span id="st-err">-</span></div>
+        <div class="stat"><span>DFT 复数乘法</span><span id="st-dft">-</span></div>
+        <div class="stat"><span>FFT 复数乘法</span><span id="st-fft">-</span></div>
+      </div>
+    </aside>
+  </div>
+</main>
+<script type="module" src="./fft.js"></script>
+</body>
+</html>
+
